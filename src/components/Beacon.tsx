@@ -1,3 +1,4 @@
+import fanIcon from "../assets/FanIcon.svg";
 import "./Beacon.css";
 
 type Props = {
@@ -13,8 +14,7 @@ export default function Beacon({ onClick, label = "Open tour" }: Props) {
       aria-label={label}
       onClick={onClick}
     >
-      <span className="beacon-dot" aria-hidden />
-      <span className="beacon-pulse" aria-hidden />
+      <img src={fanIcon} alt="" className="beacon-icon" aria-hidden />
     </button>
   );
 }

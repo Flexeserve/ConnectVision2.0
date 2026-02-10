@@ -1,74 +1,84 @@
-import BoltIcon from "@mui/icons-material/Bolt";
-import {
-  GaugeContainer,
-  GaugeValueArc,
-  GaugeReferenceArc,
-  useGaugeState,
-} from "@mui/x-charts/Gauge";
+import { PieChart } from "@mui/x-charts/PieChart";
 import "./WidgetBase.css";
 import "./EnergyUsageWidget.css";
+import scheduleIcon from "../../assets/ScheduleEnergyIcon.svg";
+import useElementSize from "../../hooks/useElementSize";
 
-function GaugePointer() {
-  const { valueAngle, outerRadius, cx, cy } = useGaugeState();
+const complianceData = [
+  { id: 0, value: 52, color: "#1fb05c", label: "Below" },
+  { id: 1, value: 34, color: "#f0c419", label: "Expected" },
+  { id: 2, value: 14, color: "#f14734", label: "Above" },
+];
 
-  if (valueAngle === null) {
-    return null;
-  }
-
-  const target = {
-    x: cx + outerRadius * Math.sin(valueAngle),
-    y: cy - outerRadius * Math.cos(valueAngle),
-  };
-
-  return (
-    <g>
-      <circle cx={cx} cy={cy} r={5} fill="#333333" />
-      <path
-        d={`M ${cx} ${cy} L ${target.x} ${target.y}`}
-        stroke="#333333"
-        strokeWidth={3}
-      />
-    </g>
-  );
-}
+const belowRate = complianceData[0]?.value ?? 0;
 
 export default function EnergyUsageWidget() {
+  const [gaugeRef, gaugeSize] = useElementSize<HTMLDivElement>();
+  const measuredWidth = gaugeSize.width || 210;
+  const chartWidth = Math.max(Math.min(measuredWidth, 300), 160);
+  const chartHeight = Math.max(chartWidth * 0.85, 150);
+  const chartCy = chartHeight - Math.min(chartHeight * 0.3, 60);
+
   return (
     <div className="widget-card widget-energy">
       <div className="widget-title">
-        <BoltIcon fontSize="small" />
-        Energy Usage
+        <img
+          src={scheduleIcon}
+          alt=""
+          className="schedule-icon"
+          aria-hidden
+        />
+        Schedule compliance
       </div>
 
-      <div className="energy-gauge">
-        <GaugeContainer
-          width={200}
-          height={130}
-          startAngle={-90}
-          endAngle={90}
-          value={80}
-        >
-          <defs>
-            <linearGradient id="energyArcGradient" cx="50%" cy="100%" r="120%">
-              <stop offset="0%" stopColor="#17ff4f" />
-              <stop offset="60%" stopColor="#9a9a9a" />
-              <stop offset="100%" stopColor="#ff2d2d" />
-            </linearGradient>
-          </defs>
-          <GaugeReferenceArc style={{ fill: "url(#energyArcGradient)" }} />
-          <GaugeValueArc style={{ fill: "rgba(255, 255, 255, 0.75)" }} />
-          <GaugePointer />
-        </GaugeContainer>
-      </div>
+      <div className="schedule-content">
+        <div className="energy-insights">
+          <div className="energy-label">
+            Below threshold{" "}
+            <span className="energy-highlight">{belowRate}%</span>
+          </div>
+          <div className="energy-legend">
+            {complianceData.map((slice) => (
+              <span key={slice.id} className="energy-legend-item">
+                <span
+                  className="energy-dot"
+                  style={{ backgroundColor: slice.color }}
+                />
+                {slice.label}
+              </span>
+            ))}
+          </div>
+        </div>
 
-      <div className="energy-label">Avg. usage: Optimal</div>
-      <div className="energy-legend">
-        <span className="energy-dot low" />
-        Low
-        <span className="energy-dot optimal" />
-        Optimal
-        <span className="energy-dot high" />
-        High
+        <div className="energy-gauge" ref={gaugeRef}>
+          <PieChart
+            series={[
+              {
+                data: complianceData,
+                innerRadius: 42,
+                outerRadius: 70,
+                startAngle: 90,
+                endAngle: -90,
+                paddingAngle: 1,
+                cornerRadius: 2,
+                cx: chartWidth / 2,
+                cy: chartCy,
+              },
+            ]}
+            width={chartWidth}
+            height={chartHeight}
+            slotProps={{
+              legend: { hidden: true },
+              root: {
+                sx: {
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                },
+              },
+            }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -5,17 +5,14 @@
 
 .cloud-widget {
   display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 18px;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .cloud-widget-left {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  gap: 10px;
-  min-width: 130px;
+  gap: 12px;
   color: #0b0b0b;
 }
 
@@ -29,7 +26,7 @@
 
 .cloud-connect-logo {
   width: 90px;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .cloud-status {
@@ -61,29 +58,70 @@
   display: inline-block;
 }
 
-.cloud-check {
-  color: #1fb05c;
+.status-dot.is-online {
+  background: #1fb05c;
+}
+
+.status-dot.is-warning {
+  background: #f0c419;
+}
+
+.cloud-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.cloud-summary-item {
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summary-label {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a7a7a;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+}
+
+.summary-value--muted {
+  font-size: 12px;
+  color: #7a7a7a;
+  font-weight: 500;
+}
+
+.summary-value--alert {
+  color: #f14734;
 }
 
 .cloud-widget-right {
-  flex: 1;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+  display: grid;
+  place-items: center;
 }
 
 .cloud-gauge {
   width: 100%;
-  max-width: 240px;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 8px;
+  justify-items: center;
 }
 
 .cloud-pie-wrapper {
   width: 100%;
+  padding: 0 2px;
   height: auto;
   margin: 0 auto;
   display: flex;
@@ -93,28 +131,39 @@
 
 .cloud-pie-wrapper svg {
   display: block;
+  width: 100% !important;
+  height: auto !important;
 }
 
 .cloud-gauge-value {
-  margin-top: 6px;
-  font-size: 46px;
-  font-weight: 700;
-  color: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.cloud-gauge-caption {
-  margin-top: 2px;
-  font-size: 11px;
-  letter-spacing: 0.05em;
+.cloud-gauge-number {
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 700;
+  color: #000;
+  line-height: 1;
+}
+
+.cloud-gauge-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #5d5d5d;
 }
 
 .cloud-gauge-legend {
-  margin-top: 10px;
+  width: 100%;
+  margin-top: 0;
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
   color: #000;
 }
 

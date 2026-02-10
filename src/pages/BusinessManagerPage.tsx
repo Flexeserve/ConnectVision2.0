@@ -29,6 +29,51 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
 const ReactGridLayout = WidthProvider(RGL);
+const GRID_COLS = 6;
+const LAYOUT_COOKIE_NAME = "cv_widget_layout";
+const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
+
+const clampNumber = (value: number | undefined, min: number, max: number) => {
+  if (typeof value !== "number" || Number.isNaN(value)) return undefined;
+  return Math.min(Math.max(value, min), max);
+};
+
+const loadLayoutCookie = (): Layout[] | null => {
+  if (typeof document === "undefined") return null;
+  const cookies = document.cookie?.split(";").map((c) => c.trim()) ?? [];
+  const target = cookies.find((c) => c.startsWith(`${LAYOUT_COOKIE_NAME}=`));
+  if (!target) return null;
+  try {
+    const value = target.substring(LAYOUT_COOKIE_NAME.length + 1);
+    const parsed = JSON.parse(decodeURIComponent(value));
+    if (Array.isArray(parsed)) {
+      return parsed as Layout[];
+    }
+  } catch {
+    // Ignore malformed cookies
+  }
+  return null;
+};
+
+const saveLayoutCookie = (layout: Layout[]) => {
+  if (typeof document === "undefined") return;
+  try {
+    const encoded = encodeURIComponent(JSON.stringify(layout));
+    document.cookie = `${LAYOUT_COOKIE_NAME}=${encoded}; max-age=${LAYOUT_COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
+  } catch {
+    // Ignore storage failures
+  }
+};
+
+const WIDGET_DIMENSIONS: Record<string, Partial<Pick<Layout, "w" | "h">>> = {
+  "fan-life": { h: 4, w: 3 },
+  energy: { h: 4, w: 3 },
+  element: { h: 4, w: 3 },
+  cloud: { h: 4, w: 3 },
+  alarms: { w: 1, h: 1 },
+  gateway: { h: 2, w: 2 },
+  commander: { h: 2, w: 2 },
+};
 
 const BU_ROWS = [
   {
@@ -93,24 +138,85 @@ export default function BusinessManagerPage({
   );
 
   const [isEditing, setIsEditing] = React.useState(false);
-  const DEFAULT_LAYOUT: Layout[] = React.useMemo(
-    () =>
-      widgetComponents.map((widget, index) => ({
+  const DEFAULT_LAYOUT: Layout[] = React.useMemo(() => {
+    const columnHeights = Array(GRID_COLS).fill(0);
+
+    return widgetComponents.map((widget) => {
+      const { w = 3, h = 3 } = WIDGET_DIMENSIONS[widget.id] ?? {};
+      const clampedWidth = Math.min(Math.max(w, 1), GRID_COLS);
+
+      let bestX = 0;
+      let minHeight = Number.POSITIVE_INFINITY;
+
+      for (let x = 0; x <= GRID_COLS - clampedWidth; x += 1) {
+        const slice = columnHeights.slice(x, x + clampedWidth);
+        const sliceHeight = slice.length ? Math.max(...slice) : 0;
+        if (sliceHeight < minHeight) {
+          minHeight = sliceHeight;
+          bestX = x;
+        }
+      }
+
+      for (let i = bestX; i < bestX + clampedWidth; i += 1) {
+        columnHeights[i] = minHeight + h;
+      }
+
+      return {
         i: widget.id,
-        x: (index % 2) * 3,
-        y: Math.floor(index / 2) * 3,
-        w: 3,
-        h: 3,
-      })),
-    [widgetComponents],
+        x: bestX,
+        y: minHeight,
+        w: clampedWidth,
+        h,
+      };
+    });
+  }, [widgetComponents]);
+
+  const mergeLayoutWithDefaults = React.useCallback(
+    (persisted?: Layout[] | null) => {
+      if (!persisted?.length) return DEFAULT_LAYOUT;
+      const persistedMap = new Map<string, Layout>();
+      persisted.forEach((item) => {
+        if (item && typeof item.i === "string") {
+          persistedMap.set(item.i, item);
+        }
+      });
+
+      return DEFAULT_LAYOUT.map((base) => {
+        const incoming = persistedMap.get(base.i);
+        if (!incoming) return base;
+
+        const width = clampNumber(incoming.w, 1, GRID_COLS) ?? base.w;
+        const height =
+          clampNumber(incoming.h, 1, Number.MAX_SAFE_INTEGER) ?? base.h;
+        const maxX = Math.max(GRID_COLS - width, 0);
+        const x = clampNumber(incoming.x, 0, maxX) ?? base.x;
+        const y =
+          clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;
+
+        return {
+          ...base,
+          ...incoming,
+          w: width,
+          h: height,
+          x,
+          y,
+        };
+      });
+    },
+    [DEFAULT_LAYOUT],
   );
 
-  const [widgetLayout, setWidgetLayout] = React.useState<Layout[]>(
-    DEFAULT_LAYOUT,
+  const [widgetLayout, setWidgetLayout] = React.useState<Layout[]>(() =>
+    mergeLayoutWithDefaults(loadLayoutCookie()),
   );
+
+  React.useEffect(() => {
+    setWidgetLayout((prev) => mergeLayoutWithDefaults(prev));
+  }, [mergeLayoutWithDefaults]);
 
   const handleLayoutChange = React.useCallback((next: Layout[]) => {
     setWidgetLayout(next);
+    saveLayoutCookie(next);
   }, []);
 
   return (
@@ -338,7 +444,7 @@ export default function BusinessManagerPage({
               <ReactGridLayout
                 className={`widgets-grid ${isEditing ? "widgets-grid--editing" : ""}`}
                 layout={widgetLayout}
-                cols={6}
+                cols={GRID_COLS}
                 rowHeight={80}
                 margin={[16, 16]}
                 onLayoutChange={handleLayoutChange}

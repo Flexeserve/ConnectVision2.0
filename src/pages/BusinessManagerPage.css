@@ -59,8 +59,8 @@
 
 .widgets-panel {
   border-left: 1px solid #c0c0c0; /* Only left border */
-  min-height: 100%;
-  padding: 10px 16px 24px;
+  min-height: calc(100vh - 140px);
+  padding: 20px 16px 48px;
   color: #c6c6c6;
   box-sizing: border-box;
   display: flex;
@@ -149,12 +149,13 @@
 .widgets-panel .grid-scroll-container {
   flex: 1;
   overflow-y: auto;
-  padding-right: 8px;
+  padding: 8px 12px 48px 0;
 }
 
 .widgets-grid {
   width: 100%;
   min-height: 240px;
+  padding-bottom: 40px;
 }
 
 .widget-cell {
@@ -336,29 +337,26 @@
 
 .tour-beacon-icon {
   position: relative;
-  display: inline-block;
-  width: 18px;
-  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #ffd6c2 35%, #f06a24 100%);
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.35),
+    inset 0 0 10px rgba(255, 255, 255, 0.4);
   pointer-events: none;
 }
 
-.tour-beacon-icon::before,
-.tour-beacon-icon::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-}
-
 .tour-beacon-icon::before {
-  background: #fb0505;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
-}
-
-.tour-beacon-icon::after {
-  inset: -6px;
-  border: 2px solid rgba(240, 106, 36, 0.6);
-  animation: beaconPulse 1.6s ease-out infinite;
+  content: "";
+  width: 22px;
+  height: 22px;
+  background: url("../assets/FanIcon.svg") center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+  animation: fanSpin 2.4s linear infinite;
 }
 
 @keyframes tourBeaconFade {
