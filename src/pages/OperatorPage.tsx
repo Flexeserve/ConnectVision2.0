@@ -4,6 +4,7 @@ import connectLogo from "../assets/connect_flexeserve.svg";
 import "./OperatorPage.css";
 import {
   Suspense,
+  memo,
   useEffect,
   useMemo,
   useState,
@@ -178,13 +179,12 @@ function useAdoptedCamera(gltf?: GLTF | null) {
     camera.position.copy(position);
     camera.quaternion.copy(quaternion);
 
+    const perspectiveCamera = camera as PerspectiveCamera;
     if ("fov" in exportedCamera) {
-      (camera as PerspectiveCamera).fov = exportedCamera.fov;
-      (camera as PerspectiveCamera).focus = exportedCamera.focus;
+      copyPerspectiveProps(perspectiveCamera, exportedCamera);
+    } else {
+      syncCameraClipping(perspectiveCamera, exportedCamera as PerspectiveCamera);
     }
-
-    camera.near = exportedCamera.near;
-    camera.far = exportedCamera.far;
     camera.updateProjectionMatrix();
   }, [camera, gltf]);
 }
@@ -193,6 +193,23 @@ type ImportedOperatorSceneProps = {
   onAnchors?: (anchors: LightAnchors) => void;
   onFanEmitters?: (emitters: FanEmitters) => void;
   onSceneReady?: () => void;
+};
+
+const syncCameraClipping = (
+  target: PerspectiveCamera,
+  source: PerspectiveCamera,
+) => {
+  target.near = source.near;
+  target.far = source.far;
+};
+
+const copyPerspectiveProps = (
+  target: PerspectiveCamera,
+  source: PerspectiveCamera,
+) => {
+  target.fov = source.fov;
+  target.focus = source.focus;
+  syncCameraClipping(target, source);
 };
 
 function ImportedOperatorScene({
@@ -409,7 +426,7 @@ type AnchoredRectLightProps = {
   rotationOffset?: [number, number, number];
 };
 
-function AnchoredRectLight({
+const AnchoredRectLight = memo(function AnchoredRectLight({
   anchor,
   active,
   color,
@@ -492,9 +509,14 @@ function AnchoredRectLight({
       {debug && <LightDebugControls objectRef={groupRef} label={label} />}
     </>
   );
-}
+});
 
-function FanFlowField({
+const deterministicSeed = (index: number, offset: number) => {
+  const raw = ((index + 1) * 97 + offset * 53) % 360;
+  return (raw * Math.PI) / 180;
+};
+
+const FanFlowField = memo(function FanFlowField({
   emitter,
   active,
   color,
@@ -526,14 +548,16 @@ function FanFlowField({
     return texture;
   }, []);
 
-  const lineConfigs = useMemo(() => {
-    const configs: {
-      geometry: PlaneGeometry;
-      basePositions: Float32Array;
-      waveSeed: number;
-      lateralSeed: number;
-      verticalSeed: number;
-    }[] = [];
+  type LineConfig = {
+    geometry: PlaneGeometry;
+    basePositions: Float32Array;
+    waveSeed: number;
+    lateralSeed: number;
+    verticalSeed: number;
+  };
+
+  const lineConfigs = useMemo<LineConfig[]>(() => {
+    const configs: LineConfig[] = [];
     const lineWidth = width / (lineCount * 0.8);
     const spacing = lineWidth * 0.25;
     for (let i = 0; i < lineCount; i += 1) {
@@ -546,13 +570,13 @@ function FanFlowField({
           (geometry.getAttribute("position") as BufferAttribute)
             .array as ArrayLike<number>,
         ),
-        waveSeed: Math.random() * Math.PI * 2,
-        lateralSeed: Math.random() * Math.PI * 2,
-        verticalSeed: Math.random() * Math.PI * 2,
+        waveSeed: deterministicSeed(i, 1),
+        lateralSeed: deterministicSeed(i, 2),
+        verticalSeed: deterministicSeed(i, 3),
       });
     }
     return configs;
-  }, [height, width]);
+  }, [height, width, lineCount]);
 
   const materialsRef = useRef<MeshBasicMaterial[]>([]);
   const intensityRef = useRef(0);
@@ -594,6 +618,10 @@ function FanFlowField({
   }, [emitter, offset]);
 
   useFrame(({ clock }) => {
+    if (!emitter && intensityRef.current < 0.01) {
+      if (groupRef.current) groupRef.current.visible = false;
+      return;
+    }
     const target = active && emitter ? 1 : 0;
     intensityRef.current = MathUtils.lerp(intensityRef.current, target, 0.08);
     const visible = Boolean(emitter) && intensityRef.current > 0.02;
@@ -610,6 +638,7 @@ function FanFlowField({
       materialsRef.current.forEach((material) => {
         if (material) material.opacity = 0;
       });
+      if (groupRef.current) groupRef.current.visible = false;
       return;
     }
 
@@ -666,7 +695,7 @@ function FanFlowField({
       ))}
     </group>
   );
-}
+});
 
 export default function OperatorPage({ onBack }: OperatorPageProps) {
   const [temps, setTemps] = useState(["170F", "170F", "170F", "170F"]);
@@ -674,6 +703,13 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
   const [fanEmitters, setFanEmitters] = useState<FanEmitters>({});
   const [sceneReady, setSceneReady] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
+  const scratchVectors = useMemo(
+    () => ({
+      origin: new Vector3(),
+      forward: new Vector3(),
+    }),
+    [],
+  );
   const handleSceneReady = useCallback(() => {
     setSceneReady(true);
   }, []);
@@ -685,17 +721,21 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
   }, [sceneReady]);
   const computeFanTarget = useCallback(
     (emitter: FanEmitter): [number, number, number] => {
-      const origin = new Vector3(...emitter.position);
-      const forward = new Vector3(0, 0, 1);
+      const origin = scratchVectors.origin;
+      const forward = scratchVectors.forward;
+      origin.set(emitter.position[0], emitter.position[1], emitter.position[2]);
+      forward.set(0, 0, 1);
       if (emitter.quaternion) {
         forward.applyQuaternion(new Quaternion(...emitter.quaternion));
       } else if (emitter.rotation) {
         forward.applyEuler(new Euler(...emitter.rotation));
       }
-      const target = origin.clone().add(forward);
-      return [target.x, target.y, target.z];
+      const targetX = origin.x + forward.x;
+      const targetY = origin.y + forward.y;
+      const targetZ = origin.z + forward.z;
+      return [targetX, targetY, targetZ];
     },
-    [],
+    [scratchVectors],
   );
 
   const buildFanControllerEntry = useCallback(
@@ -757,7 +797,9 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
     }
   };
 
-  const isZoneActive = (value: string) => {
+  const isStatusActive = (value: string) => value.toLowerCase() !== "off";
+
+  const isFanActive = (value: string) => {
     const lower = value.toLowerCase();
     return lower !== "off" && lower !== "lights only";
   };
@@ -778,7 +820,8 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
   const zoneStates = useMemo(
     () =>
       temps.map((value) => ({
-        active: isZoneActive(value),
+        statusActive: isStatusActive(value),
+        fanActive: isFanActive(value),
         color: getFanColor(value),
       })),
     [temps],
@@ -837,51 +880,60 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
 
       <div className="operator-content">
         <div className="operator-left">
-          <div className="operator-grid">
-            {[0, 1].map((col) => (
-              <AnimatedContent
-                key={`card-${col}`}
-                distance={100}
-                direction="vertical"
-                reverse={false}
-                duration={0.8}
-                ease="power3.out"
-                initialOpacity={0}
-                animateOpacity
-                scale={1}
-                threshold={0.1}
-                delay={col * 0.1}
-              >
-                <div className="operator-card">
-                  <div className="operator-card-header">
-                    {col === 0 ? "Flexeserve - LEFT" : "Flexeserve - RIGHT*"}
+          <div className="tablet">
+            <div className="operator-grid">
+              {[0, 1].map((col) => (
+                <AnimatedContent
+                  key={`card-${col}`}
+                  distance={100}
+                  direction="vertical"
+                  reverse={false}
+                  duration={0.8}
+                  ease="power3.out"
+                  initialOpacity={0}
+                  animateOpacity
+                  scale={1}
+                  threshold={0.1}
+                  delay={col * 0.1}
+                >
+                  <div className="operator-card">
+                    <div className="operator-card-header">
+                      {col === 0 ? "Flexeserve - LEFT" : "Flexeserve - RIGHT*"}
+                    </div>
+                    <div className="operator-card-body">
+                      {[0, 1].map((row) => {
+                        const idx = col * 2 + row;
+                        return (
+                          <div className="temp-row" key={`temp-${idx}`}>
+                            <span
+                              className={`status-dot ${
+                                zoneStates[idx]?.statusActive
+                                  ? ""
+                                  : "status-dot--off"
+                              }`}
+                              aria-hidden
+                            />
+                            <select
+                              className="temp-select"
+                              value={temps[idx]}
+                              onChange={(event) =>
+                                updateTemp(idx, event.target.value)
+                              }
+                            >
+                              {tempOptions.map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="operator-card-body">
-                    {[0, 1].map((row) => {
-                      const idx = col * 2 + row;
-                      return (
-                        <div className="temp-row" key={`temp-${idx}`}>
-                          <span className="status-dot" aria-hidden />
-                          <select
-                            className="temp-select"
-                            value={temps[idx]}
-                            onChange={(event) =>
-                              updateTemp(idx, event.target.value)
-                            }
-                          >
-                            {tempOptions.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </AnimatedContent>
-            ))}
+                </AnimatedContent>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -891,15 +943,24 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
               className={`operator-canvas-wrapper ${sceneReady ? "is-ready" : ""}`}
             >
               <Canvas
-                camera={{ position: [0, 1.4, 6], fov: 120 }}
+                camera={{ position: [0, 1.4, 6], fov: 30 }}
                 shadows
-                dpr={[1, 1.5]}
+                dpr={[0.8, 1.25]}
+                performance={{ min: 0.7, max: 1 }}
                 onCreated={({ gl, camera }) => {
                   gl.shadowMap.enabled = true;
                   gl.shadowMap.type = PCFSoftShadowMap;
                   camera.lookAt(0, 1, 0);
                 }}
               >
+                <directionalLight
+                  color="#fff"
+                  intensity={5}
+                  castShadow
+                  position={[0, 1, 1]}
+                  shadow-mapSize-width={1024}
+                  shadow-mapSize-height={1024}
+                />
                 <CameraOrbitControls enabled={cameraControlsActive} />
                 <Suspense fallback={null}>
                   <directionalLight
@@ -1075,7 +1136,7 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
                         <FanFlowField
                           key={`fan-flow-${emitterKey}-${zoneIndex}`}
                           emitter={resolvedEmitter}
-                          active={zoneStates[zoneIndex]?.active ?? false}
+                          active={zoneStates[zoneIndex]?.fanActive ?? false}
                           color={zoneStates[zoneIndex]?.color ?? "#8d8d8d"}
                           offset={offset}
                         />

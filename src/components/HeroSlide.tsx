@@ -35,13 +35,8 @@ export default function HeroSlide({ visible, onClose }: Props) {
       </div>
       <Box className="hero-content">
         <div className="hero-title" id="hero-title">
-          <span className="hero-title-brand">
-            flex<span className="hero-title-accent">e</span>serve
-          </span>
-          <span className="hero-title-main">
-            conn<span className="hero-title-accent">e</span>ct
-          </span>
-          <div className="hero-subtitle">The Pulse of Your Operations</div>
+          <div className="hero-logo"></div>
+          <div className="hero-subtitle">SUBTEXT WILL GO HERE LOL</div>
         </div>
         <div className="hero-cta">
           <Button
@@ -57,12 +52,11 @@ export default function HeroSlide({ visible, onClose }: Props) {
               fontWeight: 800,
               letterSpacing: "0.8em",
               textTransform: "uppercase",
-              color: "#fff",
+              color: "#333333",
               borderRadius: "999px",
               position: "relative",
               background: "transparent",
-              boxShadow:
-                "0 25px 65px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
+
               transition:
                 "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease",
 
@@ -84,21 +78,13 @@ export default function HeroSlide({ visible, onClose }: Props) {
 
               "&:hover": {
                 transform: "translateY(-4px) scale(1.03)",
-                boxShadow:
-                  "0 30px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.35)",
               },
 
               "&:active": {
                 transform: "translateY(-1px) scale(0.99)",
-                boxShadow:
-                  "0 20px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
               },
 
-              "&:focus-visible": {
-                outline: "none",
-                boxShadow:
-                  "0 0 0 3px rgba(255,255,255,0.25), 0 25px 65px rgba(0, 0, 0, 0.35)",
-              },
+              "&:focus-visible": {},
             }}
           >
             GET STARTED

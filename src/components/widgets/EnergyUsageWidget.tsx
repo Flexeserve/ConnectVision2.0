@@ -22,10 +22,10 @@ function GaugePointer() {
 
   return (
     <g>
-      <circle cx={cx} cy={cy} r={5} fill="#ffffff" />
+      <circle cx={cx} cy={cy} r={5} fill="#333333" />
       <path
         d={`M ${cx} ${cy} L ${target.x} ${target.y}`}
-        stroke="#ffffff"
+        stroke="#333333"
         strokeWidth={3}
       />
     </g>
@@ -46,7 +46,7 @@ export default function EnergyUsageWidget() {
           height={130}
           startAngle={-90}
           endAngle={90}
-          value={50}
+          value={80}
         >
           <defs>
             <linearGradient id="energyArcGradient" cx="50%" cy="100%" r="120%">

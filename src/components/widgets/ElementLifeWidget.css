@@ -1,11 +1,11 @@
 .widget-element {
-  background: #333333;
+  background: #fff;
 }
 
 .widget-progress {
   margin-top: 12px;
   height: 6px;
-  background: #ffffff;
+  background: #333333;
   border-radius: 999px;
   overflow: hidden;
 }

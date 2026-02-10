@@ -1,14 +1,13 @@
 .widget-fan {
-  background: #333333;
+  background: #fff;
   background-size: 200% 200%;
-  color: #fff;
+  color: #333333;
   border: none;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
   animation: widgetGlow 6s ease-in-out infinite;
 }
 
 .widget-fan .widget-title {
-  color: #ffe7db;
+  color: #333333;
 }
 
 @keyframes widgetGlow {

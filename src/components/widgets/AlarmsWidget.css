@@ -1,12 +1,12 @@
 .widget-alarms {
-  background: #333333;
+  background: #ffffff;
 }
 
 .alarm-count {
   margin-top: 6px;
   font-size: 26px;
   font-weight: 700;
-  color: #ffffff;
+  color: #333333;
 }
 
 .alarm-list {

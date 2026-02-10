@@ -1,6 +1,6 @@
 /* src/pages/OperatorPage.css */
 .operator-page {
-  background: #333333;
+  background: #ededee;
   min-height: 100vh;
   color: #202020;
   display: flex;
@@ -9,20 +9,19 @@
 
 .temp-select {
   min-width: 140px;
+  min-height: 120px;
   font-size: 22px;
   font-weight: 700;
-  color: #202020;
+  color: linear-gradient(45deg, #d94d14, #ff7a3a) 1;
   background: #ffffff;
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  padding: 6px 10px;
+  border: 3px solid;
+  border-radius: 20px;
+  padding: 12px 14px;
   cursor: pointer;
+  text-align: center;
+  
 }
 
-.temp-select:focus {
-  outline: 2px solid rgba(217, 77, 20, 0.4);
-  outline-offset: 2px;
-}
 
 .operator-content {
   display: flex;
@@ -37,7 +36,10 @@
 }
 
 .operator-left {
-  flex: 0 0 55%;
+  display: flex;
+  justify-content: center;
+  width: 60%;
+  margin-top: -40px;
 }
 
 .operator-right {
@@ -58,24 +60,9 @@
   height: clamp(420px, 86vh, 980px);
   overflow: hidden;
   border-radius: 24px;
-  
+
   margin: 0 auto 18px;
   position: relative;
-}
-
-.operator-cube::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("../assets/FanIcon.svg");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: min(70%, 620px);
-  filter: saturate(1.2) brightness(1.1)
-    drop-shadow(0 0 38px rgba(0, 0, 0, 0.55));
-  opacity: 0.85;
-  pointer-events: none;
-  z-index: 0;
 }
 
 .operator-cube canvas {
@@ -153,7 +140,7 @@
   color: #1a1a1a;
   font-weight: 600;
   border-radius: 999px;
-  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.25);
+  
   border: 2px solid rgba(217, 77, 20, 0.3);
   text-align: center;
   animation: bubbleZigZag 2.6s ease forwards;
@@ -201,17 +188,103 @@
 
 .operator-grid {
   display: grid;
-  grid-template-columns: repeat(2, 240px);
-  gap: 28px;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
   justify-content: center;
+  align-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.tablet {
+  position: relative;
+  width: clamp(600px, 62vw, 900px);
+  aspect-ratio: 3719 / 2682;
+  background: url("../assets/OperatorView.svg") center / contain no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.2rem, 2.5vw, 2.5rem) clamp(1.5rem, 3vw, 3rem);
+  box-sizing: border-box;
+  filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.25));
+  margin-top: -20px;
+}
+
+/* Reflection */
+.tablet::after {
+  content: "";
+  position: absolute;
+  bottom: -100%; /* how far below the tablet the reflection sits */
+  left: 0;
+  width: 100%;
+  height: 100%; /* reflection height */
+  background: inherit; /* copies the same background image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  transform: scaleY(-1); /* flips vertically */
+  opacity: 1; /* reflection strength */
+  pointer-events: none;
+
+  /* fade-out gradient */
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0));
+}
+
+
+
+.tablet .operator-card {
+  width: 100%;
+  max-width: 200px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  
+  background: rgba(255, 255, 255, 1);
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  padding: 12px;
+  height: auto;
+}
+
+.operator-card {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+}
+
+.operator-card-body {
+  min-height: 130px;
+  min-width: 30px;
+  flex: 1;
+  padding: 12px 10px;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .tablet {
+    width: 100%;
+    aspect-ratio: auto;
+    padding: 1.5rem;
+  }
+
+  .tablet-screen {
+    width: 88%;
+    height: auto;
+  }
+
+  .operator-grid {
+    grid-template-columns: minmax(220px, 1fr);
+    max-width: 320px;
+  }
 }
 
 .operator-card {
   background: #ffffff;
   border-radius: 6px;
   border: 1px solid #d0d0d0;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+  
   overflow: hidden;
+  
 }
 
 .operator-card-header {
@@ -222,12 +295,12 @@
 }
 
 .operator-card-body {
-  padding: 16px 12px;
-  min-height: 350px;
+  padding: 12px 10px;
+  min-height: 100px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  justify-content: space-around;
+  gap: 12px;
+  justify-content: center;
 }
 
 .temp-row {
@@ -241,9 +314,17 @@
 .status-dot {
   width: 14px;
   height: 14px;
+  min-width: 14px;
+  min-height: 14px;
   border-radius: 50%;
   background: #2e7d32;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  flex: 0 0 14px;
+}
+
+.status-dot--off {
+  background: #8d8d8d;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .temp-value {
