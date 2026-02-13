@@ -183,7 +183,10 @@ function useAdoptedCamera(gltf?: GLTF | null) {
     if ("fov" in exportedCamera) {
       copyPerspectiveProps(perspectiveCamera, exportedCamera);
     } else {
-      syncCameraClipping(perspectiveCamera, exportedCamera as PerspectiveCamera);
+      syncCameraClipping(
+        perspectiveCamera,
+        exportedCamera as PerspectiveCamera,
+      );
     }
     camera.updateProjectionMatrix();
   }, [camera, gltf]);

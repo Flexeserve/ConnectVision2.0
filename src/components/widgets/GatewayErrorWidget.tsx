@@ -10,7 +10,7 @@ export default function GatewayErrorWidget() {
         Gateway Error
       </div>
       <div className="widget-value alarm-value-gateway">4</div>
-      <div className="widget-sub">Active gateway alarms</div>
+      
     </div>
   );
 }

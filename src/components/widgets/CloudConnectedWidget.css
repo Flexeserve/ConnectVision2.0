@@ -3,30 +3,29 @@
   background-color: #fff;
 }
 
-.cloud-widget {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.cloud-widget-left {
+.cloud-body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  color: #0b0b0b;
 }
 
-.cloud-labels {
-  font-weight: 700;
-  letter-spacing: 0.08em;
+.cloud-visual {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  font-size: 13px;
 }
 
-.cloud-connect-logo {
-  width: 90px;
-  margin-top: 4px;
+.cloud-title-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.cloud-info {
+  color: #0b0b0b;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .cloud-status {
@@ -58,111 +57,59 @@
   display: inline-block;
 }
 
-.status-dot.is-online {
-  background: #1fb05c;
-}
-
 .status-dot.is-warning {
   background: #f0c419;
 }
 
-.cloud-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 8px;
-}
-
-.cloud-summary-item {
-  padding: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
-  background: #fafafa;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.summary-label {
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #7a7a7a;
-}
-
-.summary-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111;
-}
-
-.summary-value--muted {
-  font-size: 12px;
-  color: #7a7a7a;
-  font-weight: 500;
-}
-
-.summary-value--alert {
-  color: #f14734;
-}
-
-.cloud-widget-right {
-  display: grid;
-  place-items: center;
+.cloud-footnote {
+  font-size: 11px;
+  color: #5d5d5d;
 }
 
 .cloud-gauge {
   width: 100%;
-  text-align: center;
-  display: grid;
-  grid-template-rows: auto auto auto;
-  gap: 8px;
-  justify-items: center;
-}
-
-.cloud-pie-wrapper {
-  width: 100%;
-  padding: 0 2px;
-  height: auto;
-  margin: 0 auto;
   display: flex;
-  justify-content: center;
   align-items: center;
-}
-
-.cloud-pie-wrapper svg {
-  display: block;
-  width: 100% !important;
-  height: auto !important;
+  gap: 16px;
+  justify-content: space-between;
+  flex-wrap: nowrap;
 }
 
 .cloud-gauge-value {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
+  width: auto;
+}
+
+.cloud-pie-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .cloud-gauge-number {
-  font-size: clamp(28px, 5vw, 40px);
+  /* Container-relative sizing - scales with widget width - increased for better visibility */
+  font-size: clamp(28px, 9cqw, 52px);
   font-weight: 700;
-  color: #000;
+  color: var(--widget-text-primary);
   line-height: 1;
 }
 
 .cloud-gauge-label {
-  font-size: 12px;
+  /* Container-relative sizing - scales with widget width - increased */
+  font-size: clamp(10px, 3.2cqw, 14px);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5d5d5d;
+  color: var(--widget-text-secondary);
 }
 
 .cloud-gauge-legend {
-  width: 100%;
-  margin-top: 0;
+  flex: 0 0 auto;
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
   font-size: 11px;
   color: #000;
 }
@@ -181,4 +128,52 @@
 
 .legend-dot--red {
   background: #f14734;
+}
+
+.cloud-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cloud-cta-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(120deg, #205ffd 0%, #7b9bff 100%);
+  cursor: pointer;
+  align-self: flex-start;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  box-shadow: 0 12px 24px rgba(32, 95, 253, 0.35);
+}
+
+.cloud-cta-button:hover,
+.cloud-cta-button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(32, 95, 253, 0.4);
+  outline: none;
+}
+
+.cloud-description {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #303030;
+}
+
+/* Mobile responsive breakpoint */
+@media (max-width: 600px) {
+  .cloud-gauge-number {
+    font-size: clamp(28px, 5vw, 40px);
+  }
+
+  .cloud-gauge-label {
+    font-size: clamp(10px, 2.5vw, 12px);
+  }
+
+  .cloud-gauge {
+    gap: 12px;
+  }
 }

@@ -1,8 +1,8 @@
+import { useState, useEffect, useRef } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import "./WidgetBase.css";
 import "./EnergyUsageWidget.css";
 import scheduleIcon from "../../assets/ScheduleEnergyIcon.svg";
-import useElementSize from "../../hooks/useElementSize";
 
 const complianceData = [
   { id: 0, value: 52, color: "#1fb05c", label: "Below" },
@@ -13,71 +13,70 @@ const complianceData = [
 const belowRate = complianceData[0]?.value ?? 0;
 
 export default function EnergyUsageWidget() {
-  const [gaugeRef, gaugeSize] = useElementSize<HTMLDivElement>();
-  const measuredWidth = gaugeSize.width || 210;
-  const chartWidth = Math.max(Math.min(measuredWidth, 300), 160);
-  const chartHeight = Math.max(chartWidth * 0.85, 150);
-  const chartCy = chartHeight - Math.min(chartHeight * 0.3, 60);
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const [chartSize, setChartSize] = useState(100);
+  const [innerRadius, setInnerRadius] = useState(30);
+  const [outerRadius, setOuterRadius] = useState(50);
+
+  useEffect(() => {
+    if (!widgetRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const containerWidth = entry.contentRect.width;
+        const containerHeight = entry.contentRect.height;
+
+        // Calculate chart size based on container dimensions
+        // Use smaller dimension and scale appropriately
+        const baseSize = Math.min(containerWidth * 0.35, containerHeight * 0.5);
+        const size = Math.max(60, Math.min(baseSize, 140));
+
+        setChartSize(size);
+        setInnerRadius(size * 0.3);
+        setOuterRadius(size * 0.5);
+      }
+    });
+
+    observer.observe(widgetRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+
 
   return (
-    <div className="widget-card widget-energy">
+    <div ref={widgetRef} className="widget-card widget-energy">
       <div className="widget-title">
-        <img
-          src={scheduleIcon}
-          alt=""
-          className="schedule-icon"
-          aria-hidden
-        />
-        Schedule compliance
+        <img src={scheduleIcon} alt="" className="schedule-icon" aria-hidden />
+        <span>Schedule compliance</span>
       </div>
 
-      <div className="schedule-content">
-        <div className="energy-insights">
-          <div className="energy-label">
-            Below threshold{" "}
-            <span className="energy-highlight">{belowRate}%</span>
-          </div>
-          <div className="energy-legend">
-            {complianceData.map((slice) => (
-              <span key={slice.id} className="energy-legend-item">
-                <span
-                  className="energy-dot"
-                  style={{ backgroundColor: slice.color }}
-                />
-                {slice.label}
-              </span>
-            ))}
-          </div>
-        </div>
+      <div className="energy-body">
+        <div className="energy-info"></div>
 
-        <div className="energy-gauge" ref={gaugeRef}>
-          <PieChart
-            series={[
-              {
-                data: complianceData,
-                innerRadius: 42,
-                outerRadius: 70,
-                startAngle: 90,
-                endAngle: -90,
-                paddingAngle: 1,
-                cornerRadius: 2,
-                cx: chartWidth / 2,
-                cy: chartCy,
-              },
-            ]}
-            width={chartWidth}
-            height={chartHeight}
-            slotProps={{
-              legend: { hidden: true },
-              root: {
-                sx: {
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                },
-              },
-            }}
-          />
+        <div className="energy-visual">
+          <div className="energy-gauge">
+            <div className="energy-value">
+              <span className="energy-gauge-number">{belowRate}%</span>
+              <span className="energy-gauge-label">Below schedule</span>
+            </div>
+
+            <div className="energy-pie-wrapper">
+              <PieChart
+                series={[
+                  {
+                    data: complianceData,
+                    innerRadius: innerRadius,
+                    outerRadius: outerRadius,
+                    cornerRadius: 3,
+                  },
+                ]}
+                width={chartSize}
+                height={chartSize}
+              />
+            </div>
+
+
+          </div>
         </div>
       </div>
     </div>

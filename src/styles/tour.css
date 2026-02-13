@@ -1,0 +1,107 @@
+/* Custom Driver.js tour styling for Business Manager */
+
+.driver-popover.business-manager-tour-popover {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #e0e0e0;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-title {
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 8px;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-description {
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  color: #5d5d5d;
+  line-height: 1.5;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-progress-text {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  color: #999999;
+}
+
+/* Button styling */
+.driver-popover.business-manager-tour-popover .driver-popover-footer button {
+  font-family: "Inter", sans-serif;
+  font-size: 0.875rem;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 150ms ease;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-next-btn {
+  background: linear-gradient(45deg, #d94d14 0%, #f06a24 100%);
+  color: #ffffff;
+  border: none;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-next-btn:hover {
+  background: linear-gradient(45deg, #c04412 0%, #e05a1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(217, 77, 20, 0.3);
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-prev-btn {
+  background: #ededee;
+  color: #333333;
+  border: 1px solid #c0c0c0;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-prev-btn:hover {
+  background: #d8d8d8;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-close-btn {
+  color: #999999;
+  font-size: 1.5rem;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-close-btn:hover {
+  color: #333333;
+}
+
+/* Highlight overlay */
+.driver-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.driver-active-element {
+  border-radius: 4px;
+}
+
+/* Arrow styling */
+.driver-popover.business-manager-tour-popover .driver-popover-arrow-side-left.driver-popover-arrow,
+.driver-popover.business-manager-tour-popover .driver-popover-arrow-side-right.driver-popover-arrow,
+.driver-popover.business-manager-tour-popover .driver-popover-arrow-side-top.driver-popover-arrow,
+.driver-popover.business-manager-tour-popover .driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-color: #ffffff;
+}
+
+/* Progress bar */
+.driver-popover.business-manager-tour-popover .driver-popover-progress-bar {
+  background: #ededee;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.driver-popover.business-manager-tour-popover .driver-popover-progress-bar-fill {
+  background: linear-gradient(45deg, #d94d14 0%, #f06a24 100%);
+  height: 100%;
+  border-radius: 2px;
+  transition: width 300ms ease;
+}

@@ -12,7 +12,7 @@ export default function FanLifeWidget() {
       <div className="widget-value">
         460 <span>hrs</span>
       </div>
-      <div className="widget-sub">Unit uptime vs expected fan model life.</div>
+      
     </div>
   );
 }

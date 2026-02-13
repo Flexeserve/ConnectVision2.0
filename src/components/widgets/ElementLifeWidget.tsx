@@ -12,10 +12,8 @@ export default function ElementLifeWidget() {
       <div className="widget-value">
         45 <span>hrs</span>
       </div>
-      <div className="widget-sub">Expected service window</div>
-      <div className="widget-progress">
-        <div className="widget-progress-fill" />
-      </div>
+      
+      
     </div>
   );
 }

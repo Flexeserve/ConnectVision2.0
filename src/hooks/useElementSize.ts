@@ -10,21 +10,18 @@ export default function useElementSize<T extends HTMLElement>() {
   const [size, setSize] = React.useState<Size>({ width: 0, height: 0 });
 
   React.useEffect(() => {
-    if (typeof ResizeObserver === "undefined") {
-      return undefined;
-    }
+    if (typeof ResizeObserver === "undefined") return undefined;
     const node = ref.current;
     if (!node) return undefined;
 
     const observer = new ResizeObserver(([entry]) => {
       if (!entry?.contentRect) return;
       const { width, height } = entry.contentRect;
-      setSize((prev) => {
-        if (prev.width === width && prev.height === height) {
-          return prev;
-        }
-        return { width, height };
-      });
+      setSize((prev) =>
+        prev.width === width && prev.height === height
+          ? prev
+          : { width, height },
+      );
     });
     observer.observe(node);
     return () => observer.disconnect();

@@ -10,7 +10,7 @@ export default function CommanderOfflineWidget() {
         Commander Box Offline
       </div>
       <div className="widget-value alarm-value-commander">7</div>
-      <div className="widget-sub">Units currently offline</div>
+      
     </div>
   );
 }

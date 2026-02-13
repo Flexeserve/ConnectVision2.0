@@ -1,23 +1,9 @@
 .widget-fan {
   background: #fff;
-  background-size: 200% 200%;
   color: #333333;
   border: none;
-  animation: widgetGlow 6s ease-in-out infinite;
 }
 
 .widget-fan .widget-title {
   color: #333333;
-}
-
-@keyframes widgetGlow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }

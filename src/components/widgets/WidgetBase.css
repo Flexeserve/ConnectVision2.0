@@ -1,18 +1,44 @@
+:root {
+  /* Widget spacing */
+  --widget-padding: 12px;
+  --widget-border-radius: 2px;
+  --widget-gap: 8px;
+
+  /* Widget typography - increased sizes for better visibility */
+  --widget-title-size: 14px;
+  --widget-value-size: 48px;
+  --widget-sub-size: 12px;
+  --widget-title-letter-spacing: 0.08em;
+
+  /* Widget colors */
+  --widget-text-primary: #333333;
+  --widget-text-secondary: #5d5d5d;
+  --widget-bg: #ffffff;
+  --widget-alarm-color: #d94d14;
+  --widget-border-subtle: rgba(255, 255, 255, 0.06);
+
+  /* Transitions */
+  --widget-hover-duration: 180ms;
+}
+
 .widget-card {
-  background: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px 12px 10px;
-  border-radius: 10px;
+  background: var(--widget-bg);
+  border: 1px solid var(--widget-border-subtle);
+  padding: var(--widget-padding) var(--widget-padding) 10px;
+  border-radius: var(--widget-border-radius);
   position: relative;
   overflow: hidden;
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+
+  /* Enable container queries for dynamic content scaling */
+  container-type: inline-size;
+  container-name: widget;
 
   transition:
-    transform 180ms ease,
-    box-shadow 180ms ease;
+    transform var(--widget-hover-duration) ease,
+    box-shadow var(--widget-hover-duration) ease;
 }
 
 .widget-card:hover {
@@ -23,30 +49,114 @@
 .widget-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--widget-gap);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 10px;
-  color: #333333;
+  letter-spacing: var(--widget-title-letter-spacing);
+  font-size: clamp(10px, 4cqw, var(--widget-title-size));  /* Scales with container width */
+  color: var(--widget-text-primary);
+
+  /* Text truncation for long titles */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .widget-value {
-  margin-top: 8px;
-  font-size: 34px;
+  margin-top: var(--widget-gap);
+  font-size: clamp(28px, 10cqw, var(--widget-value-size));  /* Scales with container width - increased min/max */
   font-weight: 700;
-  color: #333;
+  color: var(--widget-text-primary);
+  text-align: center;
+
+  display: flex;
+  justify-content: center;   /* horizontal centering */
+  align-items: center;       /* vertical centering */
 }
+
 
 .widget-value span {
   font-size: 14px;
   font-weight: 600;
   margin-left: 6px;
-  color: #333333;
+  color: var(--widget-text-primary);
 }
 
 .widget-sub {
   margin-top: 4px;
-  color: #333333;
-  font-size: 10px;
+  color: var(--widget-text-primary);
+  font-size: var(--widget-sub-size);
   line-height: 1.3;
+}
+
+/* Shared gauge pattern for chart widgets */
+.gauge-container {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--widget-gap);
+}
+
+.gauge-number {
+  font-size: clamp(28px, 9cqw, 52px);  /* Scales with container width - increased for better visibility */
+  font-weight: 700;
+  line-height: 1;
+  color: var(--widget-text-primary);
+}
+
+.gauge-label {
+  font-size: clamp(10px, 3.2cqw, 14px);  /* Scales with container width - increased */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--widget-text-secondary);
+}
+
+.gauge-section {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Container query breakpoints for dynamic sizing */
+@container widget (max-width: 200px) {
+  /* Very small widgets */
+  .widget-title {
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .widget-value {
+    font-size: 28px;
+  }
+
+  .gauge-number {
+    font-size: 28px;
+  }
+
+  .gauge-label {
+    font-size: 10px;
+  }
+}
+
+@container widget (min-width: 400px) {
+  /* Large widgets */
+  .widget-title {
+    gap: 12px;
+    font-size: 16px;
+  }
+
+  .widget-value {
+    font-size: 56px;
+  }
+
+  .gauge-number {
+    font-size: 56px;
+  }
+
+  .gauge-label {
+    font-size: 15px;
+  }
 }

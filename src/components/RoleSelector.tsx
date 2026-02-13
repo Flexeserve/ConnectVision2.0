@@ -3,6 +3,8 @@ import React from "react";
 import "./RoleSelector.css";
 import { Box, Typography, Button } from "@mui/material";
 import BackButton from "./BackButton";
+import businessManagerImage from "../assets/BusinessManager.jpg";
+import operatorImage from "../assets/Operator.jpg";
 
 export type Role = "manager" | "operator";
 
@@ -49,75 +51,93 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
       <div
         className={`panel left ${animating === "manager" ? "slide-out-right" : ""}`}
         style={{
-          backgroundImage: 'url("/assets/manager.jpg")',
+          backgroundImage: `url(${businessManagerImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        <Box
-          textAlign="center"
-          sx={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            px: 3,
-          }}
-        >
-          <Typography sx={{ color: "#333333" }} variant="h3" gutterBottom>
-            Business Manager
-          </Typography>
-          <Typography
-            sx={{ mb: 2, maxWidth: 420, mx: "auto" }}
-            color="textSecondary"
+        <div className="panel-content-wrapper">
+          <Box
+            className="panel-content"
+            textAlign="center"
+            sx={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 1.5,
+            }}
           >
-            Manage inventory, analytics and operations.
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => handleClick("manager")}
-            sx={{ backgroundColor: "#d94d14" }}
-          >
-            Open Manager
-          </Button>
-        </Box>
+            <Typography sx={{ color: "#fff" }} variant="h3" gutterBottom>
+              Business Manager
+            </Typography>
+            <Typography
+              sx={{
+                mb: 2,
+                maxWidth: 420,
+                mx: "auto",
+                color: "#fff",
+              }}
+            >
+              Manage inventory, analytics and operations.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => handleClick("manager")}
+              sx={{ backgroundColor: "#d94d14" }}
+              className="panel-cta-button"
+            >
+              Open Manager
+            </Button>
+          </Box>
+        </div>
       </div>
 
       <div
         className={`panel right ${animating === "operator" ? "slide-out-left" : ""}`}
         style={{
-          backgroundImage: 'url("/assets/operator.jpg")',
+          backgroundImage: `url(${operatorImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        <Box
-          textAlign="center"
-          sx={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            px: 3,
-          }}
-        >
-          <Typography sx={{ color: "#333333" }} variant="h3" gutterBottom>
-            Operator
-          </Typography>
-          <Typography
-            sx={{ mb: 2, maxWidth: 420, mx: "auto" }}
-            color="textSecondary"
+        <div className="panel-content-wrapper">
+          <Box
+            className="panel-content"
+            textAlign="center"
+            sx={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 1.5,
+            }}
           >
-            Fast operational controls & workflows.
-          </Typography>
-          <Button variant="contained" onClick={() => handleClick("operator")}>
-            Open Operator
-          </Button>
-        </Box>
+            <Typography sx={{ color: "#fff" }} variant="h3" gutterBottom>
+              Operator
+            </Typography>
+            <Typography
+              sx={{
+                mb: 2,
+                maxWidth: 420,
+                mx: "auto",
+                color: "#fff",
+              }}
+            >
+              Fast operational controls & workflows.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => handleClick("operator")}
+              sx={{ backgroundColor: "#d94d14" }}
+              className="panel-cta-button"
+            >
+              Open Operator
+            </Button>
+          </Box>
+        </div>
       </div>
     </div>
   );

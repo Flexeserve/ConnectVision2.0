@@ -2,43 +2,33 @@
   background: #fff;
 }
 
-.schedule-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.schedule-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-.energy-insights {
-  flex: 1 1 200px;
-  min-width: 180px;
+.energy-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.energy-gauge {
-  flex: 1 1 240px;
-  min-width: 180px;
-  display: flex;
-  justify-content: flex-end;
+.energy-visual {
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.energy-gauge svg {
-  width: 100% !important;
-  height: auto !important;
+.schedule-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.energy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .energy-label {
-  margin-top: 8px;
-  font-size: 11px;
+  margin-top: 4px;
+  font-size: 5px;
   color: #5d5d5d;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -50,25 +40,66 @@
   letter-spacing: 0.04em;
 }
 
-.energy-legend {
-  margin-top: 0;
+.energy-footnote {
+  font-size: 11px;
+  color: #5d5d5d;
+}
+
+.energy-gauge {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  height: auto;
+}
+
+.energy-value {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  font-size: 11px;
-  color: #333333;
+  gap: 4px;
+  width: auto;
 }
 
-.energy-legend-item {
-  display: inline-flex;
+.energy-gauge-number {
+  /* Container-relative sizing - scales with widget width - increased for better visibility */
+  font-size: clamp(28px, 9cqw, 52px);
+  font-weight: 700;
+  color: var(--widget-text-primary);
+  line-height: 1;
+}
+
+.energy-gauge-label {
+  /* Container-relative sizing - scales with widget width - increased */
+  font-size: clamp(10px, 3.2cqw, 14px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--widget-text-secondary);
+}
+
+.energy-pie-wrapper {
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 6px;
 }
 
-.energy-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
+/* Mobile responsive breakpoint */
+@media (max-width: 600px) {
+  .energy-gauge-number {
+    font-size: clamp(28px, 5vw, 40px);
+  }
+
+  .energy-gauge-label {
+    font-size: clamp(10px, 2.5vw, 12px);
+  }
+
+  .energy-gauge {
+    gap: 12px;
+  }
 }
+
+
+
+

@@ -8,8 +8,10 @@ import {
   InputAdornment,
 } from "@mui/material";
 import connectLogo from "../assets/connect_flexeserve.svg";
+import viewAllBUsLogo from "../assets/ViewAllBUsLogo.svg";
 import Header from "../components/Header";
 import "./BusinessManagerPage.css";
+import "../styles/tour.css";
 import SearchIcon from "@mui/icons-material/Search";
 import FanLifeWidget from "../components/widgets/FanLifeWidget";
 import EnergyUsageWidget from "../components/widgets/EnergyUsageWidget";
@@ -20,16 +22,18 @@ import CommanderOfflineWidget from "../components/widgets/CommanderOfflineWidget
 import CloudConnectedWidget from "../components/widgets/CloudConnectedWidget";
 import offlineIcon from "../assets/OfflineIcon.svg";
 import warningIcon from "../assets/WarningIcon.svg";
-import Beacon from "../components/Beacon";
-import GuidedBeacon, {
-  type GuidedBeaconHandle,
-} from "../components/GuidedBeacon";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+import { createBusinessManagerTour } from "../utils/businessManagerTour";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 const ReactGridLayout = WidthProvider(RGL);
-const GRID_COLS = 6;
+
+// Grid configuration constants
+const GRID_COLS = 12; // Increased from 6 for finer horizontal positioning
+const GRID_ROW_HEIGHT = 40; // Halved from 80px for finer vertical positioning
+const GRID_MARGIN: [number, number] = [16, 16];
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
 const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
 
@@ -66,13 +70,13 @@ const saveLayoutCookie = (layout: Layout[]) => {
 };
 
 const WIDGET_DIMENSIONS: Record<string, Partial<Pick<Layout, "w" | "h">>> = {
-  "fan-life": { h: 4, w: 3 },
-  energy: { h: 4, w: 3 },
-  element: { h: 4, w: 3 },
-  cloud: { h: 4, w: 3 },
-  alarms: { w: 1, h: 1 },
-  gateway: { h: 2, w: 2 },
-  commander: { h: 2, w: 2 },
+  "fan-life": { h: 8, w: 6 },    // 6/12 = 50% width (same as 3/6), 8×40px = 320px height (same as 4×80px)
+  energy: { h: 8, w: 6 },        // Scaled to maintain visual size with new grid
+  element: { h: 8, w: 6 },       // Scaled to maintain visual size with new grid
+  cloud: { h: 8, w: 6 },         // Scaled to maintain visual size with new grid
+  alarms: { w: 2, h: 2 },        // 2/12 = 16.7% width (same as 1/6), 2×40px = 80px height (same as 1×80px)
+  gateway: { h: 4, w: 4 },       // 4/12 = 33.3% width (same as 2/6), 4×40px = 160px height (same as 2×80px)
+  commander: { h: 4, w: 4 },     // 4/12 = 33.3% width (same as 2/6), 4×40px = 160px height (same as 2×80px)
 };
 
 const BU_ROWS = [
@@ -112,18 +116,6 @@ export default function BusinessManagerPage({
   onBack?: () => void;
   onOpen?: (id: string) => void;
 }) {
-  const [showTour, setShowTour] = React.useState(true);
-  const searchBeaconRef = React.useRef<GuidedBeaconHandle | null>(null);
-  const offlineBeaconRef = React.useRef<GuidedBeaconHandle | null>(null);
-  const alarmsBeaconRef = React.useRef<GuidedBeaconHandle | null>(null);
-  const rowsBeaconRef = React.useRef<GuidedBeaconHandle | null>(null);
-  const widgetsBeaconRef = React.useRef<GuidedBeaconHandle | null>(null);
-
-  React.useEffect(() => {
-    const timeout = window.setTimeout(() => setShowTour(false), 2400);
-    return () => window.clearTimeout(timeout);
-  }, []);
-
   const widgetComponents = React.useMemo(
     () => [
       { id: "fan-life", element: <FanLifeWidget /> },
@@ -138,6 +130,24 @@ export default function BusinessManagerPage({
   );
 
   const [isEditing, setIsEditing] = React.useState(false);
+
+  // Tour initialization
+  const tour = React.useRef(createBusinessManagerTour());
+
+  // Auto-start tour every time (kiosk demo mode)
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      tour.current.drive();
+    }, 1500); // Delay to let the page load completely
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Manual tour start function
+  const startTour = React.useCallback(() => {
+    tour.current.drive();
+  }, []);
+
   const DEFAULT_LAYOUT: Layout[] = React.useMemo(() => {
     const columnHeights = Array(GRID_COLS).fill(0);
 
@@ -190,8 +200,7 @@ export default function BusinessManagerPage({
           clampNumber(incoming.h, 1, Number.MAX_SAFE_INTEGER) ?? base.h;
         const maxX = Math.max(GRID_COLS - width, 0);
         const x = clampNumber(incoming.x, 0, maxX) ?? base.x;
-        const y =
-          clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;
+        const y = clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;
 
         return {
           ...base,
@@ -221,73 +230,51 @@ export default function BusinessManagerPage({
 
   return (
     <div className="business-manager-page">
-      <GuidedBeacon
-        ref={searchBeaconRef}
-        target=".search-beacon-target"
-        content="Search by location name or number."
-        delayMs={350}
-      />
-      <GuidedBeacon
-        ref={offlineBeaconRef}
-        target=".offline-beacon-target"
-        content="Offline count for this BU."
-        delayMs={350}
-      />
-      <GuidedBeacon
-        ref={alarmsBeaconRef}
-        target=".alarms-beacon-target"
-        content="Active alarms for this BU."
-        delayMs={350}
-      />
-      <GuidedBeacon
-        ref={rowsBeaconRef}
-        target=".burows-beacon-target"
-        content="Business units overview."
-        delayMs={350}
-      />
-      <GuidedBeacon
-        ref={widgetsBeaconRef}
-        target=".widgets-beacon-target"
-        content="Operational widgets and analytics."
-        delayMs={350}
-      />
-      <div
-        className={`tour-overlay ${showTour ? "is-visible" : "is-hidden"}`}
-        role="status"
-        aria-live="polite"
-      >
-        <div className="tour-card">
-          Click the pulsing beacons to learn about our platform.
-          <div className="tour-beacon">
-            <span className="tour-beacon-icon" aria-hidden />
-          </div>
-        </div>
-      </div>
       <Header onBack={onBack} />
       <div className="app-container">
+        <div className="greetings">
+          Good Morning
+        </div>
         <div className="app-left">
-          <Container maxWidth="lg" sx={{ mt: 4 }}>
-            <Box className="bu-list beacon-host burows-beacon-target">
-              <Beacon
-                onClick={() => rowsBeaconRef.current?.start()}
-                label="BU rows beacon"
-              />
-              {BU_ROWS.map((r) => (
+          <Container maxWidth="lg" sx={{ mt: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
               <Box
-                key={r.id}
-                className="bu-row"
-                sx={{ borderLeft: "4px solid #333333" }}
+                component="img"
+                src={viewAllBUsLogo}
+                alt="View All Markets"
+                sx={{ height: 64 }}
+              />
+              <Typography
+                sx={{
+                  fontFamily: "Inter, sans-serif",
+                  fontSize: "1.1rem",
+                  fontWeight: 600,
+                  color: "#202020",
+                }}
               >
-                <Box className="bu-row-content">
-                  <Box className="bu-row-text">
-                    <span className="bu-row-pill" aria-hidden />
-                    <span className="bu-row-pill bu-row-pill--small" aria-hidden />
-                  </Box>
+                View All Markets
+              </Typography>
+            </Box>
+            <Box className="bu-list burows-beacon-target">
+              {BU_ROWS.map((r) => (
+                <Box
+                  key={r.id}
+                  className="bu-row"
+                  sx={{ borderLeft: "4px solid #333333" }}
+                >
+                  <Box className="bu-row-content">
+                    <Box className="bu-row-text">
+                      <span className="bu-row-pill" aria-hidden />
+                      <span
+                        className="bu-row-pill bu-row-pill--small"
+                        aria-hidden
+                      />
+                    </Box>
 
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <div
-                      className={`icon-border ${r.id === "east" ? "beacon-host offline-beacon-target" : ""}`}
-                    >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <div
+                        className={`icon-border ${r.id === "east" ? "offline-beacon-target" : ""}`}
+                      >
                         <img
                           src={offlineIcon}
                           alt=""
@@ -305,15 +292,9 @@ export default function BusinessManagerPage({
                         >
                           {r.alarms}
                         </Typography>
-                        {r.id === "east" && (
-                          <Beacon
-                            onClick={() => offlineBeaconRef.current?.start()}
-                            label="Offline beacon"
-                          />
-                        )}
                       </div>
                       <div
-                        className={`icon-border ${r.id === "east" ? "beacon-host alarms-beacon-target" : ""}`}
+                        className={`icon-border ${r.id === "east" ? "alarms-beacon-target" : ""}`}
                       >
                         <img
                           src={warningIcon}
@@ -332,12 +313,6 @@ export default function BusinessManagerPage({
                         >
                           {r.notices}
                         </Typography>
-                        {r.id === "east" && (
-                          <Beacon
-                            onClick={() => alarmsBeaconRef.current?.start()}
-                            label="Alarms beacon"
-                          />
-                        )}
                       </div>
                     </Stack>
                   </Box>
@@ -345,12 +320,12 @@ export default function BusinessManagerPage({
               ))}
             </Box>
           </Container>
-
-          <img src={connectLogo} alt="connect" className="footer-logo" />
         </div>
+        
         <div className="app-right">
           <div className="greetings-search">
-            <Box className="beacon-host search-beacon-target">
+
+            <Box className="search-beacon-target">
               <TextField
                 variant="outlined"
                 size="small"
@@ -416,20 +391,73 @@ export default function BusinessManagerPage({
                   },
                 }}
               />
-              <Beacon
-                onClick={() => searchBeaconRef.current?.start()}
-                label="Search beacon"
-              />
             </Box>
           </div>
-          <div className="widgets-panel beacon-host widgets-beacon-target">
-            <Beacon
-              onClick={() => widgetsBeaconRef.current?.start()}
-              label="Widgets beacon"
-            />
-            <div className="dashboard-header">
+          <Box
+            className="widgets-panel widgets-beacon-target"
+            sx={{
+              borderLeft: "1px solid #c0c0c0",
+              minHeight: "calc(100vh - 140px)",
+              padding: "20px 16px 48px",
+              paddingRight: "40px",
+              color: "#c6c6c6",
+              boxSizing: "border-box",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              width: "100%",
+              overflow: "hidden",
+              background: "#ededee",
+              justifyContent: "center",
+              opacity: 0,
+              animation: "fadeWidgets 0.9s ease forwards 0.15s",
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                color: "#333333",
+                fontFamily: '"Inter", sans-serif',
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                textTransform: "uppercase",
+              }}
+            >
               <span className="dashboard-title">Overview dashboard</span>
               <span className="dashboard-divider" aria-hidden />
+              <button
+                type="button"
+                className="dashboard-tour-button"
+                aria-label="Start guided tour"
+                onClick={startTour}
+                style={{
+                  border: "1px solid rgba(0, 0, 0, 0.35)",
+                  borderRadius: "6px",
+                  background: "#ffffff",
+                  color: "#333333",
+                  width: "32px",
+                  height: "32px",
+                  fontSize: "0.85rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "background 150ms ease, color 150ms ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#333333";
+                  e.currentTarget.style.color = "#ffffff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#ffffff";
+                  e.currentTarget.style.color = "#333333";
+                }}
+              >
+                <HelpOutlineIcon fontSize="small" />
+              </button>
               <button
                 type="button"
                 className="dashboard-edit-button"
@@ -439,14 +467,20 @@ export default function BusinessManagerPage({
               >
                 {isEditing ? "✓" : "✎"}
               </button>
-            </div>
-            <div className="grid-scroll-container">
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "8px 12px 48px 0",
+              }}
+            >
               <ReactGridLayout
                 className={`widgets-grid ${isEditing ? "widgets-grid--editing" : ""}`}
                 layout={widgetLayout}
                 cols={GRID_COLS}
-                rowHeight={80}
-                margin={[16, 16]}
+                rowHeight={GRID_ROW_HEIGHT}
+                margin={GRID_MARGIN}
                 onLayoutChange={handleLayoutChange}
                 isDraggable={isEditing}
                 isResizable={isEditing}
@@ -465,10 +499,13 @@ export default function BusinessManagerPage({
                   </div>
                 ))}
               </ReactGridLayout>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </div>
       </div>
+      <footer className="page-footer">
+        <img src={connectLogo} alt="Connect by Flexeserve" className="footer-logo" />
+      </footer>
     </div>
   );
 }
