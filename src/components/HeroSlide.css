@@ -66,13 +66,13 @@
   justify-content: center;
   gap: clamp(0.6rem, 1.5vw, 1.1rem);
   position: relative;
-  padding-right: clamp(1rem, 4vw, 3rem);
+  padding-right: clamp(3rem, 8vw, 7rem);
 }
 
 .hero-right-fan {
   position: absolute;
-  top: clamp(-2rem, 6vw, -16rem);
-  right: clamp(0.4rem, 2vw, 1.5rem);
+  top: clamp(-6rem, 2vw, -20rem);
+  right: clamp(2rem, 6vw, 5rem);
   width: clamp(150px, 16vw, 240px);
   height: auto;
   opacity: 0.5;
@@ -186,24 +186,11 @@
   align-self: center;
 }
 
-.hero-arrow span {
-  width: 28px;
-  height: 28px;
-  border-right: 8px solid #d94d14;
-  border-bottom: 8px solid #d94d14;
-  transform: rotate(45deg);
-  animation: arrowDrop 1.6s ease-in-out infinite;
-  opacity: 0.35;
-}
-
-.hero-arrow span:nth-child(2) {
-  animation-delay: 0.2s;
-  opacity: 0.6;
-}
-
-.hero-arrow span:nth-child(3) {
-  animation-delay: 0.4s;
-  opacity: 0.9;
+.hero-arrow-icon {
+  width: clamp(44px, 4vw, 64px);
+  height: auto;
+  display: block;
+  animation: heroArrowBounce 2.2s ease-in-out infinite;
 }
 
 @media (max-width: 1100px) {
@@ -324,5 +311,15 @@
   100% {
     opacity: 0;
     transform: translateY(6px) rotate(45deg);
+  }
+}
+
+@keyframes heroArrowBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
   }
 }

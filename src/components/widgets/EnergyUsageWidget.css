@@ -64,8 +64,7 @@
 }
 
 .energy-gauge-number {
-  /* Container-relative sizing - scales with widget width - increased for better visibility */
-  font-size: clamp(28px, 9cqw, 52px);
+  font-size: clamp(24px, min(12cqi, 20cqb), 88px);
   font-weight: 700;
   color: var(--widget-text-primary);
   line-height: 1;
@@ -99,7 +98,6 @@
     gap: 12px;
   }
 }
-
 
 
 

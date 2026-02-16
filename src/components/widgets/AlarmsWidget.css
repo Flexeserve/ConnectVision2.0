@@ -1,12 +1,27 @@
 .widget-alarms {
   background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
-.alarm-count {
-  margin-top: 6px;
-  font-size: 26px;
+.widget-alarms .widget-title {
+  flex: 0 0 auto;
+  min-height: 1.6em;
+}
+
+.widget-alarms .widget-value {
+  margin-top: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(20px, min(10cqw, 20cqh), 56px);
   font-weight: 700;
   color: #333333;
+  line-height: 1;
+  text-align: center;
 }
 
 .alarm-list {

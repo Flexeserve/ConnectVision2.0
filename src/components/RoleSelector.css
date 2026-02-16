@@ -16,6 +16,7 @@
 }
 
 .panel {
+  position: relative;
   flex: 0 0 50vw;
   width: 50vw;
   height: 100vh;
@@ -28,6 +29,16 @@
   will-change: transform;
   opacity: 0;
   transform: translate3d(0, 10px, 0);
+  overflow: hidden;
+}
+
+.panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #333333 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* fade-up on mount */
@@ -59,14 +70,16 @@
 }
 
 .panel-content-wrapper {
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: clamp(240px, 35vh, 340px);
   margin: 0;
   padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 3rem);
   border-radius: 25px;
-  background-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(5px);
+  background-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -75,7 +88,6 @@
 .panel-content {
   color: #111111;
   font-family: "Inter", "Inter var", sans-serif;
-  font-weight: 700;
   font-weight: 800;
 }
 

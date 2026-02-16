@@ -36,6 +36,7 @@ const GRID_ROW_HEIGHT = 40; // Halved from 80px for finer vertical positioning
 const GRID_MARGIN: [number, number] = [16, 16];
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
 const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
+const ENABLE_TOUR = false;
 
 const clampNumber = (value: number | undefined, min: number, max: number) => {
   if (typeof value !== "number" || Number.isNaN(value)) return undefined;
@@ -79,32 +80,40 @@ const WIDGET_DIMENSIONS: Record<string, Partial<Pick<Layout, "w" | "h">>> = {
   commander: { h: 4, w: 4 },     // 4/12 = 33.3% width (same as 2/6), 4×40px = 160px height (same as 2×80px)
 };
 
-const BU_ROWS = [
+export type BURow = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  alarms?: number;
+  notices?: number;
+};
+
+const DEFAULT_BU_ROWS: BURow[] = [
   {
     id: "east",
-    title: "BU Eastern Canada",
-    subtitle: "5 stores inside",
+    title: "Central",
+    subtitle: "3 Stores",
     alarms: 2,
     notices: 3,
   },
   {
     id: "gulf",
-    title: "BU Gulf Coast",
-    subtitle: "489 stores inside",
+    title: "North",
+    subtitle: "2 Stores",
     alarms: 1368,
     notices: 135,
   },
   {
     id: "tx",
-    title: "BU Texas",
-    subtitle: "489 stores inside",
+    title: "South",
+    subtitle: "2 Stores",
     alarms: 1564,
     notices: 93,
   },
   {
     id: "west",
-    title: "BU Western Canada",
-    subtitle: "5 stores inside",
+    title: "Transport Hubs",
+    subtitle: "2 Stores",
     alarms: 4,
     notices: 4,
   },
@@ -112,21 +121,38 @@ const BU_ROWS = [
 
 export default function BusinessManagerPage({
   onBack,
+  onOpen,
+  rows,
+  heading,
 }: {
   onBack?: () => void;
   onOpen?: (id: string) => void;
+  rows?: BURow[];
+  heading?: string;
 }) {
+  const buRows = rows ?? DEFAULT_BU_ROWS;
+  const totalOfflineDevices = React.useMemo(
+    () => buRows.reduce((sum, row) => sum + (row.alarms ?? 0), 0),
+    [buRows],
+  );
+  const totalActiveAlarms = React.useMemo(
+    () => buRows.reduce((sum, row) => sum + (row.notices ?? 0), 0),
+    [buRows],
+  );
   const widgetComponents = React.useMemo(
     () => [
       { id: "fan-life", element: <FanLifeWidget /> },
       { id: "energy", element: <EnergyUsageWidget /> },
       { id: "element", element: <ElementLifeWidget /> },
-      { id: "alarms", element: <AlarmsWidget /> },
+      { id: "alarms", element: <AlarmsWidget value={totalActiveAlarms} /> },
       { id: "gateway", element: <GatewayErrorWidget /> },
-      { id: "commander", element: <CommanderOfflineWidget /> },
+      {
+        id: "commander",
+        element: <CommanderOfflineWidget value={totalOfflineDevices} />,
+      },
       { id: "cloud", element: <CloudConnectedWidget /> },
     ],
-    [],
+    [totalActiveAlarms, totalOfflineDevices],
   );
 
   const [isEditing, setIsEditing] = React.useState(false);
@@ -136,6 +162,7 @@ export default function BusinessManagerPage({
 
   // Auto-start tour every time (kiosk demo mode)
   React.useEffect(() => {
+    if (!ENABLE_TOUR) return;
     const timer = setTimeout(() => {
       tour.current.drive();
     }, 1500); // Delay to let the page load completely
@@ -145,6 +172,7 @@ export default function BusinessManagerPage({
 
   // Manual tour start function
   const startTour = React.useCallback(() => {
+    if (!ENABLE_TOUR) return;
     tour.current.drive();
   }, []);
 
@@ -237,7 +265,7 @@ export default function BusinessManagerPage({
         </div>
         <div className="app-left">
           <Container maxWidth="lg" sx={{ mt: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 4, mb: 3 }}>
               <Box
                 component="img"
                 src={viewAllBUsLogo}
@@ -252,23 +280,50 @@ export default function BusinessManagerPage({
                   color: "#202020",
                 }}
               >
-                View All Markets
+                {heading ?? "View All Markets"}
               </Typography>
             </Box>
             <Box className="bu-list burows-beacon-target">
-              {BU_ROWS.map((r) => (
+              {buRows.map((r) => (
                 <Box
                   key={r.id}
                   className="bu-row"
                   sx={{ borderLeft: "4px solid #333333" }}
+                  onClick={() => onOpen?.(r.id)}
+                  role={onOpen ? "button" : undefined}
+                  tabIndex={onOpen ? 0 : -1}
+                  onKeyDown={(event) => {
+                    if (!onOpen) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onOpen(r.id);
+                    }
+                  }}
                 >
                   <Box className="bu-row-content">
                     <Box className="bu-row-text">
-                      <span className="bu-row-pill" aria-hidden />
-                      <span
-                        className="bu-row-pill bu-row-pill--small"
-                        aria-hidden
-                      />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 800,
+                          color: "#202020",
+                        }}
+                      >
+                        {r.title}
+                      </Typography>
+                      {r.subtitle ? (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontFamily: "Inter, sans-serif",
+                            fontWeight: 500,
+                            color: "#5a5a5a",
+                          }}
+                        >
+                          {r.subtitle}
+                        </Typography>
+                      ) : null}
                     </Box>
 
                     <Stack direction="row" spacing={1} alignItems="center">
@@ -290,7 +345,7 @@ export default function BusinessManagerPage({
                             color: "#000000ff",
                           }}
                         >
-                          {r.alarms}
+                          {r.alarms ?? 0}
                         </Typography>
                       </div>
                       <div
@@ -311,7 +366,7 @@ export default function BusinessManagerPage({
                             color: "#000000ff",
                           }}
                         >
-                          {r.notices}
+                          {r.notices ?? 0}
                         </Typography>
                       </div>
                     </Stack>
@@ -394,10 +449,10 @@ export default function BusinessManagerPage({
             </Box>
           </div>
           <Box
-            className="widgets-panel widgets-beacon-target"
+            className="widgets-panel widgets-scroll widgets-beacon-target"
             sx={{
               borderLeft: "1px solid #c0c0c0",
-              minHeight: "calc(100vh - 140px)",
+              height: "calc(100vh - 120px)",
               padding: "20px 16px 48px",
               paddingRight: "40px",
               color: "#c6c6c6",
@@ -406,9 +461,8 @@ export default function BusinessManagerPage({
               flexDirection: "column",
               gap: 2,
               width: "100%",
-              overflow: "hidden",
+              overflowY: "auto",
               background: "#ededee",
-              justifyContent: "center",
               opacity: 0,
               animation: "fadeWidgets 0.9s ease forwards 0.15s",
             }}
@@ -471,8 +525,8 @@ export default function BusinessManagerPage({
             <Box
               sx={{
                 flex: 1,
-                overflowY: "auto",
                 padding: "8px 12px 48px 0",
+                minHeight: "140vh",
               }}
             >
               <ReactGridLayout
@@ -504,6 +558,7 @@ export default function BusinessManagerPage({
         </div>
       </div>
       <footer className="page-footer">
+        <span>© {new Date().getFullYear()} Flexeserve Connect</span>
         <img src={connectLogo} alt="Connect by Flexeserve" className="footer-logo" />
       </footer>
     </div>

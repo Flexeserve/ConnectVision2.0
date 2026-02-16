@@ -5,6 +5,7 @@ import { Box, Button } from "@mui/material";
 
 import heroProductImage from "../assets/HeroImage.png";
 import heroFanIcon from "../assets/FanIcon.svg";
+import flexeserveSaffronIcon from "../assets/FlexeserveSaffron.svg";
 
 type Props = {
   visible: boolean;
@@ -35,9 +36,11 @@ export default function HeroSlide({ visible, onClose }: Props) {
             </div>
             <div className="hero-cta-block">
               <div className="hero-arrow" aria-hidden="true">
-                <span />
-                <span />
-                <span />
+                <img
+                  src={flexeserveSaffronIcon}
+                  alt=""
+                  className="hero-arrow-icon"
+                />
               </div>
               <div className="hero-cta">
                 <Button

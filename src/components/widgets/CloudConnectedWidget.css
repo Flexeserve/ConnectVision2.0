@@ -72,7 +72,7 @@
   align-items: center;
   gap: 16px;
   justify-content: space-between;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .cloud-gauge-value {
@@ -81,17 +81,18 @@
   align-items: flex-start;
   gap: 4px;
   width: auto;
+  flex: 0 1 220px;
 }
 
 .cloud-pie-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex: 1 1 200px;
 }
 
 .cloud-gauge-number {
-  /* Container-relative sizing - scales with widget width - increased for better visibility */
-  font-size: clamp(28px, 9cqw, 52px);
+  font-size: clamp(24px, min(12cqi, 20cqb), 88px);
   font-weight: 700;
   color: var(--widget-text-primary);
   line-height: 1;
@@ -175,5 +176,17 @@
 
   .cloud-gauge {
     gap: 12px;
+    justify-content: center;
+  }
+
+  .cloud-gauge-value,
+  .cloud-pie-wrapper {
+    flex: 1 1 100%;
+    align-items: center;
+  }
+
+  .cloud-gauge-value {
+    align-items: center;
+    text-align: center;
   }
 }

@@ -8,17 +8,57 @@
 }
 
 .temp-select {
+  width: 100%;
   min-width: 140px;
   min-height: 120px;
-  font-size: 22px;
-  font-weight: 700;
-  color: linear-gradient(45deg, #d94d14, #ff7a3a) 1;
   background: #ffffff;
-  border: 3px solid;
-  border-radius: 20px;
-  padding: 12px 14px;
+  border: 2px solid #d0d0d0;
+  border-radius: 12px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.temp-select-top {
+  flex: 0 0 20%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.temp-select-bottom {
+  flex: 1 1 80%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.temp-select-unit {
+  font-size: clamp(12px, 0.9vw, 15px);
+  font-weight: 700;
+  color: #202020;
+}
+
+.temp-select-input {
+  width: 100%;
+  min-height: 52px;
+  background: none;
+  color: #202020;
+  font-size: clamp(16px, 1.3vw, 22px);
+  font-weight: 700;
+  padding: 8px 10px;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  border: 0;
+  outline: none;
   text-align: center;
+  text-align-last: center;
 }
 
 .operator-content {
@@ -162,25 +202,19 @@
 @keyframes bubbleZigZag {
   0% {
     opacity: 0;
-    transform: translate(8px, 12px) scale(0.96);
+    transform: scale(0.98);
   }
   15% {
     opacity: 1;
-    transform: translate(-6px, 0) scale(1);
-  }
-  45% {
-    transform: translate(10px, -10px) scale(1.02);
-  }
-  65% {
-    transform: translate(-12px, -14px) scale(1);
+    transform: scale(1);
   }
   80% {
     opacity: 1;
-    transform: translate(6px, -18px) scale(1.01);
+    transform: scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(-2px, -26px) scale(0.97);
+    transform: scale(0.98);
   }
 }
 

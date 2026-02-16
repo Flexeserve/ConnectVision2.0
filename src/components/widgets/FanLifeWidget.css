@@ -2,8 +2,25 @@
   background: #fff;
   color: #333333;
   border: none;
+  align-items: stretch;
+  text-align: left;
+  gap: 0.5rem;
 }
 
 .widget-fan .widget-title {
   color: #333333;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.widget-fan .widget-value {
+  width: 100%;
+  justify-content: center;
+  font-size: clamp(22px, min(10cqw, 18cqh), 64px);
+  line-height: 1;
+}
+
+.widget-fan .widget-value span {
+  font-size: clamp(12px, min(5cqi, 9cqb), 30px);
+  margin-left: 0.35rem;
 }

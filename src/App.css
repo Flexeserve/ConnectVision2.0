@@ -36,3 +36,28 @@
   opacity: 1;
   pointer-events: auto;
 }
+
+.subpage-slide {
+  position: absolute;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  will-change: transform, opacity;
+  transition:
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.subpage-slide.from-right {
+  transform: translate3d(100%, 0, 0);
+}
+
+.subpage-slide.enter {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+  pointer-events: auto;
+}

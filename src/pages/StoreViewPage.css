@@ -1,0 +1,147 @@
+.store-view-page {
+  min-height: 100vh;
+  background: #ededee;
+}
+
+.store-view-container {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px);
+}
+
+.store-view-main {
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 0;
+  align-items: flex-start;
+}
+
+.store-view-bottom {
+  padding: 0 clamp(1.5rem, 3vw, 3rem) 24px;
+}
+
+.store-view-left {
+  flex: 0 0 60%;
+  min-width: 0;
+  padding: 0 clamp(1.5rem, 3vw, 3rem);
+}
+
+.store-view-right {
+  flex: 0 0 40%;
+  min-width: 0;
+  padding: 0 clamp(1.5rem, 3vw, 3rem) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.store-view-content-container {
+  box-sizing: border-box;
+}
+
+.store-device-container {
+  width: 100%;
+  
+  
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.store-device-header {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1.3fr 0.5fr;
+  gap: 12px;
+  color: #ff5b2e;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.store-device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.store-device-row {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1.3fr 0.5fr;
+  gap: 12px;
+  align-items: center;
+  background: rgba(255, 255, 255, 1);
+  padding: 10px 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.store-device-cell {
+  color: #333333;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.store-device-select {
+  width: 100%;
+  background: #fff;
+  border: 2px solid #c0c0c0;
+  border-radius: 12px;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+
+.store-device-status {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.store-status-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid #000000;
+  background: #1e7d3f;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.store-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.store-row {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #c8c8c8;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.store-row:hover {
+  background: #e5e5e5;
+}
+
+@media (max-width: 1100px) {
+  .store-view-main {
+    flex-direction: column;
+  }
+
+  .store-view-left,
+  .store-view-right {
+    flex: 1 1 auto;
+  }
+
+  .store-view-bottom {
+    padding: 0 16px 24px;
+  }
+
+  .store-device-header,
+  .store-device-row {
+    grid-template-columns: 1.5fr 1fr 1.2fr 0.6fr;
+  }
+}

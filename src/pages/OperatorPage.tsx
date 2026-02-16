@@ -50,7 +50,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 RectAreaLightUniformsLib.init();
 
-const tempOptions = ["Off", "Lights Only", "170F", "175F", "180F"];
+const tempOptions = ["Off", "Lights Only", "170", "175", "180"];
 const defaultLightTarget: [number, number, number] = [0, 1, 0];
 const defaultLightRotation: [number, number, number] = [-Math.PI / 2, 0, 0];
 const zoneDisplayMeta = [
@@ -154,6 +154,7 @@ const zoneFlowLayout: ZoneFlowLayout[] = [
 
 type OperatorPageProps = {
   onBack?: () => void;
+  title?: string;
 };
 
 function useAdoptedCamera(gltf?: GLTF | null) {
@@ -700,7 +701,7 @@ const FanFlowField = memo(function FanFlowField({
   );
 });
 
-export default function OperatorPage({ onBack }: OperatorPageProps) {
+export default function OperatorPage({ onBack, title }: OperatorPageProps) {
   const [temps, setTemps] = useState(["170F", "170F", "170F", "170F"]);
   const [lightAnchors, setLightAnchors] = useState<LightAnchors>({});
   const [fanEmitters, setFanEmitters] = useState<FanEmitters>({});
@@ -878,7 +879,7 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
   return (
     <div className="operator-page">
       <div className="operator-header">
-        <Header onBack={onBack} title="Operator View" />
+        <Header onBack={onBack} title={title ?? "Operator View"} />
       </div>
 
       <div className="operator-content">
@@ -908,27 +909,43 @@ export default function OperatorPage({ onBack }: OperatorPageProps) {
                         const idx = col * 2 + row;
                         return (
                           <div className="temp-row" key={`temp-${idx}`}>
-                            <span
-                              className={`status-dot ${
-                                zoneStates[idx]?.statusActive
-                                  ? ""
-                                  : "status-dot--off"
-                              }`}
-                              aria-hidden
-                            />
-                            <select
+                            <div
                               className="temp-select"
-                              value={temps[idx]}
-                              onChange={(event) =>
-                                updateTemp(idx, event.target.value)
-                              }
+                              onClick={(event) => {
+                                const select = event.currentTarget.querySelector(
+                                  ".temp-select-input",
+                                ) as HTMLSelectElement | null;
+                                select?.focus();
+                                select?.click();
+                              }}
                             >
-                              {tempOptions.map((opt) => (
-                                <option key={opt} value={opt}>
-                                  {opt}
-                                </option>
-                              ))}
-                            </select>
+                              <div className="temp-select-top">
+                                <span
+                                  className={`status-dot ${
+                                    zoneStates[idx]?.statusActive
+                                      ? ""
+                                      : "status-dot--off"
+                                  }`}
+                                  aria-hidden
+                                />
+                                <span className="temp-select-unit">°C</span>
+                              </div>
+                              <div className="temp-select-bottom">
+                                <select
+                                  className="temp-select-input"
+                                  value={temps[idx]}
+                                  onChange={(event) =>
+                                    updateTemp(idx, event.target.value)
+                                  }
+                                >
+                                  {tempOptions.map((opt) => (
+                                    <option key={opt} value={opt}>
+                                      {opt}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
