@@ -5,6 +5,8 @@
   overflow: hidden;
   z-index: 900;
   background-color: #fff;
+  font-family: "Inter", "Inter var", sans-serif;
+  font-weight: 700;
 }
 
 .role-back {
@@ -36,7 +38,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, #333333 0%, transparent 60%);
+  background: linear-gradient(to top, #333333 0%, transparent 120%);
   pointer-events: none;
   z-index: 1;
 }

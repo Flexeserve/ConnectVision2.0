@@ -2,7 +2,7 @@ import { AppBar, Toolbar, Box, Typography, IconButton } from "@mui/material";
 import settingsIcon from "../assets/SettingsIcon.svg";
 import React from "react";
 import BackButton from "./BackButton";
-import marketLogo from "../assets/MarketLogo.svg";
+import flexeserveLogo from "../assets/flexeserveLogo.svg";
 
 type Props = { onBack?: () => void; title?: string };
 
@@ -40,8 +40,8 @@ export default function Header({ onBack, title }: Props) {
           {onBack && <BackButton onClick={onBack} />}
           <Box
             component="img"
-            src={marketLogo}
-            alt="Market Logo"
+            src={flexeserveLogo}
+            alt="Flexeserve Logo"
             className="header-logo"
             sx={{ height: 40 }}
           />

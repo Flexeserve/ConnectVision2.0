@@ -66,22 +66,24 @@
 
 .widget-value {
   margin-top: var(--widget-gap);
-  font-size: clamp(20px, min(14cqi, 28cqb), 112px);
+  font-size: min(20cqi, 30cqb);
   font-weight: 700;
   color: var(--widget-text-primary);
   text-align: center;
+  line-height: 0.95;
 
   display: flex;
   justify-content: center;   /* horizontal centering */
   align-items: center;       /* vertical centering */
   flex: 1 1 auto;
+  align-self: stretch;
   min-height: 0;
   overflow: hidden;
 }
 
 
 .widget-value span {
-  font-size: 14px;
+  font-size: min(8cqi, 12cqb);
   font-weight: 600;
   margin-left: 6px;
   color: var(--widget-text-primary);

@@ -17,11 +17,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(20px, min(10cqw, 20cqh), 56px);
+  font-size: min(20cqi, 30cqb);
   font-weight: 700;
   color: #333333;
   line-height: 1;
   text-align: center;
+  align-self: stretch;
 }
 
 .alarm-list {

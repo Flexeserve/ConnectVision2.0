@@ -59,6 +59,7 @@ const zoneDisplayMeta = [
   { unit: "Flexeserve Right", zone: 1 },
   { unit: "Flexeserve Right", zone: 2 },
 ];
+const LIGHT_CONTROL_MAP = [2, 3, 0, 1];
 
 const arraysEqual = (
   a?: readonly number[] | null,
@@ -702,7 +703,7 @@ const FanFlowField = memo(function FanFlowField({
 });
 
 export default function OperatorPage({ onBack, title }: OperatorPageProps) {
-  const [temps, setTemps] = useState(["170F", "170F", "170F", "170F"]);
+  const [temps, setTemps] = useState(["170", "170", "170", "170"]);
   const [lightAnchors, setLightAnchors] = useState<LightAnchors>({});
   const [fanEmitters, setFanEmitters] = useState<FanEmitters>({});
   const [sceneReady, setSceneReady] = useState(false);
@@ -821,20 +822,35 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
     return "#ffd8b2";
   };
 
-  const zoneStates = useMemo(
+  const controlStates = useMemo(
     () =>
       temps.map((value) => ({
         statusActive: isStatusActive(value),
         fanActive: isFanActive(value),
         color: getFanColor(value),
+        value,
       })),
     [temps],
   );
 
-  const light1Active = temps[0].toLowerCase() !== "off";
-  const light2Active = temps[1].toLowerCase() !== "off";
-  const light3Active = temps[2].toLowerCase() !== "off";
-  const light4Active = temps[3].toLowerCase() !== "off";
+  const zoneStates = useMemo(
+    () =>
+      LIGHT_CONTROL_MAP.map(
+        (controlIndex) =>
+          controlStates[controlIndex] ?? {
+            statusActive: false,
+            fanActive: false,
+            color: "#8d8d8d",
+            value: "Off",
+          },
+      ),
+    [controlStates],
+  );
+
+  const light1Active = zoneStates[0]?.value.toLowerCase() !== "off";
+  const light2Active = zoneStates[1]?.value.toLowerCase() !== "off";
+  const light3Active = zoneStates[2]?.value.toLowerCase() !== "off";
+  const light4Active = zoneStates[3]?.value.toLowerCase() !== "off";
   const fan1LightPosition = fanController.fan1?.position ?? [-5, 3, -3];
   const fan1LightTarget = fanController.fan1?.target ?? [0, 1, 0];
 
@@ -910,7 +926,11 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
                         return (
                           <div className="temp-row" key={`temp-${idx}`}>
                             <div
-                              className="temp-select"
+                              className={`temp-select ${
+                                temps[idx]?.toLowerCase() === "off"
+                                  ? "temp-select--off"
+                                  : ""
+                              }`}
                               onClick={(event) => {
                                 const select = event.currentTarget.querySelector(
                                   ".temp-select-input",
@@ -922,7 +942,7 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
                               <div className="temp-select-top">
                                 <span
                                   className={`status-dot ${
-                                    zoneStates[idx]?.statusActive
+                                    controlStates[idx]?.statusActive
                                       ? ""
                                       : "status-dot--off"
                                   }`}
@@ -932,7 +952,11 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
                               </div>
                               <div className="temp-select-bottom">
                                 <select
-                                  className="temp-select-input"
+                                  className={`temp-select-input ${
+                                    temps[idx]?.toLowerCase() === "off"
+                                      ? "temp-select-input--off"
+                                      : ""
+                                  }`}
                                   value={temps[idx]}
                                   onChange={(event) =>
                                     updateTemp(idx, event.target.value)
@@ -1223,7 +1247,14 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
         </div>
       </div>
 
-      <img src={connectLogo} alt="connect" className="operator-footer-logo" />
+      <footer className="page-footer">
+        <span>© {new Date().getFullYear()} Flexeserve Connect</span>
+        <img
+          src={connectLogo}
+          alt="Connect by Flexeserve"
+          className="footer-logo"
+        />
+      </footer>
     </div>
   );
 }

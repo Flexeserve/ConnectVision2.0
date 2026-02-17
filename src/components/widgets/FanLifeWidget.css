@@ -16,11 +16,12 @@
 .widget-fan .widget-value {
   width: 100%;
   justify-content: center;
-  font-size: clamp(22px, min(10cqw, 18cqh), 64px);
-  line-height: 1;
+  font-size: min(20cqi, 30cqb);
+  line-height: 0.95;
+  align-self: stretch;
 }
 
 .widget-fan .widget-value span {
-  font-size: clamp(12px, min(5cqi, 9cqb), 30px);
+  font-size: min(8cqi, 12cqb);
   margin-left: 0.35rem;
 }
