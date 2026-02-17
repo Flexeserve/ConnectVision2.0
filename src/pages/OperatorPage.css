@@ -31,6 +31,10 @@
   border-color: transparent;
 }
 
+.temp-select--off .temp-select-unit {
+  color: #ffffff;
+}
+
 .temp-select-top {
   flex: 0 0 20%;
   min-height: 0;

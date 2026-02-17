@@ -6,6 +6,7 @@ import {
   Stack,
   TextField,
   InputAdornment,
+  Alert,
 } from "@mui/material";
 import connectLogo from "../assets/connect_flexeserve.svg";
 import viewAllBUsLogo from "../assets/ViewAllBUsLogo.svg";
@@ -258,7 +259,7 @@ export default function BusinessManagerPage({
 
   return (
     <div className="business-manager-page">
-      <Header onBack={onBack} />
+      <Header onBack={onBack} title="Manager View" />
       <div className="app-container">
         <div className="greetings">
           Good Morning
@@ -467,6 +468,10 @@ export default function BusinessManagerPage({
               animation: "fadeWidgets 0.9s ease forwards 0.15s",
             }}
           >
+            <Alert severity="info">
+              Data shown here is not sourced from any connected devices.
+              Demonstration purposes only.
+            </Alert>
             <Box
               sx={{
                 width: "100%",

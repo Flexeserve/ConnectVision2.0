@@ -43,15 +43,24 @@ export default function Header({ onBack, title }: Props) {
             src={flexeserveLogo}
             alt="Flexeserve Logo"
             className="header-logo"
-            sx={{ height: 40 }}
+            sx={{ height: 20 }}
           />
           {title && (
-            <Typography
-              variant="subtitle1"
-              sx={{ fontWeight: 600, color: "#202020" }}
-            >
-              {title}
-            </Typography>
+            <>
+              <Typography
+                component="span"
+                aria-hidden
+                sx={{ fontWeight: 600, color: "#202020" }}
+              >
+                |
+              </Typography>
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 600, color: "#202020" }}
+              >
+                {title}
+              </Typography>
+            </>
           )}
         </Box>
 

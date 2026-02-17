@@ -45,7 +45,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
     >
       {onBack && (
         <div className="role-back">
-          <BackButton onClick={onBack} />
+          <BackButton onClick={onBack} color="#ffffff" />
         </div>
       )}
       <div
@@ -80,7 +80,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
                 color: "#fff",
               }}
             >
-              Manage inventory, analytics and operations.
+              Remote management of all connected devices across the business.
             </Typography>
             <Button
               variant="contained"
@@ -88,7 +88,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
               sx={{ backgroundColor: "#d94d14" }}
               className="panel-cta-button"
             >
-              Open Manager
+              View Business Manager
             </Button>
           </Box>
         </div>
@@ -126,7 +126,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
                 color: "#fff",
               }}
             >
-              Fast operational controls & workflows.
+              On-site interaction with connected devices within the parameters set-out by the business manager.
             </Typography>
             <Button
               variant="contained"
@@ -134,7 +134,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
               sx={{ backgroundColor: "#d94d14" }}
               className="panel-cta-button"
             >
-              Open Operator
+              View Operator
             </Button>
           </Box>
         </div>
