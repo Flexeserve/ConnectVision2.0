@@ -4,6 +4,16 @@ import "driver.js/dist/driver.css";
 // Tour configuration for Business Manager Page
 export const businessManagerTourSteps: DriveStep[] = [
   {
+    element: ".bm-container-beacon",
+    popover: {
+      title: "Organise Locations",
+      description:
+        "Group and organise all your locations into regions and sub-regions that make sense to your business model",
+      side: "bottom",
+      align: "start",
+    },
+  },
+  {
     element: ".header-logo",
     popover: {
       title: "Company Logo",
@@ -27,7 +37,7 @@ export const businessManagerTourSteps: DriveStep[] = [
     popover: {
       title: "Business Units Overview",
       description:
-        "View all your business units here. Each unit shows offline devices and active alarms.",
+        "Group and organise all your locations into regions and sub-regions that make sense to your business model",
       side: "right",
       align: "start",
     },
@@ -56,7 +66,7 @@ export const businessManagerTourSteps: DriveStep[] = [
     popover: {
       title: "Search",
       description:
-        "Search by location name or number to quickly find specific business units or stores.",
+        "Find a particular location via store name.",
       side: "bottom",
       align: "start",
     },
@@ -66,7 +76,7 @@ export const businessManagerTourSteps: DriveStep[] = [
     popover: {
       title: "Widgets Panel",
       description:
-        "Operational widgets and analytics. View real-time data about your operations including fan life, energy usage, and system health.",
+        "Widgets to illustrate performance data, alerts or device status. The widgets can be resized and arranged to suit your needs and priorities.",
       side: "left",
       align: "start",
     },
@@ -79,6 +89,16 @@ export const businessManagerTourSteps: DriveStep[] = [
         "Click here to enter edit mode. You can then drag to rearrange widgets, resize them, or customize your dashboard layout. Changes are saved automatically.",
       side: "bottom",
       align: "end",
+    },
+  },
+  {
+    element: ".region-alerts-stack-target",
+    popover: {
+      title: "Alarms",
+      description:
+        "Status and performance alerts for the relevant region to draw your attention to any issues that need addressing",
+      side: "right",
+      align: "center",
     },
   },
 ];
@@ -108,6 +128,25 @@ export const createBusinessManagerTour = () => {
 
     // Animation duration
     animate: true,
+  });
+
+  return driverObj;
+};
+
+export const createBusinessManagerBeaconTour = (stepIndex: number) => {
+  const step = businessManagerTourSteps[stepIndex];
+  if (!step) return null;
+
+  const driverObj = driver({
+    showProgress: false,
+    steps: [step],
+    showButtons: ["close"],
+    smoothScroll: true,
+    animate: true,
+    popoverClass: "business-manager-tour-popover",
+    onDestroyStarted: () => {
+      driverObj.destroy();
+    },
   });
 
   return driverObj;

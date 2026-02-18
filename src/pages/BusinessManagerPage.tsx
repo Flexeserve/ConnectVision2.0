@@ -17,6 +17,7 @@ import "../styles/tour.css";
 import SearchIcon from "@mui/icons-material/Search";
 import FanLifeWidget from "../components/widgets/FanLifeWidget";
 import EnergyUsageWidget from "../components/widgets/EnergyUsageWidget";
+import EnergyCostWidget from "../components/widgets/EnergyCostWidget";
 import ElementLifeWidget from "../components/widgets/ElementLifeWidget";
 import AlarmsWidget from "../components/widgets/AlarmsWidget";
 import GatewayErrorWidget from "../components/widgets/GatewayErrorWidget";
@@ -26,11 +27,14 @@ import AlarmSummaryWidget from "../components/widgets/AlarmSummaryWidget";
 import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget";
 import offlineIcon from "../assets/OfflineIcon.svg";
 import warningIcon from "../assets/WarningIcon.svg";
+import Beacon, { type BeaconOffset } from "../components/Beacon";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { createBusinessManagerTour } from "../utils/businessManagerTour";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import {
+  createBusinessManagerTour,
+  createBusinessManagerBeaconTour,
+} from "../utils/businessManagerTour";
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -39,10 +43,13 @@ const GRID_COLS = 12; // Increased from 6 for finer horizontal positioning
 const GRID_ROW_HEIGHT = 40; // Halved from 80px for finer vertical positioning
 const GRID_MARGIN: [number, number] = [16, 16];
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
+const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
 const LAYOUT_VERSION = "v2";
 const LAYOUT_VERSION_KEY = "cv_widget_layout_version";
 const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
 const ENABLE_TOUR = false;
+const LAYOUT_SYNC_EVENT = "cv_widget_layout_updated";
+const BEACON_OFFSETS_KEY = "cv_beacon_offsets";
 
 const clampNumber = (value: number | undefined, min: number, max: number) => {
   if (typeof value !== "number" || Number.isNaN(value)) return undefined;
@@ -53,8 +60,18 @@ const loadLayoutCookie = (): Layout[] | null => {
   if (typeof document === "undefined") return null;
   if (typeof window !== "undefined") {
     const storedVersion = window.localStorage.getItem(LAYOUT_VERSION_KEY);
-    if (storedVersion !== LAYOUT_VERSION) {
-      return null;
+    if (storedVersion === LAYOUT_VERSION) {
+      const storedLayout = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
+      if (storedLayout) {
+        try {
+          const parsed = JSON.parse(storedLayout);
+          if (Array.isArray(parsed)) return parsed as Layout[];
+        } catch {
+          // Ignore malformed localStorage
+        }
+      }
+    } else {
+      window.localStorage.removeItem(LAYOUT_STORAGE_KEY);
     }
   }
   const cookies = document.cookie?.split(";").map((c) => c.trim()) ?? [];
@@ -79,6 +96,7 @@ const saveLayoutCookie = (layout: Layout[]) => {
     document.cookie = `${LAYOUT_COOKIE_NAME}=${encoded}; max-age=${LAYOUT_COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
     if (typeof window !== "undefined") {
       window.localStorage.setItem(LAYOUT_VERSION_KEY, LAYOUT_VERSION);
+      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout));
     }
   } catch {
     // Ignore storage failures
@@ -86,15 +104,18 @@ const saveLayoutCookie = (layout: Layout[]) => {
 };
 
 const WIDGET_DIMENSIONS: Record<string, Partial<Pick<Layout, "w" | "h">>> = {
-  "fan-life": { h: 8, w: 6 },    // 6/12 = 50% width (same as 3/6), 8×40px = 320px height (same as 4×80px)
-  energy: { h: 8, w: 6 },        // Scaled to maintain visual size with new grid
-  element: { h: 8, w: 6 },       // Scaled to maintain visual size with new grid
-  cloud: { h: 8, w: 6 },         // Scaled to maintain visual size with new grid
-  alarms: { w: 2, h: 2 },        // 2/12 = 16.7% width (same as 1/6), 2×40px = 80px height (same as 1×80px)
-  gateway: { h: 4, w: 4 },       // 4/12 = 33.3% width (same as 2/6), 4×40px = 160px height (same as 2×80px)
+  "fan-life": { h: 8, w: 6 }, // 6/12 = 50% width (same as 3/6), 8x40px = 320px height (same as 4x80px)
+  energy: { h: 8, w: 6 }, // Scaled to maintain visual size with new grid
+  element: { h: 8, w: 6 }, // Scaled to maintain visual size with new grid
+  cloud: { h: 8, w: 6 }, // Scaled to maintain visual size with new grid
+  alarms: { w: 2, h: 2 }, // 2/12 = 16.7% width (same as 1/6), 2x40px = 80px height (same as 1x80px)
+  gateway: { h: 4, w: 4 }, // 4/12 = 33.3% width (same as 2/6), 4x40px = 160px height (same as 2x80px)
   commander: { h: 4, w: 4 },
-  "alarm-summary": { h: 10, w: 12 },     // 4/12 = 33.3% width (same as 2/6), 4×40px = 160px height (same as 2×80px)
+  "alarm-summary": { h: 10, w: 12 }, // 4/12 = 33.3% width (same as 2/6), 4x40px = 160px height (same as 2x80px)
+  "energy-cost": { h: 6, w: 12 },
+  "door-opened": { h: 6, w: 12 },
 };
+
 
 export type BURow = {
   id: string;
@@ -159,6 +180,7 @@ export default function BusinessManagerPage({
     () => [
       { id: "fan-life", element: <FanLifeWidget /> },
       { id: "energy", element: <EnergyUsageWidget /> },
+      { id: "energy-cost", element: <EnergyCostWidget /> },
       { id: "element", element: <ElementLifeWidget /> },
       { id: "alarms", element: <AlarmsWidget value={totalActiveAlarms} /> },
       { id: "gateway", element: <GatewayErrorWidget /> },
@@ -176,9 +198,18 @@ export default function BusinessManagerPage({
   const [isEditing, setIsEditing] = React.useState(false);
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [isWidgetsScrolled, setIsWidgetsScrolled] = React.useState(false);
-  const [widgetsPanelHeight, setWidgetsPanelHeight] = React.useState<
-    number | undefined
-  >(undefined);
+  const [isBeaconDevMode, setIsBeaconDevMode] = React.useState(false);
+  const [beaconOffsets, setBeaconOffsets] = React.useState<Record<string, BeaconOffset>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = window.localStorage.getItem(BEACON_OFFSETS_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw) as Record<string, BeaconOffset>;
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  });
   const widgetsPanelRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -191,24 +222,34 @@ export default function BusinessManagerPage({
     return () => observer.disconnect();
   }, []);
 
-  React.useEffect(() => {
-    if (!widgetsPanelRef.current) return;
-    const panel = widgetsPanelRef.current;
-
-    const updateHeight = () => {
-      const contentHeight = panel.scrollHeight;
-      const nextHeight = Math.ceil(contentHeight * 1.3);
-      setWidgetsPanelHeight(nextHeight);
-    };
-
-    updateHeight();
-    const resizeObserver = new ResizeObserver(updateHeight);
-    resizeObserver.observe(panel);
-    return () => resizeObserver.disconnect();
-  }, [widgetComponents, isEditing]);
 
   // Tour initialization
   const tour = React.useRef(createBusinessManagerTour());
+  const startTourFrom = React.useCallback((stepIndex: number) => {
+    const beaconTour = createBusinessManagerBeaconTour(stepIndex);
+    if (!beaconTour) return;
+    beaconTour.drive();
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(BEACON_OFFSETS_KEY, JSON.stringify(beaconOffsets));
+  }, [beaconOffsets]);
+
+  React.useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        setIsBeaconDevMode((prev) => !prev);
+      }
+      if (event.ctrlKey && event.shiftKey && event.key === "0") {
+        event.preventDefault();
+        setBeaconOffsets({});
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
 
   // Auto-start tour every time (kiosk demo mode)
   React.useEffect(() => {
@@ -221,10 +262,6 @@ export default function BusinessManagerPage({
   }, []);
 
   // Manual tour start function
-  const startTour = React.useCallback(() => {
-    if (!ENABLE_TOUR) return;
-    tour.current.drive();
-  }, []);
 
   const DEFAULT_LAYOUT: Layout[] = React.useMemo(
     () => [
@@ -237,9 +274,11 @@ export default function BusinessManagerPage({
       { i: "cloud", x: 0, y: 18, w: 8, h: 4 },
       { i: "alarm-summary", x: 0, y: 22, w: 12, h: 6 },
       { i: "door-opened", x: 0, y: 5, w: 12, h: 6 },
+      { i: "energy-cost", x: 0, y: 28, w: 12, h: 6 },
     ],
     [],
   );
+
 
   const mergeLayoutWithDefaults = React.useCallback(
     (persisted?: Layout[] | null) => {
@@ -286,22 +325,67 @@ export default function BusinessManagerPage({
   const handleLayoutChange = React.useCallback((next: Layout[]) => {
     setWidgetLayout(next);
     saveLayoutCookie(next);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent(LAYOUT_SYNC_EVENT, { detail: next }),
+      );
+    }
   }, []);
 
-  const handleLogLayout = React.useCallback(() => {
-    console.log("[WidgetLayout]", JSON.stringify(widgetLayout, null, 2));
+  React.useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    let lastSerialized = JSON.stringify(widgetLayout);
+
+    const handleSync = (event: Event) => {
+      const customEvent = event as CustomEvent<Layout[]>;
+      const next = customEvent.detail;
+      if (!Array.isArray(next)) return;
+      const nextSerialized = JSON.stringify(next);
+      if (nextSerialized === lastSerialized) return;
+      lastSerialized = nextSerialized;
+      setWidgetLayout(next);
+    };
+
+    window.addEventListener(LAYOUT_SYNC_EVENT, handleSync);
+    return () => window.removeEventListener(LAYOUT_SYNC_EVENT, handleSync);
   }, [widgetLayout]);
+
+  const dynamicBottomPadding = React.useMemo(() => {
+    const maxRow = widgetLayout.reduce((max, item) => {
+      const bottom = (item.y ?? 0) + (item.h ?? 0);
+      return Math.max(max, bottom);
+    }, 0);
+    const gridHeight =
+      maxRow * GRID_ROW_HEIGHT + Math.max(0, maxRow - 1) * GRID_MARGIN[1];
+    return Math.max(220, Math.ceil(gridHeight * 0.5));
+  }, [widgetLayout]);
+
+  const handleBeaconOffsetChange = React.useCallback(
+    (beaconId: string, next: BeaconOffset) => {
+      setBeaconOffsets((prev) => ({
+        ...prev,
+        [beaconId]: next,
+      }));
+    },
+    [],
+  );
+
 
   return (
     <div className="business-manager-page">
       <Header onBack={onBack} title="Manager View" />
-      <div className="app-container">
+      <div className="beacon-host beacon-host--app">
+      <div className="app-container bm-container-beacon">
         <div className="greetings">
-          Good Morning
+          Good morning, Düsseldorf
         </div>
         <div className="app-left">
           <Container maxWidth="lg" sx={{ mt: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 4, mb: 3 }}>
+            <Box
+              className="beacon-host beacon-host--header"
+              sx={{ display: "flex", alignItems: "center", gap: 4, mb: 3 }}
+            >
+              
               <Box
                 component="img"
                 src={viewAllBUsLogo}
@@ -320,8 +404,16 @@ export default function BusinessManagerPage({
                 {heading ?? "View All Markets"}
               </Typography>
             </Box>
-            <Box className="bu-list burows-beacon-target">
-              {buRows.map((r) => (
+            <Box className="bu-list burows-beacon-target beacon-host">
+              <Beacon
+                label="Business units tour"
+                beaconId="bu-list"
+                onClick={() => startTourFrom(3)}
+                devMode={isBeaconDevMode}
+                offset={beaconOffsets["bu-list"]}
+                onOffsetChange={(next) => handleBeaconOffsetChange("bu-list", next)}
+              />
+              {buRows.map((r, index) => (
                 <Box
                   key={r.id}
                   className="bu-row"
@@ -338,7 +430,21 @@ export default function BusinessManagerPage({
                   }}
                 >
                   <Box className="bu-row-content">
-                    <Box className="bu-row-text">
+                    <Box
+                      className={`bu-row-text ${index === 0 ? "beacon-host beacon-host--bu-text region-alerts-text-target" : ""}`}
+                    >
+                      {index === 0 ? (
+                        <Beacon
+                          label="Region alarms tour"
+                          beaconId="region-alarms"
+                          onClick={() => startTourFrom(9)}
+                          devMode={isBeaconDevMode}
+                          offset={beaconOffsets["region-alarms"]}
+                          onOffsetChange={(next) =>
+                            handleBeaconOffsetChange("region-alarms", next)
+                          }
+                        />
+                      ) : null}
                       <Typography
                         variant="body2"
                         sx={{
@@ -363,9 +469,14 @@ export default function BusinessManagerPage({
                       ) : null}
                     </Box>
 
-                    <Stack direction="row" spacing={1} alignItems="center">
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      className={index === 0 ? "region-alerts-stack-target" : undefined}
+                    >
                       <div
-                        className={`icon-border ${r.id === "east" ? "offline-beacon-target" : ""}`}
+                        className={`icon-border ${r.id === "east" ? "offline-beacon-target beacon-host beacon-host--icon" : ""}`}
                       >
                         <img
                           src={offlineIcon}
@@ -384,9 +495,19 @@ export default function BusinessManagerPage({
                         >
                           {r.alarms ?? 0}
                         </Typography>
+                        {r.id === "east" ? (
+                          <Beacon
+                            label="Offline count tour"
+                            beaconId="offline"
+                            onClick={() => startTourFrom(4)}
+                            devMode={isBeaconDevMode}
+                            offset={beaconOffsets.offline}
+                            onOffsetChange={(next) => handleBeaconOffsetChange("offline", next)}
+                          />
+                        ) : null}
                       </div>
                       <div
-                        className={`icon-border ${r.id === "east" ? "alarms-beacon-target" : ""}`}
+                        className={`icon-border ${r.id === "east" ? "alarms-beacon-target beacon-host beacon-host--icon" : ""}`}
                       >
                         <img
                           src={warningIcon}
@@ -405,6 +526,16 @@ export default function BusinessManagerPage({
                         >
                           {r.notices ?? 0}
                         </Typography>
+                        {r.id === "east" ? (
+                          <Beacon
+                            label="Active alarms tour"
+                            beaconId="alarms"
+                            onClick={() => startTourFrom(5)}
+                            devMode={isBeaconDevMode}
+                            offset={beaconOffsets.alarms}
+                            onOffsetChange={(next) => handleBeaconOffsetChange("alarms", next)}
+                          />
+                        ) : null}
                       </div>
                     </Stack>
                   </Box>
@@ -417,7 +548,15 @@ export default function BusinessManagerPage({
         <div className="app-right">
           <div className="greetings-search">
 
-            <Box className="search-beacon-target">
+            <Box className="search-beacon-target beacon-host beacon-host--search">
+              <Beacon
+                label="Search tour"
+                beaconId="search"
+                onClick={() => startTourFrom(6)}
+                devMode={isBeaconDevMode}
+                offset={beaconOffsets.search}
+                onOffsetChange={(next) => handleBeaconOffsetChange("search", next)}
+              />
               <TextField
                 variant="outlined"
                 size="small"
@@ -486,7 +625,7 @@ export default function BusinessManagerPage({
             </Box>
           </div>
           <Box
-            className="widgets-panel widgets-scroll widgets-beacon-target"
+            className="widgets-panel widgets-scroll widgets-beacon-target beacon-host"
             ref={widgetsPanelRef}
             onScroll={(event) => {
               const target = event.currentTarget;
@@ -494,23 +633,31 @@ export default function BusinessManagerPage({
             }}
             sx={{
               borderLeft: "1px solid var(--border-color)",
-              height: widgetsPanelHeight ? `${widgetsPanelHeight}px` : "auto",
-              maxHeight: "calc(100vh - 120px)",
+                height: "auto",
+                maxHeight: "calc(100vh - 120px)",
               padding: "20px 16px 48px",
               paddingRight: "40px",
-              paddingBottom: "280px",
+              paddingBottom: `${dynamicBottomPadding}px`,
               color: "var(--text-muted)",
               boxSizing: "border-box",
               display: "flex",
               flexDirection: "column",
               gap: 2,
               width: "100%",
-              overflowY: "auto",
+                overflowY: "auto",
               background: "var(--app-bg)",
               opacity: 0,
               animation: "fadeWidgets 0.9s ease forwards 0.15s",
             }}
           >
+            <Beacon
+              label="Widgets panel tour"
+              beaconId="widgets"
+              onClick={() => startTourFrom(7)}
+              devMode={isBeaconDevMode}
+              offset={beaconOffsets.widgets}
+              onOffsetChange={(next) => handleBeaconOffsetChange("widgets", next)}
+            />
             <div
               className={`dashboard-edit-fab ${
                 isWidgetsScrolled ? "is-visible" : ""
@@ -547,51 +694,12 @@ export default function BusinessManagerPage({
               <span className="dashboard-divider" aria-hidden />
               <button
                 type="button"
-                className="dashboard-tour-button"
-                aria-label="Start guided tour"
-                onClick={startTour}
-                style={{
-                  border: "1px solid var(--border-strong)",
-                  borderRadius: "6px",
-                  background: "var(--panel-bg)",
-                  color: "var(--text-primary)",
-                  width: "32px",
-                  height: "32px",
-                  fontSize: "0.85rem",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  transition: "background 150ms ease, color 150ms ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background =
-                    "var(--text-primary)";
-                  e.currentTarget.style.color = "var(--panel-bg)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "var(--panel-bg)";
-                  e.currentTarget.style.color = "var(--text-primary)";
-                }}
-              >
-                <HelpOutlineIcon fontSize="small" />
-              </button>
-              <button
-                type="button"
                 className="dashboard-edit-button"
                 aria-label="Edit dashboard layout"
                 aria-pressed={isEditing}
                 onClick={() => setIsEditing((prev) => !prev)}
               >
                 {isEditing ? "✓" : "✎"}
-              </button>
-              <button
-                type="button"
-                className="dashboard-edit-button"
-                aria-label="Log widget layout"
-                onClick={handleLogLayout}
-              >
-                {`{}`}
               </button>
             </Box>
             <Box
@@ -608,12 +716,14 @@ export default function BusinessManagerPage({
                 rowHeight={GRID_ROW_HEIGHT}
                 margin={GRID_MARGIN}
                 onLayoutChange={handleLayoutChange}
+                onDragStop={handleLayoutChange}
+                onResizeStop={handleLayoutChange}
                 isDraggable={isEditing}
                 isResizable={isEditing}
                 draggableHandle=".widget-drag-handle"
-                compactType="vertical"
+                compactType={null}
                 measureBeforeMount={false}
-                autoSize={false}
+                autoSize
               >
                 {widgetComponents.map((widget) => (
                   <div
@@ -628,6 +738,15 @@ export default function BusinessManagerPage({
             </Box>
           </Box>
         </div>
+      </div>
+        <Beacon
+          label="Settings tour"
+          beaconId="settings"
+          onClick={() => startTourFrom(2)}
+          devMode={isBeaconDevMode}
+          offset={beaconOffsets.settings}
+          onOffsetChange={(next) => handleBeaconOffsetChange("settings", next)}
+        />
       </div>
       <footer className="page-footer">
         <span>© {new Date().getFullYear()} Flexeserve Connect</span>

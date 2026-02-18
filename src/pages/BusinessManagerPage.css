@@ -6,7 +6,7 @@
   background-color: var(--app-bg);
   color: var(--text-primary);
   flex: 1;
-  padding: 0 clamp(1.5rem, 4vw, 3.5rem);
+  padding: 0 clamp(4rem, 12vw, 12rem);
 }
 
 .app-left {
@@ -18,7 +18,7 @@
   min-width: 0;
   height: 80vh; /* Full viewport height */
   color: var(--text-primary);
-  padding: 0 clamp(1.5rem, 3vw, 3rem);
+  padding: 0 clamp(0.75rem, 1.5vw, 1.5rem);
   animation: shrinkLeftPanel 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   justify-content: space-between;
 }
@@ -37,12 +37,6 @@
 
 
 
-.separator {
-  width: calc(100% - 20%);
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 12px 0 24px 0;
-}
 
 .app-right {
   flex: 0 0 40%;
@@ -221,6 +215,11 @@
   background: var(--panel-bg-hover);
 }
 
+/* Do not trigger row hover highlight when hovering beacon controls */
+.bu-row-content:has(.beacon-button:hover) {
+  background: var(--panel-bg);
+}
+
 .bu-row-text {
   display: flex;
   flex-direction: column;
@@ -379,11 +378,63 @@ body.dark .view-all-logo {
   position: relative;
 }
 
+.beacon-host--app .beacon-button {
+  top: 12px;
+  right: 12px;
+  bottom: auto;
+}
+
+.beacon-host--header .beacon-button {
+  top: 8px;
+  right: 8px;
+  bottom: auto;
+}
+
+.beacon-host--search .beacon-button {
+  top: 4px;
+  right: 4px;
+  bottom: auto;
+  z-index: 3;
+}
+
+.beacon-host--bu-text .beacon-button {
+  top: 0;
+  right: -6px;
+  bottom: auto;
+  width: 24px;
+  height: 24px;
+  z-index: 3;
+}
+
+.beacon-host--bu-text .beacon-dot {
+  width: 16px;
+  height: 16px;
+}
+
+.beacon-host--icon .beacon-button {
+  width: 28px;
+  height: 28px;
+  right: -8px;
+  bottom: -8px;
+}
+
+.beacon-host--icon .beacon-dot {
+  width: 20px;
+  height: 20px;
+}
+
 .widgets-panel .beacon-button {
   top: 10px;
   right: 10px;
   bottom: auto;
+  width: 46px;
+  height: 46px;
   z-index: 2;
+}
+
+.widgets-panel .beacon-dot {
+  width: 46px;
+  height: 46px;
 }
 
 .search-button {

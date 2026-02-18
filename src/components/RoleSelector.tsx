@@ -66,7 +66,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
               gap: 1.5,
             }}
           >
-            <Typography sx={{ color: "#fff" }} variant="h3" gutterBottom>
+            <Typography sx={{ color: "#fff", fontWeight: 600 }} variant="h3" gutterBottom>
               Business Manager
             </Typography>
             <Typography
@@ -112,7 +112,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
               gap: 1.5,
             }}
           >
-            <Typography sx={{ color: "#fff" }} variant="h3" gutterBottom>
+            <Typography sx={{ color: "#fff", fontWeight: 600 }} variant="h3" gutterBottom>
               Operator
             </Typography>
             <Typography

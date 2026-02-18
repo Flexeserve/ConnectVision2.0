@@ -77,11 +77,12 @@
 
 /* Highlight overlay */
 .driver-overlay {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.32);
 }
 
 .driver-active-element {
   border-radius: 4px;
+  filter: brightness(1.08) contrast(1.05);
 }
 
 /* Arrow styling */

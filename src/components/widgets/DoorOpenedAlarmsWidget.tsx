@@ -3,39 +3,41 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import "./WidgetBase.css";
 import "./DoorOpenedAlarmsWidget.css";
 
-const generateSeries = (length: number) => {
-  const base = 82;
+const TIME_SLOTS = ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "00:00", "03:00"];
+
+const buildRangeLabels = (days: number) =>
+  Array.from({ length: days }).flatMap((_, dayIndex) =>
+    TIME_SLOTS.map((slot) => `D${dayIndex + 1} ${slot}`),
+  );
+
+const generateSeries = (days: number) => {
+  const pointsPerDay = TIME_SLOTS.length;
   const values: number[] = [];
-  const eventCount = Math.max(2, Math.round(length / 4));
-  const eventGap = Math.max(2, Math.floor(length / eventCount));
-  const dropDepth = 8 + Math.round(Math.random() * 6); // 8-14C drop
-  const recoverySteps = 3;
+  const base = 80;
 
-  let doorEventIndex = 1 + Math.floor(Math.random() * 2);
-  for (let i = 0; i < length; i += 1) {
-    const inRecovery = i > doorEventIndex && i <= doorEventIndex + recoverySteps;
-    const currentBase = inRecovery
-      ? base - dropDepth + (dropDepth * (i - doorEventIndex)) / recoverySteps
-      : base;
-    const noise = Math.floor(Math.random() * 3) - 1; // -1 to +1
-    const value = Math.min(92, Math.max(68, Math.round(currentBase + noise)));
-    values.push(value);
+  for (let day = 0; day < days; day += 1) {
+    const dayStart = values.length;
+    const doorIndex = dayStart + 2 + Math.floor(Math.random() * 3);
+    const dropDepth = 10 + Math.floor(Math.random() * 6); // 10-15C drop
+    const recoverySteps = 2 + Math.floor(Math.random() * 2); // 2-3 points
 
-    if (i === doorEventIndex) {
-      values[i] = Math.max(68, base - dropDepth);
-      doorEventIndex += eventGap + Math.floor(Math.random() * 2);
+    for (let i = 0; i < pointsPerDay; i += 1) {
+      const idx = dayStart + i;
+      const noise = Math.floor(Math.random() * 3) - 1;
+      let value = base + noise;
+
+      if (idx === doorIndex) {
+        value = base - dropDepth;
+      } else if (idx > doorIndex && idx <= doorIndex + recoverySteps) {
+        const step = idx - doorIndex;
+        value = base - dropDepth + (dropDepth * step) / recoverySteps + noise;
+      }
+
+      values.push(Math.round(Math.max(60, Math.min(92, value))));
     }
   }
 
   return values;
-};
-
-const X_LABELS_BY_RANGE: Record<string, string[]> = {
-  "last-week": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  "last-month": ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12"],
-  "last-3-months": [
-    "W1","W2","W3","W4","W5","W6","W7","W8","W9","W10","W11","W12","W13","W14","W15","W16","W17","W18",
-  ],
 };
 
 export default function DoorOpenedAlarmsWidget() {
@@ -43,12 +45,11 @@ export default function DoorOpenedAlarmsWidget() {
   const [chartSize, setChartSize] = useState({ width: 320, height: 160 });
   const [range, setRange] = useState("last-week");
   const seriesData = useMemo(() => {
-    if (range === "last-week") return generateSeries(7);
-    if (range === "last-month") return generateSeries(12);
-    return generateSeries(18);
+    if (range === "last-3-days") return generateSeries(3);
+    return generateSeries(7);
   }, [range]);
   const xLabels = useMemo(
-    () => X_LABELS_BY_RANGE[range] ?? X_LABELS_BY_RANGE["last-week"],
+    () => buildRangeLabels(range === "last-3-days" ? 3 : 7),
     [range],
   );
 
@@ -86,9 +87,8 @@ export default function DoorOpenedAlarmsWidget() {
           onChange={(event) => setRange(event.target.value)}
           aria-label="Select time range"
         >
+          <option value="last-3-days">Last 3 days</option>
           <option value="last-week">Last week</option>
-          <option value="last-month">Last month</option>
-          <option value="last-3-months">Last 3 months</option>
         </select>
       </div>
 
@@ -108,15 +108,7 @@ export default function DoorOpenedAlarmsWidget() {
                 color: "#d94d14",
                 curve: "monotoneX",
                 area: true,
-                showMark: ({ index }) => {
-                  if (index === 0 || index === seriesData.length - 1) return true;
-                  if (seriesData.length < 3) return true;
-                  const prev = seriesData[index - 1];
-                  const curr = seriesData[index];
-                  const next = seriesData[index + 1];
-                  const isTrough = curr <= prev && curr <= next;
-                  return !isTrough;
-                },
+                showMark: false,
                 valueFormatter: (value, context) => {
                   const dataIndex = (context as { dataIndex?: number })?.dataIndex;
                   if (typeof dataIndex === "number" && isPeakIndex(dataIndex)) {
@@ -131,17 +123,15 @@ export default function DoorOpenedAlarmsWidget() {
               {
                 scaleType: "point",
                 data: xLabels.slice(0, seriesData.length),
-                label:
-                  range === "last-week"
-                    ? "Time (days)"
-                    : range === "last-month"
-                      ? "Time (weeks)"
-                      : "Time (weeks)",
+                label: "Time (hours)",
               },
             ]}
             yAxis={[
               {
                 label: "Temperature (°C)",
+                sx: {
+                  color: "var(--text-primary)",
+                },
               },
             ]}
             sx={{

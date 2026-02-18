@@ -38,16 +38,53 @@ type RegionNode = {
 
 const randomStoreCount = () => Math.floor(Math.random() * 5) + 1;
 
-const buildStores = (prefix: string, count: number): StoreNode[] =>
-  Array.from({ length: count }).map((_, index) => {
-    const storeIndex = index + 1;
+const STORE_NAME_POOL = [
+  "Brad Lane",
+  "Kingsway",
+  "Maple Crescent",
+  "Oakridge",
+  "Harbour View",
+  "Rivergate",
+  "Willow Park",
+  "Elm Street",
+  "Stonebridge",
+  "Baker Row",
+  "Holloway",
+  "Meadow Lane",
+  "Cedar Walk",
+  "Lakeside",
+  "Foxglove",
+  "Hilltop",
+  "Ashgrove",
+  "Parkside",
+  "Chapel Row",
+  "Market Street",
+  "Bridge End",
+  "Station Rise",
+  "Westfield",
+  "Eastgate",
+  "Southbank",
+  "Northfield",
+  "Wellington Way",
+  "Abbey Road",
+  "Granary Wharf",
+  "Millstone",
+];
+
+const buildStores = (prefix: string, count: number): StoreNode[] => {
+  const pool = [...STORE_NAME_POOL];
+  return Array.from({ length: count }).map((_, index) => {
+    const name =
+      pool.splice(Math.floor(Math.random() * pool.length), 1)[0] ??
+      `Site ${index + 1}`;
     return {
-      id: `${prefix}-store-${storeIndex}`,
-      title: `${prefix} Store ${String(storeIndex).padStart(2, "0")}`,
+      id: `${prefix}-${name.toLowerCase().replace(/\s+/g, "-")}`,
+      title: name,
       alarms: Math.floor(Math.random() * 7),
       notices: Math.floor(Math.random() * 10),
     };
   });
+};
 
 const REGIONS: RegionNode[] = [
   {
@@ -155,7 +192,7 @@ const SUB_REGION_ROWS_BY_REGION = REGIONS.reduce<Record<string, BURow[]>>(
       return {
         id: subRegion.id,
         title: subRegion.title,
-        subtitle: undefined,
+        subtitle: `${subRegion.stores.length} Stores`,
         alarms: totals.alarms,
         notices: totals.notices,
       };

@@ -76,8 +76,8 @@
 
 .widget-value {
   margin-top: var(--widget-gap);
-  font-size: min(26cqi, 40cqb);
-  font-weight: 700;
+  font-size: 3rem;
+  font-weight: 800;
   color: var(--widget-text-primary);
   text-align: center;
   line-height: 0.95;
@@ -94,7 +94,7 @@
 
 
 .widget-value span {
-  font-size: min(12cqi, 18cqb);
+  font-size: 1.1rem;
   font-weight: 600;
   margin-left: 6px;
   color: var(--widget-text-primary);
@@ -147,11 +147,11 @@
   }
 
   .widget-value {
-    font-size: clamp(16px, min(8cqi, 12cqb), 28px);
+    font-size: 1.6rem;
   }
 
   .gauge-number {
-    font-size: clamp(16px, min(8cqi, 12cqb), 28px);
+    font-size: 1.4rem;
   }
 
   .gauge-label {
@@ -161,11 +161,11 @@
 
 @container widget (max-height: 180px) {
   .widget-value {
-    font-size: clamp(18px, min(9cqi, 15cqb), 36px);
+    font-size: 2rem;
   }
 
   .gauge-number {
-    font-size: clamp(18px, min(9cqi, 15cqb), 36px);
+    font-size: 1.8rem;
   }
 }
 
@@ -177,11 +177,11 @@
   }
 
   .widget-value {
-    font-size: clamp(36px, min(16cqi, 30cqb), 120px);
+    font-size: 4rem;
   }
 
   .gauge-number {
-    font-size: clamp(34px, min(15cqi, 28cqb), 108px);
+    font-size: 3.4rem;
   }
 
   .gauge-label {

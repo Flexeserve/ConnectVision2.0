@@ -4,6 +4,48 @@
   color: var(--text-primary);
 }
 
+.beacon-host {
+  position: relative;
+}
+
+.beacon-host--store-container .beacon-button {
+  top: 8px;
+  right: 8px;
+  bottom: auto;
+}
+
+.beacon-host--store-row .beacon-button {
+  top: 8px;
+  right: 8px;
+  bottom: auto;
+}
+
+.beacon-host--schedule .beacon-button {
+  top: -8px;
+  right: -10px;
+  bottom: auto;
+  width: 26px;
+  height: 26px;
+}
+
+.beacon-host--schedule .beacon-dot {
+  width: 18px;
+  height: 18px;
+}
+
+.beacon-host--status-dots .beacon-button {
+  top: -8px;
+  right: -10px;
+  bottom: auto;
+  width: 26px;
+  height: 26px;
+}
+
+.beacon-host--status-dots .beacon-dot {
+  width: 18px;
+  height: 18px;
+}
+
 .store-view-container {
   display: flex;
   flex-direction: column;

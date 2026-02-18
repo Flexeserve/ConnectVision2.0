@@ -5,9 +5,9 @@ import "./EnergyUsageWidget.css";
 import scheduleIcon from "../../assets/ScheduleEnergyIcon.svg";
 
 const complianceData = [
-  { id: 0, value: 52, color: "#1fb05c", label: "Below" },
-  { id: 1, value: 34, color: "#f0c419", label: "Expected" },
-  { id: 2, value: 14, color: "#f14734", label: "Above" },
+  { id: 0, value: 52, color: "#1e7d3f", label: "Below" },
+  { id: 1, value: 34, color: "#e28e04", label: "Expected" },
+  { id: 2, value: 14, color: "#a4130e", label: "Above" },
 ];
 
 const belowRate = complianceData[0]?.value ?? 0;
@@ -67,7 +67,7 @@ export default function EnergyUsageWidget() {
                     data: complianceData,
                     innerRadius: innerRadius,
                     outerRadius: outerRadius,
-                    cornerRadius: 3,
+                    cornerRadius: 1,
                   },
                 ]}
                 slotProps={{

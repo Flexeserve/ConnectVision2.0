@@ -2,8 +2,8 @@
   position: absolute;
   bottom: -12px;
   right: -12px;
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   border: none;
   padding: 0;
   background: none;
@@ -13,50 +13,86 @@
   justify-content: center;
   transition: transform 160ms ease;
   isolation: isolate;
+  touch-action: none;
 }
 
 .beacon-button::before,
 .beacon-button::after {
   content: "";
   position: absolute;
-  inset: -6px;
+  inset: -10px;
   border-radius: 50%;
-  border: 2px solid rgba(217, 77, 20, 0.5);
-  animation: beaconPulse 2.4s ease-out infinite;
+  border: 3px solid rgba(240, 106, 36, 0.78);
+  box-shadow: 0 0 18px rgba(240, 106, 36, 0.45);
+  animation: beaconPulse 1.5s ease-out infinite;
   opacity: 0;
   z-index: -1;
 }
 
 .beacon-button::after {
-  animation-delay: 1.2s;
+  animation-delay: 0.75s;
 }
 
 .beacon-button:hover,
 .beacon-button:focus-visible {
-  transform: translateY(-2px) scale(1.05);
+  filter: brightness(1.08);
   outline: none;
 }
 
-.beacon-dot {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #ff8432 0%, #d94d14 35%, #d94d14 100%);
-  
-  display: block;
+.beacon-button--dev {
+  cursor: grab;
 }
+
+.beacon-button--dev:active {
+  cursor: grabbing;
+}
+
+.beacon-dev-id {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 20, 0.92);
+  color: #ffffff;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 4px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.beacon-dot {
+  width: 32px;
+  height: 32px;
+  background-image: url("../assets/FanIcon.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  animation: beaconSpin 1.8s linear infinite;
+}
+
 
 @keyframes beaconPulse {
   0% {
-    transform: scale(0.7);
-    opacity: 0.9;
+    transform: scale(0.6);
+    opacity: 1;
   }
   60% {
-    transform: scale(1.35);
+    transform: scale(1.55);
     opacity: 0;
   }
   100% {
-    transform: scale(1.4);
+    transform: scale(1.65);
     opacity: 0;
+  }
+}
+
+@keyframes beaconSpin {
+  to {
+    transform: rotate(360deg);
   }
 }
