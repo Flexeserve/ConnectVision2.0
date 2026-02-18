@@ -1,0 +1,40 @@
+.widget-door-opened {
+  background: var(--widget-bg);
+  color: var(--widget-text-primary);
+  gap: 8px;
+}
+
+.widget-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.alarm-range-select {
+  border: 1px solid var(--border-strong);
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.door-opened-chart {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.door-opened-chart :is(.MuiAreaElement-root) {
+  fill: url(#doorOpenedGradient);
+}
+
+.door-opened-icon {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}

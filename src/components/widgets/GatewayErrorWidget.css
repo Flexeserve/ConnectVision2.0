@@ -1,5 +1,5 @@
 .widget-alarm-gateway {
-  background: #fff;
+  background: var(--widget-bg);
 }
 
 .alarm-value-gateway {

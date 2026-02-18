@@ -1,8 +1,8 @@
 /* src/pages/OperatorPage.css */
 .operator-page {
-  background: #ededee;
+  background: var(--app-bg);
   min-height: 100vh;
-  color: #202020;
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
   padding-bottom: 90px; /* space for fixed footer */
@@ -12,8 +12,8 @@
   width: 100%;
   min-width: 140px;
   min-height: 120px;
-  background: #ffffff;
-  border: 2px solid #d0d0d0;
+  background: var(--panel-bg);
+  border: 2px solid var(--border-subtle);
   border-radius: 12px;
   padding: 8px 10px;
   box-sizing: border-box;
@@ -54,14 +54,14 @@
 .temp-select-unit {
   font-size: clamp(12px, 0.9vw, 15px);
   font-weight: 700;
-  color: #202020;
+  color: var(--text-primary);
 }
 
 .temp-select-input {
   width: 100%;
   min-height: 52px;
   background: none;
-  color: #202020;
+  color: var(--text-primary);
   font-size: clamp(16px, 1.3vw, 22px);
   font-weight: 700;
   padding: 8px 10px;
@@ -79,6 +79,9 @@
 .temp-select-input--off {
   color: transparent;
   background: none;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 0 transparent;
+  caret-color: transparent;
 }
 
 .operator-content {
@@ -106,7 +109,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  border-left: 1px solid #d0d0d0;
+  border-left: 1px solid var(--border-subtle);
   height: 100vh;
   padding: 32px 32px 48px;
   box-sizing: border-box;
@@ -194,8 +197,8 @@
   min-width: 210px;
   max-width: 280px;
   padding: 12px 18px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1a1a1a;
+  background: var(--panel-bg);
+  color: var(--text-primary);
   font-weight: 600;
   border-radius: 999px;
 
@@ -263,6 +266,71 @@
   margin-top: -20px;
 }
 
+/* Keep tablet + controls fixed to light theme */
+.tablet,
+.tablet * {
+  color: #202020;
+}
+
+.tablet-unit-toggle-wrap {
+  position: absolute;
+  top: 25%;
+  right: clamp(2.5rem, 6vw, 4.5rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  z-index: 2;
+}
+
+.tablet-unit-toggle {
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.92);
+  color: #202020;
+  border-radius: 999px;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  min-width: 48px;
+  height: 26px;
+  position: relative;
+  isolation: isolate;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.tablet-unit-label {
+  width: 22px;
+  text-align: center;
+  letter-spacing: 0.02em;
+  opacity: 0.7;
+}
+
+.tablet-unit-toggle--on .tablet-unit-label:first-child {
+  opacity: 0.7;
+}
+
+.tablet-unit-toggle--on .tablet-unit-label:last-child {
+  opacity: 0.7;
+}
+
+.tablet-unit-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #d94d14 0%, #f06a24 100%);
+  transition: transform 180ms ease;
+  z-index: 0;
+}
+
+.tablet-unit-toggle--on .tablet-unit-knob {
+  transform: translateX(22px);
+}
+
 /* Reflection */
 .tablet::after {
   content: "";
@@ -289,13 +357,56 @@
   max-width: 200px;
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.45);
-
   background: rgba(255, 255, 255, 1);
   display: flex;
   flex-direction: column;
   margin: 0 auto;
   padding: 12px;
   height: auto;
+}
+
+.tablet .operator-card-header {
+  border-bottom: 1px solid #7a7a7a;
+  color: #202020;
+}
+
+.tablet .operator-card-body {
+  color: #202020;
+}
+
+.tablet .temp-select {
+  background: #ffffff;
+  border: 2px solid #d0d0d0;
+}
+
+.tablet .temp-select-unit {
+  color: #202020;
+}
+
+.tablet .temp-select-input {
+  color: #202020;
+}
+
+.tablet .status-dot {
+  background: #2e7d32;
+}
+
+.tablet .status-dot--off {
+  background: #8d8d8d;
+}
+
+.tablet .temp-select--off {
+  background-image:
+    url("../assets/SwitchOn.svg"),
+    linear-gradient(45deg, #e24a0a 0%, #f06a24 100%);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 54px 54px, cover;
+  border-color: transparent;
+}
+
+.tablet .temp-select--off .temp-select-unit {
+  color: #ffffff;
 }
 
 .operator-card {
@@ -329,9 +440,9 @@
 }
 
 .operator-card {
-  background: #ffffff;
+  background: var(--panel-bg);
   border-radius: 6px;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--border-subtle);
 
   overflow: hidden;
 }
@@ -340,7 +451,7 @@
   padding: 12px 10px;
   text-align: center;
   font-weight: 600;
-  border-bottom: 1px solid #7a7a7a;
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .operator-card-body {
@@ -432,8 +543,8 @@
 /* Footer section at bottom */
 .page-footer {
   width: 100%;
-  background: #ffffff;
-  border-top: 1px solid #c0c0c0;
+  background: var(--panel-bg);
+  border-top: 1px solid var(--border-color);
   padding: 12px clamp(1.5rem, 3vw, 3rem);
   display: flex;
   justify-content: space-between;

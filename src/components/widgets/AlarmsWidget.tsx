@@ -14,7 +14,6 @@ export default function AlarmsWidget({ value = 12 }: AlarmsWidgetProps) {
         Active Alarms
       </div>
       <div className="widget-value">{value}</div>
-      <div className="alarm-list"></div>
     </div>
   );
 }

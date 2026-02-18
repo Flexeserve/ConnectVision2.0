@@ -69,6 +69,7 @@ export default function StoreViewPage({
                   component="img"
                   src={storeIcon}
                   alt="Store Icon"
+                  className="store-icon"
                   sx={{ height: 64 }}
                 />
                 <Typography
@@ -76,7 +77,7 @@ export default function StoreViewPage({
                     fontFamily: "Inter, sans-serif",
                     fontSize: "1.1rem",
                     fontWeight: 600,
-                    color: "#202020",
+                    color: "var(--text-primary)",
                   }}
                 >
                   {title ?? "View All Markets"}
@@ -103,7 +104,7 @@ export default function StoreViewPage({
                         sx={{
                           fontFamily: "Inter, sans-serif",
                           fontWeight: 600,
-                          color: "#202020",
+                          color: "var(--text-primary)",
                           fontSize: "0.98rem",
                         }}
                       >
@@ -132,7 +133,7 @@ export default function StoreViewPage({
                         alignSelf: "stretch",
                         display: "flex",
                         alignItems: "center",
-                        color: "#333333",
+                        color: "var(--text-primary)",
                       }}
                     >
                       <button
@@ -149,14 +150,14 @@ export default function StoreViewPage({
                   width: { xs: "100%", sm: 360, md: 460 },
                   maxWidth: { xs: "100%", sm: 420, md: 500 },
                   "& .MuiInputBase-root": {
-                    color: "#333333",
-                    backgroundColor: "#ffffff",
+                    color: "var(--text-primary)",
+                    backgroundColor: "var(--panel-bg)",
                     paddingRight: 0,
                     paddingTop: 0,
                     paddingBottom: 0,
                   },
                   "& .MuiInputBase-input::placeholder": {
-                    color: "#a1a1a1ff",
+                    color: "var(--text-muted)",
                     opacity: 1,
                   },
                   "& .MuiOutlinedInput-root": {
@@ -176,10 +177,10 @@ export default function StoreViewPage({
                     alignSelf: "stretch",
                   },
                   "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#4a4a4a",
+                    borderColor: "var(--border-strong)",
                   },
                   "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#6a6a6a",
+                    borderColor: "var(--text-primary)",
                   },
                 }}
               />

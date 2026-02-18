@@ -1,6 +1,6 @@
 .widget-cloud {
   padding: 14px;
-  background-color: #fff;
+  background-color: var(--widget-bg);
 }
 
 .cloud-body {
@@ -21,8 +21,12 @@
   object-fit: contain;
 }
 
+body.dark .cloud-title-icon {
+  filter: invert(1) brightness(1.1);
+}
+
 .cloud-info {
-  color: #0b0b0b;
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -37,7 +41,7 @@
 }
 
 .status-label {
-  color: #7a7a7a;
+  color: var(--text-muted);
   letter-spacing: 0.08em;
 }
 
@@ -46,7 +50,7 @@
   align-items: center;
   gap: 6px;
   font-weight: 600;
-  color: #121212;
+  color: var(--text-primary);
 }
 
 .status-dot {
@@ -63,7 +67,7 @@
 
 .cloud-footnote {
   font-size: 11px;
-  color: #5d5d5d;
+  color: var(--text-muted);
 }
 
 .cloud-gauge {
@@ -112,7 +116,7 @@
   flex-direction: column;
   gap: 6px;
   font-size: 11px;
-  color: #000;
+  color: var(--text-muted);
 }
 
 .legend-dot {
@@ -124,11 +128,11 @@
 }
 
 .legend-dot--blue {
-  background: #205ffd;
+  background: var(--legend-blue);
 }
 
 .legend-dot--red {
-  background: #f14734;
+  background: var(--legend-red);
 }
 
 .cloud-actions {
@@ -161,7 +165,7 @@
 .cloud-description {
   font-size: 0.85rem;
   line-height: 1.5;
-  color: #303030;
+  color: var(--text-muted);
 }
 
 /* Mobile responsive breakpoint */

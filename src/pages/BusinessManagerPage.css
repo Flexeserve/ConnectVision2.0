@@ -3,9 +3,10 @@
   display: flex;
   flex-wrap: wrap;
   min-height: calc(100vh - 64px);
-  background-color: #ededee;
-  color: #333333;
+  background-color: var(--app-bg);
+  color: var(--text-primary);
   flex: 1;
+  padding: 0 clamp(1.5rem, 4vw, 3.5rem);
 }
 
 .app-left {
@@ -16,7 +17,7 @@
   flex: 0 0 60%;
   min-width: 0;
   height: 80vh; /* Full viewport height */
-  color: #333333;
+  color: var(--text-primary);
   padding: 0 clamp(1.5rem, 3vw, 3rem);
   animation: shrinkLeftPanel 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   justify-content: space-between;
@@ -39,7 +40,7 @@
 .separator {
   width: calc(100% - 20%);
   height: 1px;
-  background-color: #c0c0c0;
+  background-color: var(--border-color);
   margin: 12px 0 24px 0;
 }
 
@@ -52,7 +53,7 @@
 }
 
 .business-manager-page {
-  color: #333333;
+  color: var(--text-primary);
   min-height: 100vh;
   position: relative;
   display: flex;
@@ -106,14 +107,14 @@
 .dashboard-divider {
   flex: 1;
   height: 1px;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--border-color);
 }
 
 .dashboard-edit-button {
-  border: 1px solid rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
-  background: #ffffff;
-  color: #333333;
+  background: var(--panel-bg);
+  color: var(--text-primary);
   width: 32px;
   height: 32px;
   font-size: 0.85rem;
@@ -126,9 +127,32 @@
     color 150ms ease;
 }
 
+.dashboard-edit-fab {
+  position: sticky;
+  top: 12px;
+  z-index: 5;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.dashboard-edit-fab.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dashboard-edit-button--fab {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
 .dashboard-edit-button:hover {
-  background: #333333;
-  color: #ffffff;
+  background: var(--text-primary);
+  color: var(--panel-bg);
 }
 
 /* Grid scroll container styles moved to MUI Box sx props */
@@ -141,7 +165,7 @@
 
 .widget-cell {
   height: 100%;
-  background: #ffffff;
+  background: var(--panel-bg);
   border-radius: 8px;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
   overflow: hidden;
@@ -188,13 +212,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 18px;
-  background-color: #ffffff;
+  background-color: var(--panel-bg);
   min-height: 42px;
   transition: background-color 150ms ease;
 }
 
 .bu-row-content:hover {
-  background: #d3d3d3;
+  background: var(--panel-bg-hover);
 }
 
 .bu-row-text {
@@ -221,7 +245,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  border: 1px solid #8a8a8a;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
 }
 
@@ -229,8 +253,8 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1px solid #d0d0d0;
-  background: #3a3a3a;
+  border: 1px solid var(--border-subtle);
+  background: var(--icon-dot-bg);
   display: inline-block;
 }
 
@@ -249,15 +273,15 @@
 .icon-separator {
   width: 1px;
   height: 18px;
-  background: #8a8a8a;
+  background: var(--border-strong);
   display: inline-block;
 }
 
 /* Footer section at bottom */
 .page-footer {
   width: 100%;
-  background: #ffffff;
-  border-top: 1px solid #c0c0c0;
+  background: var(--panel-bg);
+  border-top: 1px solid var(--border-color);
   padding: 12px clamp(1.5rem, 3vw, 3rem);
   display: flex;
   justify-content: space-between;
@@ -300,7 +324,7 @@
 /* Orange scrollbar styling */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #d94d14 #ededee;
+  scrollbar-color: #d94d14 var(--scroll-track);
 }
 
 *::-webkit-scrollbar {
@@ -309,14 +333,14 @@
 }
 
 *::-webkit-scrollbar-track {
-  background: #ededee;
+  background: var(--scroll-track);
   border-radius: 5px;
 }
 
 *::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #d94d14 0%, #f06a24 100%);
   border-radius: 5px;
-  border: 2px solid #ededee;
+  border: 2px solid var(--scroll-track);
 }
 
 *::-webkit-scrollbar-thumb:hover {
@@ -332,6 +356,10 @@
   gap: 48px;
   flex-wrap: wrap;
   max-width: 100%;
+}
+
+body.dark .view-all-logo {
+  filter: invert(1) brightness(1.1);
 }
 
 .greetings-icon {

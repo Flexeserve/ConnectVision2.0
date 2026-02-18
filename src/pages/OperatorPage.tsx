@@ -1,6 +1,7 @@
 ﻿import { Canvas, useLoader, useThree, useFrame } from "@react-three/fiber";
 import Header from "../components/Header";
 import connectLogo from "../assets/connect_flexeserve.svg";
+import connectLogoInversed from "../assets/connect_flexeserve_inversed.svg";
 import "./OperatorPage.css";
 import {
   Suspense,
@@ -50,7 +51,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 RectAreaLightUniformsLib.init();
 
-const tempOptions = ["Off", "Lights Only", "170", "175", "180"];
+const tempOptions = ["Off", "Lights Only", "75", "85", "90"];
 const defaultLightTarget: [number, number, number] = [0, 1, 0];
 const defaultLightRotation: [number, number, number] = [-Math.PI / 2, 0, 0];
 const zoneDisplayMeta = [
@@ -703,11 +704,13 @@ const FanFlowField = memo(function FanFlowField({
 });
 
 export default function OperatorPage({ onBack, title }: OperatorPageProps) {
-  const [temps, setTemps] = useState(["170", "170", "170", "170"]);
+  const [temps, setTemps] = useState(["75", "75", "75", "75"]);
+  const [unit, setUnit] = useState<"C" | "F">("C");
   const [lightAnchors, setLightAnchors] = useState<LightAnchors>({});
   const [fanEmitters, setFanEmitters] = useState<FanEmitters>({});
   const [sceneReady, setSceneReady] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const scratchVectors = useMemo(
     () => ({
       origin: new Vector3(),
@@ -772,12 +775,32 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
   const debugActive = debugAvailable && debugLights;
   const cameraControlsActive = debugAvailable && cameraControlsEnabled;
 
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setIsDarkMode(document.body.classList.contains("dark"));
+    };
+    handleThemeChange();
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const formatTempLabel = (value: string, nextUnit: "C" | "F") => {
+    const lower = value.toLowerCase();
+    if (lower === "off" || lower === "lights only") return value;
+    const numeric = parseInt(value, 10);
+    if (Number.isNaN(numeric)) return value;
+    if (nextUnit === "C") return `${numeric}`;
+    const converted = Math.round((numeric * 9) / 5 + 32);
+    return `${converted}`;
+  };
+
   const showStatusBubble = (index: number, value: string) => {
     const meta = zoneDisplayMeta[index];
     const zoneLabel = meta
       ? `${meta.unit} Zone ${meta.zone}`
       : `Zone ${index + 1}`;
-    const message = `${zoneLabel} set to ${value}`;
+    const message = `${zoneLabel} set to ${formatTempLabel(value, unit)}`;
     if (bubbleTimeoutRef.current) {
       clearTimeout(bubbleTimeoutRef.current);
     }
@@ -815,9 +838,9 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
     if (lower === "off") return "#8d8d8d";
     const numeric = parseInt(lower, 10);
     if (!Number.isNaN(numeric)) {
-      if (numeric >= 180) return "#ff5b2e";
-      if (numeric >= 175) return "#ff7a45";
-      if (numeric >= 170) return "#ff934f";
+      if (numeric >= 90) return "#ff5b2e";
+      if (numeric >= 85) return "#ff7a45";
+      if (numeric >= 75) return "#ff934f";
     }
     return "#ffd8b2";
   };
@@ -901,6 +924,20 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
       <div className="operator-content">
         <div className="operator-left">
           <div className="tablet">
+            <div className="tablet-unit-toggle-wrap">
+              <span className="tablet-unit-label">°C</span>
+              <button
+                type="button"
+                className={`tablet-unit-toggle ${
+                  unit === "F" ? "tablet-unit-toggle--on" : ""
+                }`}
+                onClick={() => setUnit((prev) => (prev === "C" ? "F" : "C"))}
+                aria-label="Toggle temperature unit"
+              >
+                <span className="tablet-unit-knob" aria-hidden />
+              </button>
+              <span className="tablet-unit-label">°F</span>
+            </div>
             <div className="operator-grid">
               {[0, 1].map((col) => (
                 <AnimatedContent
@@ -948,7 +985,7 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
                                   }`}
                                   aria-hidden
                                 />
-                                <span className="temp-select-unit">°C</span>
+                                <span className="temp-select-unit">°{unit}</span>
                               </div>
                               <div className="temp-select-bottom">
                                 <select
@@ -964,7 +1001,7 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
                                 >
                                   {tempOptions.map((opt) => (
                                     <option key={opt} value={opt}>
-                                      {opt}
+                                      {formatTempLabel(opt, unit)}
                                     </option>
                                   ))}
                                 </select>
@@ -1250,7 +1287,7 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
       <footer className="page-footer">
         <span>© {new Date().getFullYear()} Flexeserve Connect</span>
         <img
-          src={connectLogo}
+          src={isDarkMode ? connectLogoInversed : connectLogo}
           alt="Connect by Flexeserve"
           className="footer-logo"
         />

@@ -11,18 +11,19 @@
   --widget-title-letter-spacing: 0.08em;
 
   /* Widget colors */
-  --widget-text-primary: #333333;
-  --widget-text-secondary: #5d5d5d;
-  --widget-bg: #ffffff;
   --widget-alarm-color: #d94d14;
-  --widget-border-subtle: rgba(255, 255, 255, 0.06);
 
   /* Transitions */
   --widget-hover-duration: 180ms;
 }
 
 .widget-card {
-  background: var(--widget-bg);
+  --widget-text-primary: var(--widget-text, #333333);
+  --widget-text-secondary: var(--text-muted, #5d5d5d);
+  --widget-bg: var(--widget-bg, #ffffff);
+  --widget-border-subtle: var(--widget-border, rgba(0, 0, 0, 0.08));
+
+  background: var(--widget-body-bg, #e3e3e3);
   border: 1px solid var(--widget-border-subtle);
   padding: var(--widget-padding) var(--widget-padding) 10px;
   border-radius: var(--widget-border-radius);
@@ -54,6 +55,9 @@
   letter-spacing: var(--widget-title-letter-spacing);
   font-size: clamp(10px, 4cqw, var(--widget-title-size));  /* Scales with container width */
   color: var(--widget-text-primary);
+  background: var(--widget-bg);
+  padding: 6px 8px;
+  border-radius: 6px;
 
   /* Text truncation for long titles */
   overflow: hidden;
@@ -62,6 +66,12 @@
   max-width: 100%;
   flex: 0 0 auto;
   min-height: 1.6em;
+}
+
+.widget-card > :not(.widget-title) {
+  background: var(--widget-body-bg, #e3e3e3);
+  border-radius: 8px;
+  padding: 10px;
 }
 
 .widget-value {

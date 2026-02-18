@@ -1,5 +1,5 @@
 .widget-energy {
-  background: #fff;
+  background: var(--widget-bg);
 }
 
 .energy-body {
@@ -20,6 +20,10 @@
   object-fit: contain;
 }
 
+body.dark .schedule-icon {
+  filter: invert(1) brightness(1.1);
+}
+
 .energy-info {
   display: flex;
   flex-direction: column;
@@ -29,7 +33,7 @@
 .energy-label {
   margin-top: 4px;
   font-size: 5px;
-  color: #5d5d5d;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -42,7 +46,7 @@
 
 .energy-footnote {
   font-size: 11px;
-  color: #5d5d5d;
+  color: var(--text-muted);
 }
 
 .energy-gauge {
@@ -83,6 +87,7 @@
   justify-content: center;
   align-items: center;
 }
+
 
 /* Mobile responsive breakpoint */
 @media (max-width: 600px) {

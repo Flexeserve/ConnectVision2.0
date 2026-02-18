@@ -4,7 +4,7 @@ import "./HeroSlide.css";
 import { Box, Button } from "@mui/material";
 
 import heroProductImage from "../assets/HeroImage.png";
-import heroFanIcon from "../assets/FanIcon.svg";
+import heroFanIcon from "../assets/Flexeserve fan icon watermark light grey.svg";
 import flexeserveSaffronIcon from "../assets/FlexeserveSaffron.svg";
 
 type Props = {
@@ -14,11 +14,36 @@ type Props = {
 
 export default function HeroSlide({ visible, onClose }: Props) {
   const primaryRef = React.useRef<HTMLButtonElement | null>(null);
+  const [isDarkMode, setIsDarkMode] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("cv_theme") === "dark";
+  });
 
   // Focus the primary CTA when the hero becomes visible
   React.useEffect(() => {
     if (visible) primaryRef.current?.focus();
   }, [visible]);
+
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("dark", isDarkMode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cv_theme", isDarkMode ? "dark" : "light");
+    }
+  }, [isDarkMode]);
+
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    const handleThemeChange = () => {
+      setIsDarkMode(document.body.classList.contains("dark"));
+    };
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div
@@ -109,9 +134,26 @@ export default function HeroSlide({ visible, onClose }: Props) {
             
           </div>
         </div>
-        <div className="hero-footer-note" aria-label="Flexeserve copyright notice">
+        <div
+          className="hero-footer-note"
+          aria-label="Flexeserve copyright notice"
+        >
           © Flexeserve 2026
         </div>
+        <button
+          type="button"
+          className="hero-theme-toggle"
+          onClick={() => setIsDarkMode((prev) => !prev)}
+          aria-label="Toggle dark mode"
+        >
+          <span className="hero-theme-label">
+            {isDarkMode ? "Dark" : "Light"} mode
+          </span>
+          <span
+            className={`hero-theme-switch ${isDarkMode ? "is-on" : ""}`}
+            aria-hidden
+          />
+        </button>
       </Box>
     </div>
   );

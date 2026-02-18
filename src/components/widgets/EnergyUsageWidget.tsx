@@ -70,6 +70,13 @@ export default function EnergyUsageWidget() {
                     cornerRadius: 3,
                   },
                 ]}
+                slotProps={{
+                  legend: {
+                    sx: {
+                      color: "var(--text-primary)",
+                    },
+                  },
+                }}
                 width={chartSize}
                 height={chartSize}
               />

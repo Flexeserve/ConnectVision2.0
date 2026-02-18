@@ -9,11 +9,11 @@ const TOTAL_UNITS = 1000;
 const OFFLINE_COUNT = TOTAL_UNITS - CONNECTED_COUNT;
 
 const gaugeSlices = [
-  { id: 0, value: CONNECTED_COUNT, color: "#205ffd", label: "Connected" },
+  { id: 0, value: CONNECTED_COUNT, color: "#d94d14", label: "Connected" },
   {
     id: 1,
     value: OFFLINE_COUNT,
-    color: "#f14734",
+    color: "#adadadff",
     label: "No connection",
   },
 ];
@@ -75,6 +75,13 @@ export default function CloudConnectedWidget() {
                     cornerRadius: 3,
                   },
                 ]}
+                slotProps={{
+                  legend: {
+                    sx: {
+                      color: "var(--text-primary)",
+                    },
+                  },
+                }}
                 width={chartSize}
                 height={chartSize}
               />

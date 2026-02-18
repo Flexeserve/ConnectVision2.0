@@ -9,6 +9,7 @@ import {
   Alert,
 } from "@mui/material";
 import connectLogo from "../assets/connect_flexeserve.svg";
+import connectLogoInversed from "../assets/connect_flexeserve_inversed.svg";
 import viewAllBUsLogo from "../assets/ViewAllBUsLogo.svg";
 import Header from "../components/Header";
 import "./BusinessManagerPage.css";
@@ -21,6 +22,8 @@ import AlarmsWidget from "../components/widgets/AlarmsWidget";
 import GatewayErrorWidget from "../components/widgets/GatewayErrorWidget";
 import CommanderOfflineWidget from "../components/widgets/CommanderOfflineWidget";
 import CloudConnectedWidget from "../components/widgets/CloudConnectedWidget";
+import AlarmSummaryWidget from "../components/widgets/AlarmSummaryWidget";
+import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget";
 import offlineIcon from "../assets/OfflineIcon.svg";
 import warningIcon from "../assets/WarningIcon.svg";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
@@ -36,6 +39,8 @@ const GRID_COLS = 12; // Increased from 6 for finer horizontal positioning
 const GRID_ROW_HEIGHT = 40; // Halved from 80px for finer vertical positioning
 const GRID_MARGIN: [number, number] = [16, 16];
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
+const LAYOUT_VERSION = "v2";
+const LAYOUT_VERSION_KEY = "cv_widget_layout_version";
 const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
 const ENABLE_TOUR = false;
 
@@ -46,6 +51,12 @@ const clampNumber = (value: number | undefined, min: number, max: number) => {
 
 const loadLayoutCookie = (): Layout[] | null => {
   if (typeof document === "undefined") return null;
+  if (typeof window !== "undefined") {
+    const storedVersion = window.localStorage.getItem(LAYOUT_VERSION_KEY);
+    if (storedVersion !== LAYOUT_VERSION) {
+      return null;
+    }
+  }
   const cookies = document.cookie?.split(";").map((c) => c.trim()) ?? [];
   const target = cookies.find((c) => c.startsWith(`${LAYOUT_COOKIE_NAME}=`));
   if (!target) return null;
@@ -66,6 +77,9 @@ const saveLayoutCookie = (layout: Layout[]) => {
   try {
     const encoded = encodeURIComponent(JSON.stringify(layout));
     document.cookie = `${LAYOUT_COOKIE_NAME}=${encoded}; max-age=${LAYOUT_COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LAYOUT_VERSION_KEY, LAYOUT_VERSION);
+    }
   } catch {
     // Ignore storage failures
   }
@@ -78,7 +92,8 @@ const WIDGET_DIMENSIONS: Record<string, Partial<Pick<Layout, "w" | "h">>> = {
   cloud: { h: 8, w: 6 },         // Scaled to maintain visual size with new grid
   alarms: { w: 2, h: 2 },        // 2/12 = 16.7% width (same as 1/6), 2×40px = 80px height (same as 1×80px)
   gateway: { h: 4, w: 4 },       // 4/12 = 33.3% width (same as 2/6), 4×40px = 160px height (same as 2×80px)
-  commander: { h: 4, w: 4 },     // 4/12 = 33.3% width (same as 2/6), 4×40px = 160px height (same as 2×80px)
+  commander: { h: 4, w: 4 },
+  "alarm-summary": { h: 10, w: 12 },     // 4/12 = 33.3% width (same as 2/6), 4×40px = 160px height (same as 2×80px)
 };
 
 export type BURow = {
@@ -152,11 +167,45 @@ export default function BusinessManagerPage({
         element: <CommanderOfflineWidget value={totalOfflineDevices} />,
       },
       { id: "cloud", element: <CloudConnectedWidget /> },
+      { id: "alarm-summary", element: <AlarmSummaryWidget /> },
+      { id: "door-opened", element: <DoorOpenedAlarmsWidget /> },
     ],
     [totalActiveAlarms, totalOfflineDevices],
   );
 
   const [isEditing, setIsEditing] = React.useState(false);
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [isWidgetsScrolled, setIsWidgetsScrolled] = React.useState(false);
+  const [widgetsPanelHeight, setWidgetsPanelHeight] = React.useState<
+    number | undefined
+  >(undefined);
+  const widgetsPanelRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const handleThemeChange = () => {
+      setIsDarkMode(document.body.classList.contains("dark"));
+    };
+    handleThemeChange();
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    if (!widgetsPanelRef.current) return;
+    const panel = widgetsPanelRef.current;
+
+    const updateHeight = () => {
+      const contentHeight = panel.scrollHeight;
+      const nextHeight = Math.ceil(contentHeight * 1.3);
+      setWidgetsPanelHeight(nextHeight);
+    };
+
+    updateHeight();
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(panel);
+    return () => resizeObserver.disconnect();
+  }, [widgetComponents, isEditing]);
 
   // Tour initialization
   const tour = React.useRef(createBusinessManagerTour());
@@ -177,38 +226,20 @@ export default function BusinessManagerPage({
     tour.current.drive();
   }, []);
 
-  const DEFAULT_LAYOUT: Layout[] = React.useMemo(() => {
-    const columnHeights = Array(GRID_COLS).fill(0);
-
-    return widgetComponents.map((widget) => {
-      const { w = 3, h = 3 } = WIDGET_DIMENSIONS[widget.id] ?? {};
-      const clampedWidth = Math.min(Math.max(w, 1), GRID_COLS);
-
-      let bestX = 0;
-      let minHeight = Number.POSITIVE_INFINITY;
-
-      for (let x = 0; x <= GRID_COLS - clampedWidth; x += 1) {
-        const slice = columnHeights.slice(x, x + clampedWidth);
-        const sliceHeight = slice.length ? Math.max(...slice) : 0;
-        if (sliceHeight < minHeight) {
-          minHeight = sliceHeight;
-          bestX = x;
-        }
-      }
-
-      for (let i = bestX; i < bestX + clampedWidth; i += 1) {
-        columnHeights[i] = minHeight + h;
-      }
-
-      return {
-        i: widget.id,
-        x: bestX,
-        y: minHeight,
-        w: clampedWidth,
-        h,
-      };
-    });
-  }, [widgetComponents]);
+  const DEFAULT_LAYOUT: Layout[] = React.useMemo(
+    () => [
+      { i: "fan-life", x: 0, y: 0, w: 6, h: 5 },
+      { i: "energy", x: 4, y: 11, w: 8, h: 4 },
+      { i: "element", x: 0, y: 11, w: 4, h: 7 },
+      { i: "alarms", x: 4, y: 15, w: 4, h: 3 },
+      { i: "gateway", x: 6, y: 0, w: 6, h: 5 },
+      { i: "commander", x: 8, y: 15, w: 4, h: 7 },
+      { i: "cloud", x: 0, y: 18, w: 8, h: 4 },
+      { i: "alarm-summary", x: 0, y: 22, w: 12, h: 6 },
+      { i: "door-opened", x: 0, y: 5, w: 12, h: 6 },
+    ],
+    [],
+  );
 
   const mergeLayoutWithDefaults = React.useCallback(
     (persisted?: Layout[] | null) => {
@@ -257,6 +288,10 @@ export default function BusinessManagerPage({
     saveLayoutCookie(next);
   }, []);
 
+  const handleLogLayout = React.useCallback(() => {
+    console.log("[WidgetLayout]", JSON.stringify(widgetLayout, null, 2));
+  }, [widgetLayout]);
+
   return (
     <div className="business-manager-page">
       <Header onBack={onBack} title="Manager View" />
@@ -271,6 +306,7 @@ export default function BusinessManagerPage({
                 component="img"
                 src={viewAllBUsLogo}
                 alt="View All Markets"
+                className="view-all-logo"
                 sx={{ height: 64 }}
               />
               <Typography
@@ -278,7 +314,7 @@ export default function BusinessManagerPage({
                   fontFamily: "Inter, sans-serif",
                   fontSize: "1.1rem",
                   fontWeight: 600,
-                  color: "#202020",
+                  color: "var(--text-primary)",
                 }}
               >
                 {heading ?? "View All Markets"}
@@ -289,7 +325,7 @@ export default function BusinessManagerPage({
                 <Box
                   key={r.id}
                   className="bu-row"
-                  sx={{ borderLeft: "4px solid #333333" }}
+                  sx={{ borderLeft: "4px solid var(--text-primary)" }}
                   onClick={() => onOpen?.(r.id)}
                   role={onOpen ? "button" : undefined}
                   tabIndex={onOpen ? 0 : -1}
@@ -307,8 +343,8 @@ export default function BusinessManagerPage({
                         variant="body2"
                         sx={{
                           fontFamily: "Inter, sans-serif",
-                          fontWeight: 800,
-                          color: "#202020",
+                          fontWeight: 400,
+                          color: "var(--text-primary)",
                         }}
                       >
                         {r.title}
@@ -319,7 +355,7 @@ export default function BusinessManagerPage({
                           sx={{
                             fontFamily: "Inter, sans-serif",
                             fontWeight: 500,
-                            color: "#5a5a5a",
+                            color: "var(--text-muted)",
                           }}
                         >
                           {r.subtitle}
@@ -343,7 +379,7 @@ export default function BusinessManagerPage({
                           sx={{
                             fontFamily: "Inter, sans-serif",
                             fontWeight: 500,
-                            color: "#000000ff",
+                            color: "var(--text-primary)",
                           }}
                         >
                           {r.alarms ?? 0}
@@ -364,7 +400,7 @@ export default function BusinessManagerPage({
                           sx={{
                             fontFamily: "Inter, sans-serif",
                             fontWeight: 500,
-                            color: "#000000ff",
+                            color: "var(--text-primary)",
                           }}
                         >
                           {r.notices ?? 0}
@@ -413,14 +449,14 @@ export default function BusinessManagerPage({
                   width: { xs: "100%", sm: 360, md: 460 },
                   maxWidth: { xs: "100%", sm: 420, md: 500 },
                   "& .MuiInputBase-root": {
-                    color: "#333333",
-                    backgroundColor: "#ffffff",
+                    color: "var(--text-primary)",
+                    backgroundColor: "var(--panel-bg)",
                     paddingRight: 0,
                     paddingTop: 0,
                     paddingBottom: 0,
                   },
                   "& .MuiInputBase-input::placeholder": {
-                    color: "#a1a1a1ff",
+                    color: "var(--text-muted)",
                     opacity: 1,
                   },
                   "& .MuiOutlinedInput-root": {
@@ -440,10 +476,10 @@ export default function BusinessManagerPage({
                     alignSelf: "stretch",
                   },
                   "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#4a4a4a",
+                    borderColor: "var(--border-strong)",
                   },
                   "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#6a6a6a",
+                    borderColor: "var(--text-primary)",
                   },
                 }}
               />
@@ -451,24 +487,46 @@ export default function BusinessManagerPage({
           </div>
           <Box
             className="widgets-panel widgets-scroll widgets-beacon-target"
+            ref={widgetsPanelRef}
+            onScroll={(event) => {
+              const target = event.currentTarget;
+              setIsWidgetsScrolled(target.scrollTop > 8);
+            }}
             sx={{
-              borderLeft: "1px solid #c0c0c0",
-              height: "calc(100vh - 120px)",
+              borderLeft: "1px solid var(--border-color)",
+              height: widgetsPanelHeight ? `${widgetsPanelHeight}px` : "auto",
+              maxHeight: "calc(100vh - 120px)",
               padding: "20px 16px 48px",
               paddingRight: "40px",
-              color: "#c6c6c6",
+              paddingBottom: "280px",
+              color: "var(--text-muted)",
               boxSizing: "border-box",
               display: "flex",
               flexDirection: "column",
               gap: 2,
               width: "100%",
               overflowY: "auto",
-              background: "#ededee",
+              background: "var(--app-bg)",
               opacity: 0,
               animation: "fadeWidgets 0.9s ease forwards 0.15s",
             }}
           >
-            <Alert severity="info">
+            <div
+              className={`dashboard-edit-fab ${
+                isWidgetsScrolled ? "is-visible" : ""
+              }`}
+            >
+              <button
+                type="button"
+                className="dashboard-edit-button dashboard-edit-button--fab"
+                aria-label="Edit dashboard layout"
+                aria-pressed={isEditing}
+                onClick={() => setIsEditing((prev) => !prev)}
+              >
+                {isEditing ? "✓" : "✎"}
+              </button>
+            </div>
+            <Alert severity="info" variant="outlined" sx={{ mb: 2, color: "var(--text-primary)" }}>
               Data shown here is not sourced from any connected devices.
               Demonstration purposes only.
             </Alert>
@@ -478,7 +536,7 @@ export default function BusinessManagerPage({
                 display: "flex",
                 alignItems: "center",
                 gap: 1.5,
-                color: "#333333",
+                color: "var(--text-primary)",
                 fontFamily: '"Inter", sans-serif',
                 fontSize: "0.95rem",
                 fontWeight: 600,
@@ -493,10 +551,10 @@ export default function BusinessManagerPage({
                 aria-label="Start guided tour"
                 onClick={startTour}
                 style={{
-                  border: "1px solid rgba(0, 0, 0, 0.35)",
+                  border: "1px solid var(--border-strong)",
                   borderRadius: "6px",
-                  background: "#ffffff",
-                  color: "#333333",
+                  background: "var(--panel-bg)",
+                  color: "var(--text-primary)",
                   width: "32px",
                   height: "32px",
                   fontSize: "0.85rem",
@@ -507,12 +565,13 @@ export default function BusinessManagerPage({
                   transition: "background 150ms ease, color 150ms ease",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#333333";
-                  e.currentTarget.style.color = "#ffffff";
+                  e.currentTarget.style.background =
+                    "var(--text-primary)";
+                  e.currentTarget.style.color = "var(--panel-bg)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#ffffff";
-                  e.currentTarget.style.color = "#333333";
+                  e.currentTarget.style.background = "var(--panel-bg)";
+                  e.currentTarget.style.color = "var(--text-primary)";
                 }}
               >
                 <HelpOutlineIcon fontSize="small" />
@@ -525,6 +584,14 @@ export default function BusinessManagerPage({
                 onClick={() => setIsEditing((prev) => !prev)}
               >
                 {isEditing ? "✓" : "✎"}
+              </button>
+              <button
+                type="button"
+                className="dashboard-edit-button"
+                aria-label="Log widget layout"
+                onClick={handleLogLayout}
+              >
+                {`{}`}
               </button>
             </Box>
             <Box
@@ -564,7 +631,11 @@ export default function BusinessManagerPage({
       </div>
       <footer className="page-footer">
         <span>© {new Date().getFullYear()} Flexeserve Connect</span>
-        <img src={connectLogo} alt="Connect by Flexeserve" className="footer-logo" />
+        <img
+          src={isDarkMode ? connectLogoInversed : connectLogo}
+          alt="Connect by Flexeserve"
+          className="footer-logo"
+        />
       </footer>
     </div>
   );

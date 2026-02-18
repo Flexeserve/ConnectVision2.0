@@ -10,7 +10,7 @@ type Props = {
 export default function BackButton({
   onClick,
   ariaLabel = "Back",
-  color = "#333333",
+  color = "var(--header-text)",
 }: Props) {
   return (
     <IconButton

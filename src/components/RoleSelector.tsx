@@ -29,12 +29,9 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
     console.log("RoleSelector: clicked", role);
     if (animating) return;
     setAnimating(role);
-    const delayMs = 600;
     onSelect(role);
-    window.setTimeout(() => {
-      onClose?.();
-      setAnimating(null);
-    }, delayMs);
+    onClose?.();
+    setAnimating(null);
   };
 
   return (
@@ -50,12 +47,12 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
       )}
       <div
         className={`panel left ${animating === "manager" ? "slide-out-right" : ""}`}
-        style={{
-          backgroundImage: `url(${businessManagerImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
       >
+        <div
+          className="panel-bg"
+          style={{ backgroundImage: `url(${businessManagerImage})` }}
+          aria-hidden
+        />
         <div className="panel-content-wrapper">
           <Box
             className="panel-content"
@@ -96,12 +93,12 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
 
       <div
         className={`panel right ${animating === "operator" ? "slide-out-left" : ""}`}
-        style={{
-          backgroundImage: `url(${operatorImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
       >
+        <div
+          className="panel-bg"
+          style={{ backgroundImage: `url(${operatorImage})` }}
+          aria-hidden
+        />
         <div className="panel-content-wrapper">
           <Box
             className="panel-content"
@@ -131,7 +128,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
             <Button
               variant="contained"
               onClick={() => handleClick("operator")}
-              sx={{ backgroundColor: "#d94d14" }}
+              sx={{ backgroundColor: "#d94d14", fontWeight: "bold" }}
               className="panel-cta-button"
             >
               View Operator
