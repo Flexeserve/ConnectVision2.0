@@ -23,6 +23,7 @@ type StoreViewPageProps = {
 };
 
 const STORE_BEACON_OFFSETS_KEY = "cv_store_beacon_offsets";
+const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
 
 const storeViewTourSteps: DriveStep[] = [
   {
@@ -147,6 +148,10 @@ export default function StoreViewPage({
     [title],
   );
   const [isBeaconDevMode, setIsBeaconDevMode] = React.useState(false);
+  const [isBeaconsHidden, setIsBeaconsHidden] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) === "1";
+  });
   const [beaconOffsets, setBeaconOffsets] = React.useState<
     Record<string, BeaconOffset>
   >(() => {
@@ -170,6 +175,14 @@ export default function StoreViewPage({
   }, [beaconOffsets]);
 
   React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("beacons-hidden", isBeaconsHidden);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BEACONS_HIDDEN_KEY, isBeaconsHidden ? "1" : "0");
+    }
+  }, [isBeaconsHidden]);
+
+  React.useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "b") {
         event.preventDefault();
@@ -178,6 +191,10 @@ export default function StoreViewPage({
       if (event.ctrlKey && event.shiftKey && event.key === "0") {
         event.preventDefault();
         setBeaconOffsets({});
+      }
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "h") {
+        event.preventDefault();
+        setIsBeaconsHidden((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleShortcut);
@@ -223,7 +240,7 @@ export default function StoreViewPage({
             handleBeaconOffsetChange("store-container", next)
           }
         />
-        <div className="greetings">Good Morning</div>
+        <div className="greetings">Good morning</div>
 
         <div className="store-view-main">
           <div className="store-view-left">

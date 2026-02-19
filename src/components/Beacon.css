@@ -75,6 +75,10 @@
   animation: beaconSpin 1.8s linear infinite;
 }
 
+.beacons-hidden .beacon-button {
+  display: none !important;
+}
+
 
 @keyframes beaconPulse {
   0% {

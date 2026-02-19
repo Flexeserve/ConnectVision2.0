@@ -1242,32 +1242,14 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
               </div>
             )}
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              marginTop: "0.75rem",
-            }}
-          >
-            <button
-              type="button"
-              style={{
-                border: "1px solid #333",
-                background: cameraControlsActive ? "#333" : "#fff",
-                color: cameraControlsActive ? "#fff" : "#333",
-                borderRadius: "999px",
-                padding: "0.35rem 0.9rem",
-                fontSize: "0.85rem",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onClick={() => setCameraControlsEnabled((prev) => !prev)}
-            >
-              {cameraControlsActive ? "Disable" : "Enable"} Camera Controls
-            </button>
-            <span style={{ fontSize: "0.8rem", color: "#555" }}>(Shift+C)</span>
-          </div>
+          {debugAvailable && (
+            <div className="operator-camera-toggle">
+              <span className="operator-camera-toggle-label">
+                Camera controls: {cameraControlsActive ? "enabled" : "disabled"}
+              </span>
+              <span className="operator-camera-toggle-hint">(Shift+C)</span>
+            </div>
+          )}
           {debugActive && (
             <div
               style={{

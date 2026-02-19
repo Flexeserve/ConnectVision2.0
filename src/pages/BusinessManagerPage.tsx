@@ -31,10 +31,7 @@ import Beacon, { type BeaconOffset } from "../components/Beacon";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import {
-  createBusinessManagerTour,
-  createBusinessManagerBeaconTour,
-} from "../utils/businessManagerTour";
+import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -47,9 +44,9 @@ const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
 const LAYOUT_VERSION = "v2";
 const LAYOUT_VERSION_KEY = "cv_widget_layout_version";
 const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
-const ENABLE_TOUR = false;
 const LAYOUT_SYNC_EVENT = "cv_widget_layout_updated";
 const BEACON_OFFSETS_KEY = "cv_beacon_offsets";
+const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
 
 const clampNumber = (value: number | undefined, min: number, max: number) => {
   if (typeof value !== "number" || Number.isNaN(value)) return undefined;
@@ -102,20 +99,6 @@ const saveLayoutCookie = (layout: Layout[]) => {
     // Ignore storage failures
   }
 };
-
-const WIDGET_DIMENSIONS: Record<string, Partial<Pick<Layout, "w" | "h">>> = {
-  "fan-life": { h: 8, w: 6 }, // 6/12 = 50% width (same as 3/6), 8x40px = 320px height (same as 4x80px)
-  energy: { h: 8, w: 6 }, // Scaled to maintain visual size with new grid
-  element: { h: 8, w: 6 }, // Scaled to maintain visual size with new grid
-  cloud: { h: 8, w: 6 }, // Scaled to maintain visual size with new grid
-  alarms: { w: 2, h: 2 }, // 2/12 = 16.7% width (same as 1/6), 2x40px = 80px height (same as 1x80px)
-  gateway: { h: 4, w: 4 }, // 4/12 = 33.3% width (same as 2/6), 4x40px = 160px height (same as 2x80px)
-  commander: { h: 4, w: 4 },
-  "alarm-summary": { h: 10, w: 12 }, // 4/12 = 33.3% width (same as 2/6), 4x40px = 160px height (same as 2x80px)
-  "energy-cost": { h: 6, w: 12 },
-  "door-opened": { h: 6, w: 12 },
-};
-
 
 export type BURow = {
   id: string;
@@ -199,6 +182,10 @@ export default function BusinessManagerPage({
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [isWidgetsScrolled, setIsWidgetsScrolled] = React.useState(false);
   const [isBeaconDevMode, setIsBeaconDevMode] = React.useState(false);
+  const [isBeaconsHidden, setIsBeaconsHidden] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) === "1";
+  });
   const [beaconOffsets, setBeaconOffsets] = React.useState<Record<string, BeaconOffset>>(() => {
     if (typeof window === "undefined") return {};
     try {
@@ -222,9 +209,6 @@ export default function BusinessManagerPage({
     return () => observer.disconnect();
   }, []);
 
-
-  // Tour initialization
-  const tour = React.useRef(createBusinessManagerTour());
   const startTourFrom = React.useCallback((stepIndex: number) => {
     const beaconTour = createBusinessManagerBeaconTour(stepIndex);
     if (!beaconTour) return;
@@ -237,6 +221,14 @@ export default function BusinessManagerPage({
   }, [beaconOffsets]);
 
   React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("beacons-hidden", isBeaconsHidden);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BEACONS_HIDDEN_KEY, isBeaconsHidden ? "1" : "0");
+    }
+  }, [isBeaconsHidden]);
+
+  React.useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "b") {
         event.preventDefault();
@@ -246,22 +238,14 @@ export default function BusinessManagerPage({
         event.preventDefault();
         setBeaconOffsets({});
       }
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "h") {
+        event.preventDefault();
+        setIsBeaconsHidden((prev) => !prev);
+      }
     };
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
-
-  // Auto-start tour every time (kiosk demo mode)
-  React.useEffect(() => {
-    if (!ENABLE_TOUR) return;
-    const timer = setTimeout(() => {
-      tour.current.drive();
-    }, 1500); // Delay to let the page load completely
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Manual tour start function
 
   const DEFAULT_LAYOUT: Layout[] = React.useMemo(
     () => [
@@ -431,7 +415,7 @@ export default function BusinessManagerPage({
                 >
                   <Box className="bu-row-content">
                     <Box
-                      className={`bu-row-text ${index === 0 ? "beacon-host beacon-host--bu-text region-alerts-text-target" : ""}`}
+                      className={`bu-row-text ${index === 0 ? "beacon-host beacon-host--bu-text" : ""}`}
                     >
                       {index === 0 ? (
                         <Beacon
@@ -721,7 +705,7 @@ export default function BusinessManagerPage({
                 isDraggable={isEditing}
                 isResizable={isEditing}
                 draggableHandle=".widget-drag-handle"
-                compactType={null}
+                compactType="vertical"
                 measureBeforeMount={false}
                 autoSize
               >

@@ -51,7 +51,7 @@ export default function EnergyCostWidget() {
     () => [
       {
         dataKey: "day",
-        scaleType: "band",
+        scaleType: "band" as const,
         label: "Time (days)",
       },
     ],
@@ -71,14 +71,14 @@ export default function EnergyCostWidget() {
         dataKey: "current",
         label: "This week",
         color: "#d94d14",
-        curve: "monotoneX",
+        curve: "monotoneX" as const,
         showMark: false,
       },
       {
         dataKey: "last",
         label: "Last week",
         color: "#7a7a7a",
-        curve: "monotoneX",
+        curve: "monotoneX" as const,
         showMark: false,
       },
     ],

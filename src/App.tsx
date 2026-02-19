@@ -7,6 +7,7 @@ import RoleSelector from "./components/RoleSelector";
 import BusinessManagerPage, { type BURow } from "./pages/BusinessManagerPage";
 import OperatorPage from "./pages/OperatorPage";
 import StoreViewPage from "./pages/StoreViewPage";
+import DevShortcutsHelp from "./components/DevShortcutsHelp";
 import heroImage from "./assets/HeroImage.png";
 import heroFanIcon from "./assets/FanIcon.svg";
 import businessManagerImage from "./assets/BusinessManager.jpg";
@@ -399,6 +400,7 @@ export default function App() {
   return (
     <div className="app-root">
       <HeroSlide visible={heroVisible} onClose={handleGetStarted} />
+      <DevShortcutsHelp />
 
       {selectorVisible && !selectedRole && (
         <RoleSelector

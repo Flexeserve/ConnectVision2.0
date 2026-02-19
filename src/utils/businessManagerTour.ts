@@ -1,7 +1,6 @@
 import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 
-// Tour configuration for Business Manager Page
 export const businessManagerTourSteps: DriveStep[] = [
   {
     element: ".bm-container-beacon",
@@ -27,7 +26,7 @@ export const businessManagerTourSteps: DriveStep[] = [
     popover: {
       title: "Settings",
       description:
-        "Customise your settings here such as Initial Setup, Toggle Dark Mode & Logout",
+        "Customise your settings here such as Initial Setup, Toggle Dark Mode and Logout",
       side: "bottom",
       align: "end",
     },
@@ -65,8 +64,7 @@ export const businessManagerTourSteps: DriveStep[] = [
     element: ".search-beacon-target",
     popover: {
       title: "Search",
-      description:
-        "Find a particular location via store name.",
+      description: "Find a particular location via store name.",
       side: "bottom",
       align: "start",
     },
@@ -102,36 +100,6 @@ export const businessManagerTourSteps: DriveStep[] = [
     },
   },
 ];
-
-// Create and configure the driver instance
-export const createBusinessManagerTour = () => {
-  const driverObj = driver({
-    showProgress: true,
-    steps: businessManagerTourSteps,
-    nextBtnText: "Next →",
-    prevBtnText: "← Previous",
-    doneBtnText: "Finish",
-    progressText: "{{current}} of {{total}}",
-    showButtons: ["next", "previous", "close"],
-
-    // Styling
-    popoverClass: "business-manager-tour-popover",
-
-    // Callbacks
-    onDestroyStarted: () => {
-      // No localStorage saving for kiosk demo mode
-      driverObj.destroy();
-    },
-
-    // Smooth scrolling
-    smoothScroll: true,
-
-    // Animation duration
-    animate: true,
-  });
-
-  return driverObj;
-};
 
 export const createBusinessManagerBeaconTour = (stepIndex: number) => {
   const step = businessManagerTourSteps[stepIndex];

@@ -135,6 +135,33 @@
   z-index: 1;
 }
 
+.operator-camera-toggle {
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.1;
+  transition: opacity 180ms ease;
+}
+
+.operator-camera-toggle:hover {
+  opacity: 0.75;
+}
+
+.operator-camera-toggle-label {
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.operator-camera-toggle-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .operator-canvas-wrapper {
   width: 100%;
   height: 100%;
