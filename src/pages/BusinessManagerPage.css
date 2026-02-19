@@ -26,8 +26,8 @@
 .greetings {
   flex: 0 0 100%;
   font-size: 45px;
-  font-weight: 600;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 800;
+  font-family: "Inter", "Inter var", sans-serif;
   color: #d94d14;
   text-align: left;
   padding: 0 clamp(1.5rem, 4vw, 3rem);
