@@ -17,7 +17,7 @@ import connectLogo from "./assets/connect_logo.svg";
 
 const SLIDE_MS = 600;
 const INACTIVITY_MS = 30_000;
-const ENABLE_INACTIVITY_RETURN = false;
+const ENABLE_INACTIVITY_RETURN = true;
 type StoreNode = {
   id: string;
   title: string;
@@ -250,6 +250,13 @@ export default function App() {
     "left" | "right" | null
   >(null);
   const [pageEnter, setPageEnter] = React.useState(false);
+  const [showIntroOverlay, setShowIntroOverlay] = React.useState(false);
+  const [showDockedHelper, setShowDockedHelper] = React.useState(false);
+  const introTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showHelperTip, setShowHelperTip] = React.useState(false);
+  const helperTipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   React.useEffect(() => {
     const preload = (src: string) => {
@@ -274,6 +281,54 @@ export default function App() {
     const raf = requestAnimationFrame(() => setPageEnter(true));
     return () => cancelAnimationFrame(raf);
   }, [selectedRole]);
+
+  React.useEffect(() => {
+    if (introTimerRef.current) {
+      clearTimeout(introTimerRef.current);
+      introTimerRef.current = null;
+    }
+    if (helperTipTimerRef.current) {
+      clearTimeout(helperTipTimerRef.current);
+      helperTipTimerRef.current = null;
+    }
+    setShowHelperTip(false);
+
+    if (!selectedRole || selectedRole !== "manager") {
+      setShowIntroOverlay(false);
+      setShowDockedHelper(false);
+      return;
+    }
+
+    setShowIntroOverlay(true);
+    setShowDockedHelper(false);
+    introTimerRef.current = setTimeout(() => {
+      setShowIntroOverlay(false);
+      setShowDockedHelper(true);
+      introTimerRef.current = null;
+    }, 2100);
+
+    return () => {
+      if (introTimerRef.current) {
+        clearTimeout(introTimerRef.current);
+        introTimerRef.current = null;
+      }
+      if (helperTipTimerRef.current) {
+        clearTimeout(helperTipTimerRef.current);
+        helperTipTimerRef.current = null;
+      }
+    };
+  }, [selectedRole]);
+
+  const handleHelperQuestionClick = React.useCallback(() => {
+    if (helperTipTimerRef.current) {
+      clearTimeout(helperTipTimerRef.current);
+    }
+    setShowHelperTip(true);
+    helperTipTimerRef.current = setTimeout(() => {
+      setShowHelperTip(false);
+      helperTipTimerRef.current = null;
+    }, 2400);
+  }, []);
   // Reveal selector after hero slide completes
   const handleGetStarted = () => {
     //console.log("Hero: Get started pressed — hiding hero");
@@ -465,8 +520,39 @@ export default function App() {
         <div
           className={`page-slide ${enterDirection === "right" ? "from-right" : ""} ${pageEnter ? "enter" : ""}`}
         >
-          <OperatorPage onBack={handleBackToSelector} />
+          <OperatorPage onBack={handleBackToSelector} deferSceneLoadMs={650} />
         </div>
+      )}
+
+      {selectedRole === "manager" && (showIntroOverlay || showDockedHelper) && (
+        <>
+          {showIntroOverlay && <div className="connect-helper-backdrop" aria-hidden />}
+          <div
+            className={`connect-helper ${showIntroOverlay ? "intro" : "docked"}`}
+            aria-live="polite"
+          >
+            {showIntroOverlay && (
+              <p className="connect-helper-text">
+                Click the beacons to learn more about Connect
+              </p>
+            )}
+            {showDockedHelper && showHelperTip && (
+              <div className="connect-helper-tip" role="status">
+                Click the beacons to learn more about Connect
+              </div>
+            )}
+            <button
+              type="button"
+              className="connect-helper-trigger"
+              onClick={showDockedHelper ? handleHelperQuestionClick : undefined}
+              aria-label="Help"
+            >
+              <span className="connect-helper-icon-wrap" aria-hidden>
+                <img src={heroFanIcon} alt="" className="connect-helper-icon" />
+              </span>
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

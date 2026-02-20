@@ -73,6 +73,7 @@ export default function HeroSlide({ visible, onClose }: Props) {
                   onClick={onClose}
                   ref={primaryRef}
                   aria-label="Get started"
+                  className="hero-get-connected"
                   sx={{
                     px: 2,
                     py: 1,

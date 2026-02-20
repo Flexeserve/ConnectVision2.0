@@ -157,6 +157,7 @@ const zoneFlowLayout: ZoneFlowLayout[] = [
 type OperatorPageProps = {
   onBack?: () => void;
   title?: string;
+  deferSceneLoadMs?: number;
 };
 
 function useAdoptedCamera(gltf?: GLTF | null) {
@@ -703,13 +704,28 @@ const FanFlowField = memo(function FanFlowField({
   );
 });
 
-export default function OperatorPage({ onBack, title }: OperatorPageProps) {
+export default function OperatorPage({
+  onBack,
+  title,
+  deferSceneLoadMs = 0,
+}: OperatorPageProps) {
+  const [mountScene, setMountScene] = useState(deferSceneLoadMs <= 0);
   const [temps, setTemps] = useState(["75", "75", "75", "75"]);
   const [unit, setUnit] = useState<"C" | "F">("C");
   const [lightAnchors, setLightAnchors] = useState<LightAnchors>({});
   const [fanEmitters, setFanEmitters] = useState<FanEmitters>({});
   const [sceneReady, setSceneReady] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
+  useEffect(() => {
+    if (deferSceneLoadMs <= 0) {
+      setMountScene(true);
+      return;
+    }
+    setMountScene(false);
+    const timer = setTimeout(() => setMountScene(true), deferSceneLoadMs);
+    return () => clearTimeout(timer);
+  }, [deferSceneLoadMs]);
+
   const [isDarkMode, setIsDarkMode] = useState(false);
   const scratchVectors = useMemo(
     () => ({
@@ -1020,10 +1036,11 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
 
         <div className="operator-right">
           <div className="operator-cube">
-            <div
-              className={`operator-canvas-wrapper ${sceneReady ? "is-ready" : ""}`}
-            >
-              <Canvas
+            {mountScene ? (
+              <div
+                className={`operator-canvas-wrapper ${sceneReady ? "is-ready" : ""}`}
+              >
+                <Canvas
                 camera={{ position: [0, 1.4, 6], fov: 30 }}
                 shadows
                 dpr={[0.8, 1.25]}
@@ -1225,9 +1242,12 @@ export default function OperatorPage({ onBack, title }: OperatorPageProps) {
                     },
                   )}
                 </Suspense>
-              </Canvas>
-            </div>
-            {showLoader && (
+                </Canvas>
+              </div>
+            ) : (
+              <div className="operator-canvas-placeholder" />
+            )}
+            {mountScene && showLoader && (
               <div
                 className={`operator-loader-overlay ${sceneReady ? "fade-out" : ""}`}
                 aria-live="polite"

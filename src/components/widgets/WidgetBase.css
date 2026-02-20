@@ -51,6 +51,7 @@
   display: flex;
   align-items: center;
   gap: var(--widget-gap);
+  font-family: "Inter", "Inter var", sans-serif;
   text-transform: uppercase;
   letter-spacing: var(--widget-title-letter-spacing);
   font-size: clamp(10px, 4cqw, var(--widget-title-size));  /* Scales with container width */
@@ -76,6 +77,7 @@
 
 .widget-value {
   margin-top: var(--widget-gap);
+  font-family: "Inter", "Inter var", sans-serif;
   font-size: 3rem;
   font-weight: 800;
   color: var(--widget-text-primary);

@@ -117,13 +117,21 @@ export default function Header({ onBack, title }: Props) {
               <Typography
                 component="span"
                 aria-hidden
-                sx={{ fontWeight: 600, color: "var(--header-text)" }}
+                sx={{
+                  fontFamily: '"Inter", "Inter var", sans-serif',
+                  fontWeight: 600,
+                  color: "var(--header-text)",
+                }}
               >
                 |
               </Typography>
               <Typography
                 variant="subtitle1"
-                sx={{ fontWeight: 600, color: "var(--header-text)" }}
+                sx={{
+                  fontFamily: '"Inter", "Inter var", sans-serif',
+                  fontWeight: 600,
+                  color: "var(--header-text)",
+                }}
               >
                 {title}
               </Typography>

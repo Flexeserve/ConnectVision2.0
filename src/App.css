@@ -61,3 +61,111 @@
   opacity: 1;
   pointer-events: auto;
 }
+
+.connect-helper-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1390;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.connect-helper {
+  position: fixed;
+  z-index: 1400;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  transition:
+    left 520ms ease,
+    bottom 520ms ease,
+    top 520ms ease,
+    transform 520ms ease,
+    opacity 300ms ease;
+}
+
+.connect-helper.intro {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.connect-helper.docked {
+  left: 16px;
+  bottom: 96px;
+  transform: translate(0, 0) scale(0.42);
+  transform-origin: bottom left;
+}
+
+.connect-helper-text {
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #202020;
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: clamp(24px, 2.4vw, 38px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.connect-helper-question {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 800;
+  color: #202020;
+}
+
+.connect-helper-trigger {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.connect-helper-tip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  background: rgba(255, 255, 255, 0.96);
+  color: #202020;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  width: max-content;
+  max-width: 460px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+.connect-helper-icon-wrap {
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: none;
+}
+
+.connect-helper-icon {
+  width: 68px;
+  height: 68px;
+  animation: helperSpin 2.1s linear infinite;
+}
+
+@keyframes helperSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

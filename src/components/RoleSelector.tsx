@@ -75,6 +75,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
                 maxWidth: 420,
                 mx: "auto",
                 color: "#fff",
+                fontFamily: '"Inter", "Inter var", sans-serif',
               }}
             >
               Remote management of all connected devices across the business.
@@ -121,6 +122,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
                 maxWidth: 420,
                 mx: "auto",
                 color: "#fff",
+                fontFamily: '"Inter", "Inter var", sans-serif',
               }}
             >
               On-site interaction with connected devices within the parameters set-out by the business manager.
