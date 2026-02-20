@@ -3,7 +3,7 @@ import React from "react";
 import "./HeroSlide.css";
 import { Box, Button } from "@mui/material";
 
-import heroProductImage from "../assets/HeroImage.png";
+import heroProductImage from "../assets/HeroImage.webp";
 import heroFanIcon from "../assets/Flexeserve fan icon watermark light grey.svg";
 import flexeserveSaffronIcon from "../assets/FlexeserveSaffron.svg";
 

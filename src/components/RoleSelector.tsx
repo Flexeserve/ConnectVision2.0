@@ -3,8 +3,8 @@ import React from "react";
 import "./RoleSelector.css";
 import { Box, Typography, Button } from "@mui/material";
 import BackButton from "./BackButton";
-import businessManagerImage from "../assets/BusinessManager.jpg";
-import operatorImage from "../assets/Operator.jpg";
+import businessManagerImage from "../assets/BusinessManager.webp";
+import operatorImage from "../assets/Operator.webp";
 
 export type Role = "manager" | "operator";
 

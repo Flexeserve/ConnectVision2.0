@@ -8,10 +8,10 @@ import BusinessManagerPage, { type BURow } from "./pages/BusinessManagerPage";
 import OperatorPage from "./pages/OperatorPage";
 import StoreViewPage from "./pages/StoreViewPage";
 import DevShortcutsHelp from "./components/DevShortcutsHelp";
-import heroImage from "./assets/HeroImage.png";
+import heroImage from "./assets/HeroImage.webp";
 import heroFanIcon from "./assets/FanIcon.svg";
-import businessManagerImage from "./assets/BusinessManager.jpg";
-import operatorImage from "./assets/Operator.jpg";
+import businessManagerImage from "./assets/BusinessManager.webp";
+import operatorImage from "./assets/Operator.webp";
 import operatorTabletImage from "./assets/OperatorView.svg";
 import connectLogo from "./assets/connect_logo.svg";
 
