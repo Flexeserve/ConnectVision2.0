@@ -20,6 +20,8 @@ const INACTIVITY_MS = 30_000;
 const ENABLE_INACTIVITY_RETURN = false;
 const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
 const BEACONS_VISIBILITY_EVENT = "cv_beacons_visibility_updated";
+const HEADER_BRAND_KEY = "cv_header_brand";
+const HEADER_BRAND_EVENT = "cv_header_brand_updated";
 type StoreNode = {
   id: string;
   title: string;
@@ -37,6 +39,12 @@ type RegionNode = {
   id: string;
   title: string;
   subRegions: SubRegionNode[];
+};
+
+type HebRegionNode = {
+  id: string;
+  title: string;
+  stores: StoreNode[];
 };
 
 const randomStoreCount = () => Math.floor(Math.random() * 5) + 1;
@@ -74,8 +82,12 @@ const STORE_NAME_POOL = [
   "Millstone",
 ];
 
-const buildStores = (prefix: string, count: number): StoreNode[] => {
-  const pool = [...STORE_NAME_POOL];
+const buildStores = (
+  prefix: string,
+  count: number,
+  names: string[] = STORE_NAME_POOL,
+): StoreNode[] => {
+  const pool = [...names];
   return Array.from({ length: count }).map((_, index) => {
     const name =
       pool.splice(Math.floor(Math.random() * pool.length), 1)[0] ??
@@ -87,6 +99,41 @@ const buildStores = (prefix: string, count: number): StoreNode[] => {
       notices: Math.floor(Math.random() * 10),
     };
   });
+};
+
+const TEXAS_STORE_POOLS: Record<string, string[]> = {
+  "san-antonio": [
+    "Alamo Heights",
+    "Stone Oak",
+    "Southtown",
+    "Medical Center",
+    "Pearl District",
+    "Helotes",
+  ],
+  houston: [
+    "The Heights",
+    "Midtown",
+    "Montrose",
+    "River Oaks",
+    "Memorial",
+    "Westchase",
+  ],
+  dallas: [
+    "Deep Ellum",
+    "Uptown",
+    "Bishop Arts",
+    "Lakewood",
+    "Preston Hollow",
+    "Oak Lawn",
+  ],
+  austin: [
+    "South Congress",
+    "Domain Northside",
+    "Mueller",
+    "East Austin",
+    "Rainey Street",
+    "Circle C",
+  ],
 };
 
 const REGIONS: RegionNode[] = [
@@ -161,6 +208,29 @@ const REGIONS: RegionNode[] = [
   },
 ];
 
+const HEB_REGIONS: HebRegionNode[] = [
+  {
+    id: "san-antonio",
+    title: "San Antonio",
+    stores: buildStores("San Antonio", 5, TEXAS_STORE_POOLS["san-antonio"]),
+  },
+  {
+    id: "houston",
+    title: "Houston",
+    stores: buildStores("Houston", 5, TEXAS_STORE_POOLS.houston),
+  },
+  {
+    id: "dallas",
+    title: "Dallas",
+    stores: buildStores("Dallas", 5, TEXAS_STORE_POOLS.dallas),
+  },
+  {
+    id: "austin",
+    title: "Austin",
+    stores: buildStores("Austin", 5, TEXAS_STORE_POOLS.austin),
+  },
+];
+
 const sumStoreStats = (stores: StoreNode[]) =>
   stores.reduce(
     (totals, store) => {
@@ -232,6 +302,46 @@ const STORE_TITLE_BY_ID = REGIONS.flatMap((region) =>
   return acc;
 }, {});
 
+const HEB_REGION_ROWS: BURow[] = HEB_REGIONS.map((region) => {
+  const totals = sumStoreStats(region.stores);
+  return {
+    id: region.id,
+    title: region.title,
+    subtitle: `${region.stores.length} Stores`,
+    alarms: totals.alarms,
+    notices: totals.notices,
+  };
+});
+
+const HEB_REGION_TITLE_BY_ID = HEB_REGIONS.reduce<Record<string, string>>(
+  (acc, region) => {
+    acc[region.id] = region.title;
+    return acc;
+  },
+  {},
+);
+
+const HEB_STORE_ROWS_BY_REGION = HEB_REGIONS.reduce<Record<string, BURow[]>>(
+  (acc, region) => {
+    acc[region.id] = region.stores.map((store) => ({
+      id: store.id,
+      title: store.title,
+      subtitle: undefined,
+      alarms: store.alarms,
+      notices: store.notices,
+    }));
+    return acc;
+  },
+  {},
+);
+
+const HEB_STORE_TITLE_BY_ID = HEB_REGIONS.flatMap((region) => region.stores).reduce<
+  Record<string, string>
+>((acc, store) => {
+  acc[store.id] = store.title;
+  return acc;
+}, {});
+
 export default function App() {
   const [heroVisible, setHeroVisible] = React.useState(true);
   const [selectorVisible, setSelectorVisible] = React.useState(false);
@@ -256,6 +366,10 @@ export default function App() {
   const [showDockedHelper, setShowDockedHelper] = React.useState(false);
   const introTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showHelperTip, setShowHelperTip] = React.useState(false);
+  const [isHebMode, setIsHebMode] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(HEADER_BRAND_KEY) === "heb";
+  });
   const [areBeaconsEnabled, setAreBeaconsEnabled] = React.useState(() => {
     if (typeof window === "undefined") return true;
     return window.localStorage.getItem(BEACONS_HIDDEN_KEY) !== "1";
@@ -263,6 +377,20 @@ export default function App() {
   const helperTipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+
+  React.useEffect(() => {
+    const syncHeaderBrand = () => {
+      if (typeof window === "undefined") return;
+      setIsHebMode(window.localStorage.getItem(HEADER_BRAND_KEY) === "heb");
+    };
+    syncHeaderBrand();
+    window.addEventListener("storage", syncHeaderBrand);
+    window.addEventListener(HEADER_BRAND_EVENT, syncHeaderBrand);
+    return () => {
+      window.removeEventListener("storage", syncHeaderBrand);
+      window.removeEventListener(HEADER_BRAND_EVENT, syncHeaderBrand);
+    };
+  }, []);
 
   React.useEffect(() => {
     const preload = (src: string) => {
@@ -388,6 +516,16 @@ export default function App() {
   };
 
   const handleOpenRegion = (id: string) => {
+    if (isHebMode) {
+      setSelectedRegionId(null);
+      setSelectedSubRegionId(id);
+      setSelectedStoreId(null);
+      setRegionLayerEnter(false);
+      setStoreLayerEnter(false);
+      setSubRegionLayerEnter(false);
+      requestAnimationFrame(() => setSubRegionLayerEnter(true));
+      return;
+    }
     setSelectedRegionId(id);
     setSelectedSubRegionId(null);
     setSelectedStoreId(null);
@@ -419,6 +557,15 @@ export default function App() {
   };
 
   const handleBackToRegion = () => {
+    if (isHebMode) {
+      setSubRegionLayerEnter(false);
+      setStoreLayerEnter(false);
+      setTimeout(() => {
+        setSelectedStoreId(null);
+        setSelectedSubRegionId(null);
+      }, SLIDE_MS);
+      return;
+    }
     setSubRegionLayerEnter(false);
     setStoreLayerEnter(false);
     setTimeout(() => {
@@ -497,10 +644,10 @@ export default function App() {
         >
           <BusinessManagerPage
             onBack={handleBackToSelector}
-            rows={REGION_ROWS}
+            rows={isHebMode ? HEB_REGION_ROWS : REGION_ROWS}
             onOpen={handleOpenRegion}
           />
-          {selectedRegionId && (
+          {!isHebMode && selectedRegionId && (
             <div
               className={`subpage-slide from-right ${regionLayerEnter ? "enter" : ""}`}
             >
@@ -517,9 +664,17 @@ export default function App() {
               className={`subpage-slide from-right ${subRegionLayerEnter ? "enter" : ""}`}
             >
               <BusinessManagerPage
-                onBack={handleBackToRegion}
-                heading={SUB_REGION_TITLE_BY_ID[selectedSubRegionId] ?? "View All Stores"}
-                rows={STORE_ROWS_BY_SUB_REGION[selectedSubRegionId] ?? []}
+                onBack={isHebMode ? handleBackToBusinessManager : handleBackToRegion}
+                heading={
+                  isHebMode
+                    ? HEB_REGION_TITLE_BY_ID[selectedSubRegionId] ?? "View All Stores"
+                    : SUB_REGION_TITLE_BY_ID[selectedSubRegionId] ?? "View All Stores"
+                }
+                rows={
+                  isHebMode
+                    ? HEB_STORE_ROWS_BY_REGION[selectedSubRegionId] ?? []
+                    : STORE_ROWS_BY_SUB_REGION[selectedSubRegionId] ?? []
+                }
                 onOpen={handleOpenStore}
               />
             </div>
@@ -530,7 +685,11 @@ export default function App() {
             >
               <StoreViewPage
                 onBack={handleBackToSubRegion}
-                title={STORE_TITLE_BY_ID[selectedStoreId] ?? "Store View"}
+                title={
+                  (isHebMode
+                    ? HEB_STORE_TITLE_BY_ID[selectedStoreId]
+                    : STORE_TITLE_BY_ID[selectedStoreId]) ?? "Store View"
+                }
               />
             </div>
           )}

@@ -25,8 +25,7 @@ import CommanderOfflineWidget from "../components/widgets/CommanderOfflineWidget
 import CloudConnectedWidget from "../components/widgets/CloudConnectedWidget";
 import AlarmSummaryWidget from "../components/widgets/AlarmSummaryWidget";
 import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget";
-import offlineIcon from "../assets/OfflineIcon.svg";
-import warningIcon from "../assets/WarningIcon.svg";
+import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
@@ -476,73 +475,13 @@ export default function BusinessManagerPage({
                       ) : null}
                     </Box>
 
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      className={index === 0 ? "region-alerts-stack-target" : undefined}
-                    >
-                      <div
-                        className={`icon-border ${r.id === "east" ? "offline-beacon-target beacon-host beacon-host--icon" : ""}`}
-                      >
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <div className="icon-border">
                         <img
-                          src={offlineIcon}
-                          alt=""
+                          src={onlineStatusIcon}
+                          alt="Online status"
                           className="offline-icon"
-                          aria-hidden
                         />
-                        <span className="icon-separator" aria-hidden />
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            fontFamily: "Inter, sans-serif",
-                            fontWeight: 500,
-                            color: "var(--text-primary)",
-                          }}
-                        >
-                          {r.alarms ?? 0}
-                        </Typography>
-                        {r.id === "east" ? (
-                          <Beacon
-                            label="Offline count tour"
-                            beaconId="offline"
-                            onClick={() => startTourFrom(4)}
-                            devMode={isBeaconDevMode}
-                            offset={beaconOffsets.offline}
-                            onOffsetChange={(next) => handleBeaconOffsetChange("offline", next)}
-                          />
-                        ) : null}
-                      </div>
-                      <div
-                        className={`icon-border ${r.id === "east" ? "alarms-beacon-target beacon-host beacon-host--icon" : ""}`}
-                      >
-                        <img
-                          src={warningIcon}
-                          alt=""
-                          className="warning-icon"
-                          aria-hidden
-                        />
-                        <span className="icon-separator" aria-hidden />
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            fontFamily: "Inter, sans-serif",
-                            fontWeight: 500,
-                            color: "var(--text-primary)",
-                          }}
-                        >
-                          {r.notices ?? 0}
-                        </Typography>
-                        {r.id === "east" ? (
-                          <Beacon
-                            label="Active alarms tour"
-                            beaconId="alarms"
-                            onClick={() => startTourFrom(5)}
-                            devMode={isBeaconDevMode}
-                            offset={beaconOffsets.alarms}
-                            onOffsetChange={(next) => handleBeaconOffsetChange("alarms", next)}
-                          />
-                        ) : null}
                       </div>
                     </Stack>
                   </Box>
