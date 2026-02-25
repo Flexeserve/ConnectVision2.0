@@ -80,7 +80,7 @@ export default function DoorOpenedAlarmsWidget() {
   return (
     <div ref={widgetRef} className="widget-card widget-door-opened">
       <div className="widget-title widget-title-row">
-        <span>Door Opened Alarms</span>
+        <span>Temperature</span>
         <select
           className="alarm-range-select"
           value={range}
