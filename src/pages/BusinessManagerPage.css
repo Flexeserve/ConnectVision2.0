@@ -6,7 +6,7 @@
   background-color: var(--app-bg);
   color: var(--text-primary);
   flex: 1;
-  padding: 0 clamp(4rem, 12vw, 12rem);
+  padding: 0;
 }
 
 .app-left {
@@ -14,11 +14,11 @@
   flex-direction: column; /* Stack items vertically */
   padding-top: calc(20vh - 100px); /* Center items vertically */
   align-items: center; /* Optional: center horizontally */
-  flex: 0 0 60%;
+  flex: 0 0 30%;
   min-width: 0;
   height: 80vh; /* Full viewport height */
   color: var(--text-primary);
-  padding: 0 clamp(0.75rem, 1.5vw, 1.5rem);
+  padding: 0;
   animation: shrinkLeftPanel 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   justify-content: space-between;
 }
@@ -39,9 +39,9 @@
 
 
 .app-right {
-  flex: 0 0 40%;
+  flex: 0 0 70%;
   min-width: 0;
-  padding: 0 clamp(1.5rem, 3vw, 3rem);
+  padding: 0;
   margin-bottom: 24px;
   animation: expandWidgetsPanel 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
@@ -71,7 +71,7 @@
     transform: translateX(40px);
   }
   100% {
-    flex-basis: 40%;
+    flex-basis: 70%;
     transform: translateX(0);
   }
 }
@@ -81,7 +81,7 @@
     flex-basis: 70%;
   }
   100% {
-    flex-basis: 60%;
+    flex-basis: 30%;
   }
 }
 
@@ -147,6 +147,92 @@
 .dashboard-edit-button:hover {
   background: var(--text-primary);
   color: var(--panel-bg);
+}
+
+.dev-radial-menu {
+  position: fixed;
+  left: 20px;
+  bottom: 98px;
+  transform: none;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  opacity: 0.28;
+}
+
+.dev-radial-main,
+.dev-radial-item {
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-primary);
+  font-family: "Inter", "Inter var", sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dev-radial-main {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+.dev-radial-item {
+  position: absolute;
+  min-width: 104px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 220ms ease,
+    opacity 220ms ease;
+}
+
+.dev-radial-item--left {
+  transform: translateX(-8px);
+}
+
+.dev-radial-item--top {
+  transform: translateY(-8px);
+}
+
+.dev-radial-item--right {
+  transform: translateX(8px);
+}
+
+.dev-radial-item--bottom {
+  transform: translateY(8px);
+}
+
+.dev-radial-menu.is-open .dev-radial-item {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dev-radial-menu.is-open .dev-radial-item--left {
+  transform: translateX(140px);
+}
+
+.dev-radial-menu.is-open .dev-radial-item--top {
+  transform: translate(128px, -72px);
+}
+
+.dev-radial-menu.is-open .dev-radial-item--right {
+  transform: translateX(244px);
+}
+
+.dev-radial-menu.is-open .dev-radial-item--bottom {
+  transform: translate(128px, 72px);
 }
 
 /* Grid scroll container styles moved to MUI Box sx props */

@@ -17,7 +17,9 @@ import connectLogo from "./assets/connect_logo.svg";
 
 const SLIDE_MS = 600;
 const INACTIVITY_MS = 30_000;
-const ENABLE_INACTIVITY_RETURN = true;
+const ENABLE_INACTIVITY_RETURN = false;
+const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
+const BEACONS_VISIBILITY_EVENT = "cv_beacons_visibility_updated";
 type StoreNode = {
   id: string;
   title: string;
@@ -254,6 +256,10 @@ export default function App() {
   const [showDockedHelper, setShowDockedHelper] = React.useState(false);
   const introTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showHelperTip, setShowHelperTip] = React.useState(false);
+  const [areBeaconsEnabled, setAreBeaconsEnabled] = React.useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) !== "1";
+  });
   const helperTipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -276,6 +282,20 @@ export default function App() {
   }, []);
 
   React.useEffect(() => {
+    const syncBeaconSetting = () => {
+      if (typeof window === "undefined") return;
+      setAreBeaconsEnabled(window.localStorage.getItem(BEACONS_HIDDEN_KEY) !== "1");
+    };
+    syncBeaconSetting();
+    window.addEventListener("storage", syncBeaconSetting);
+    window.addEventListener(BEACONS_VISIBILITY_EVENT, syncBeaconSetting);
+    return () => {
+      window.removeEventListener("storage", syncBeaconSetting);
+      window.removeEventListener(BEACONS_VISIBILITY_EVENT, syncBeaconSetting);
+    };
+  }, []);
+
+  React.useEffect(() => {
     if (!selectedRole) return;
     setPageEnter(false);
     const raf = requestAnimationFrame(() => setPageEnter(true));
@@ -293,7 +313,7 @@ export default function App() {
     }
     setShowHelperTip(false);
 
-    if (!selectedRole || selectedRole !== "manager") {
+    if (!selectedRole || selectedRole !== "manager" || !areBeaconsEnabled) {
       setShowIntroOverlay(false);
       setShowDockedHelper(false);
       return;
@@ -317,7 +337,7 @@ export default function App() {
         helperTipTimerRef.current = null;
       }
     };
-  }, [selectedRole]);
+  }, [selectedRole, areBeaconsEnabled]);
 
   const handleHelperQuestionClick = React.useCallback(() => {
     if (helperTipTimerRef.current) {
@@ -524,7 +544,9 @@ export default function App() {
         </div>
       )}
 
-      {selectedRole === "manager" && (showIntroOverlay || showDockedHelper) && (
+      {selectedRole === "manager" &&
+        areBeaconsEnabled &&
+        (showIntroOverlay || showDockedHelper) && (
         <>
           {showIntroOverlay && <div className="connect-helper-backdrop" aria-hidden />}
           <div

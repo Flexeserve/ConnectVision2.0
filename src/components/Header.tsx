@@ -13,10 +13,22 @@ import React from "react";
 import BackButton from "./BackButton";
 import flexeserveLogo from "../assets/flexeserveLogo.svg";
 import flexeserveLogoInversed from "../assets/flexeserveLogoInversed.svg";
+import hebLogo from "../assets/HEBLogo.svg";
 
-type Props = { onBack?: () => void; title?: string };
+type Props = {
+  onBack?: () => void;
+  title?: string;
+  headerBrand?: "default" | "heb";
+};
 
-export default function Header({ onBack, title }: Props) {
+const HEADER_BRAND_KEY = "cv_header_brand";
+const HEADER_BRAND_EVENT = "cv_header_brand_updated";
+
+export default function Header({
+  onBack,
+  title,
+  headerBrand,
+}: Props) {
   const [now, setNow] = React.useState(() => new Date());
   const [settingsAnchor, setSettingsAnchor] =
     React.useState<HTMLElement | null>(null);
@@ -26,6 +38,14 @@ export default function Header({ onBack, title }: Props) {
   });
   const [darkModeLabel, setDarkModeLabel] = React.useState("Dark mode");
   const [lightModeLabel, setLightModeLabel] = React.useState("Light mode");
+  const [globalHeaderBrand, setGlobalHeaderBrand] = React.useState<
+    "default" | "heb"
+  >(() => {
+    if (typeof window === "undefined") return "default";
+    return window.localStorage.getItem(HEADER_BRAND_KEY) === "heb"
+      ? "heb"
+      : "default";
+  });
 
   React.useEffect(() => {
     if (typeof document === "undefined") return;
@@ -76,6 +96,24 @@ export default function Header({ onBack, title }: Props) {
   }, [title]);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const syncHeaderBrand = () => {
+      setGlobalHeaderBrand(
+        window.localStorage.getItem(HEADER_BRAND_KEY) === "heb"
+          ? "heb"
+          : "default",
+      );
+    };
+    syncHeaderBrand();
+    window.addEventListener("storage", syncHeaderBrand);
+    window.addEventListener(HEADER_BRAND_EVENT, syncHeaderBrand);
+    return () => {
+      window.removeEventListener("storage", syncHeaderBrand);
+      window.removeEventListener(HEADER_BRAND_EVENT, syncHeaderBrand);
+    };
+  }, []);
+
+  React.useEffect(() => {
     const interval = window.setInterval(() => setNow(new Date()), 60_000);
     return () => window.clearInterval(interval);
   }, []);
@@ -89,13 +127,23 @@ export default function Header({ onBack, title }: Props) {
     hour12: false,
   });
 
+  const effectiveHeaderBrand = headerBrand ?? globalHeaderBrand;
+  const isHebHeader = effectiveHeaderBrand === "heb";
+  const headerBg = isHebHeader ? "#ee2824" : "var(--header-bg)";
+  const headerText = isHebHeader ? "#ffffff" : "var(--header-text)";
+  const logoSrc = isHebHeader
+    ? hebLogo
+    : isDarkMode
+      ? flexeserveLogoInversed
+      : flexeserveLogo;
+
   return (
     <AppBar
       position="static"
       color="default"
       sx={{
-        backgroundColor: "var(--header-bg)",
-        color: "var(--header-text)",
+        backgroundColor: headerBg,
+        color: headerText,
         boxShadow: "0 2px 6px rgba(0, 0, 0, 0.35)",
         borderBottom: "1px solid var(--border-color)",
         position: "relative",
@@ -107,7 +155,7 @@ export default function Header({ onBack, title }: Props) {
           {onBack && <BackButton onClick={onBack} />}
           <Box
             component="img"
-            src={isDarkMode ? flexeserveLogoInversed : flexeserveLogo}
+            src={logoSrc}
             alt="Flexeserve Logo"
             className="header-logo"
             sx={{ height: 20 }}
@@ -120,7 +168,7 @@ export default function Header({ onBack, title }: Props) {
                 sx={{
                   fontFamily: '"Inter", "Inter var", sans-serif',
                   fontWeight: 600,
-                  color: "var(--header-text)",
+                  color: headerText,
                 }}
               >
                 |
@@ -130,7 +178,7 @@ export default function Header({ onBack, title }: Props) {
                 sx={{
                   fontFamily: '"Inter", "Inter var", sans-serif',
                   fontWeight: 600,
-                  color: "var(--header-text)",
+                  color: headerText,
                 }}
               >
                 {title}
@@ -140,7 +188,7 @@ export default function Header({ onBack, title }: Props) {
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography variant="caption" sx={{ opacity: 0.7 }}>
+          <Typography variant="caption" sx={{ opacity: 0.7, color: headerText }}>
             {timeLabel}
           </Typography>
           <IconButton

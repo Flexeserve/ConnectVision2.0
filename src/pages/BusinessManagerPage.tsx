@@ -37,8 +37,8 @@ const ReactGridLayout = WidthProvider(RGL);
 
 // Grid configuration constants
 const GRID_COLS = 12; // Increased from 6 for finer horizontal positioning
-const GRID_ROW_HEIGHT = 40; // Halved from 80px for finer vertical positioning
-const GRID_MARGIN: [number, number] = [16, 16];
+const GRID_ROW_HEIGHT = 20; // Halved from 40px for tighter widget grid sizing
+const GRID_MARGIN: [number, number] = [8, 8];
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
 const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
 const LAYOUT_VERSION = "v2";
@@ -47,6 +47,9 @@ const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
 const LAYOUT_SYNC_EVENT = "cv_widget_layout_updated";
 const BEACON_OFFSETS_KEY = "cv_beacon_offsets";
 const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
+const BEACONS_VISIBILITY_EVENT = "cv_beacons_visibility_updated";
+const HEADER_BRAND_KEY = "cv_header_brand";
+const HEADER_BRAND_EVENT = "cv_header_brand_updated";
 
 const clampNumber = (value: number | undefined, min: number, max: number) => {
   if (typeof value !== "number" || Number.isNaN(value)) return undefined;
@@ -182,6 +185,11 @@ export default function BusinessManagerPage({
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [isWidgetsScrolled, setIsWidgetsScrolled] = React.useState(false);
   const [isBeaconDevMode, setIsBeaconDevMode] = React.useState(false);
+  const [isDevMenuOpen, setIsDevMenuOpen] = React.useState(false);
+  const [isHebHeader, setIsHebHeader] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(HEADER_BRAND_KEY) === "heb";
+  });
   const [isBeaconsHidden, setIsBeaconsHidden] = React.useState(() => {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem(BEACONS_HIDDEN_KEY) === "1";
@@ -209,6 +217,20 @@ export default function BusinessManagerPage({
     return () => observer.disconnect();
   }, []);
 
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const syncHeaderBrand = () => {
+      setIsHebHeader(window.localStorage.getItem(HEADER_BRAND_KEY) === "heb");
+    };
+    syncHeaderBrand();
+    window.addEventListener("storage", syncHeaderBrand);
+    window.addEventListener(HEADER_BRAND_EVENT, syncHeaderBrand);
+    return () => {
+      window.removeEventListener("storage", syncHeaderBrand);
+      window.removeEventListener(HEADER_BRAND_EVENT, syncHeaderBrand);
+    };
+  }, []);
+
   const startTourFrom = React.useCallback((stepIndex: number) => {
     const beaconTour = createBusinessManagerBeaconTour(stepIndex);
     if (!beaconTour) return;
@@ -225,6 +247,7 @@ export default function BusinessManagerPage({
     document.body.classList.toggle("beacons-hidden", isBeaconsHidden);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(BEACONS_HIDDEN_KEY, isBeaconsHidden ? "1" : "0");
+      window.dispatchEvent(new Event(BEACONS_VISIBILITY_EVENT));
     }
   }, [isBeaconsHidden]);
 
@@ -341,7 +364,7 @@ export default function BusinessManagerPage({
     }, 0);
     const gridHeight =
       maxRow * GRID_ROW_HEIGHT + Math.max(0, maxRow - 1) * GRID_MARGIN[1];
-    return Math.max(220, Math.ceil(gridHeight * 0.5));
+    return Math.max(300, Math.ceil(gridHeight * 0.5) + 80);
   }, [widgetLayout]);
 
   const handleBeaconOffsetChange = React.useCallback(
@@ -361,7 +384,7 @@ export default function BusinessManagerPage({
       <div className="beacon-host beacon-host--app">
       <div className="app-container bm-container-beacon">
         <div className="greetings">
-          Good morning, Düsseldorf
+          {isHebHeader ? "Good Morning, Texas." : "Good morning, Dusseldorf"}
         </div>
         <div className="app-left">
           <Container maxWidth="lg" sx={{ mt: 2 }}>
@@ -731,6 +754,61 @@ export default function BusinessManagerPage({
           offset={beaconOffsets.settings}
           onOffsetChange={(next) => handleBeaconOffsetChange("settings", next)}
         />
+        <div
+          className={`dev-radial-menu ${isDevMenuOpen ? "is-open" : ""}`}
+          aria-label="Developer controls"
+        >
+          <button
+            type="button"
+            className="dev-radial-main"
+            onClick={() => setIsDevMenuOpen((prev) => !prev)}
+            aria-label="Toggle dev menu"
+          >
+            Dev
+          </button>
+          <button
+            type="button"
+            className="dev-radial-item dev-radial-item--left"
+            onClick={() => setIsBeaconsHidden((prev) => !prev)}
+            aria-label="Toggle beacons visibility"
+          >
+            {isBeaconsHidden ? "Beacons Off" : "Beacons On"}
+          </button>
+          <button
+            type="button"
+            className="dev-radial-item dev-radial-item--top"
+            onClick={() => setIsBeaconDevMode((prev) => !prev)}
+            aria-label="Toggle beacon drag mode"
+          >
+            {isBeaconDevMode ? "Drag On" : "Drag Off"}
+          </button>
+          <button
+            type="button"
+            className="dev-radial-item dev-radial-item--right"
+            onClick={() => setBeaconOffsets({})}
+            aria-label="Reset beacon offsets"
+          >
+            Reset
+          </button>
+          <button
+            type="button"
+            className="dev-radial-item dev-radial-item--bottom"
+            onClick={() => {
+              const nextIsHeb = !isHebHeader;
+              setIsHebHeader(nextIsHeb);
+              if (typeof window !== "undefined") {
+                window.localStorage.setItem(
+                  HEADER_BRAND_KEY,
+                  nextIsHeb ? "heb" : "default",
+                );
+                window.dispatchEvent(new Event(HEADER_BRAND_EVENT));
+              }
+            }}
+            aria-label="Toggle HEB header"
+          >
+            {isHebHeader ? "HEB On" : "HEB Off"}
+          </button>
+        </div>
       </div>
       <footer className="page-footer">
         <span>© {new Date().getFullYear()} Flexeserve Connect</span>

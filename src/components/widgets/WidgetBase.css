@@ -21,9 +21,10 @@
   --widget-text-primary: var(--widget-text, #333333);
   --widget-text-secondary: var(--text-muted, #5d5d5d);
   --widget-bg: var(--widget-bg, #ffffff);
+  --widget-body-bg: transparent;
   --widget-border-subtle: var(--widget-border, rgba(0, 0, 0, 0.08));
 
-  background: var(--widget-body-bg, #e3e3e3);
+  background: var(--widget-bg);
   border: 1px solid var(--widget-border-subtle);
   padding: var(--widget-padding) var(--widget-padding) 10px;
   border-radius: var(--widget-border-radius);

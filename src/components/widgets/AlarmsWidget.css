@@ -8,6 +8,8 @@
 .widget-alarms .widget-title {
   flex: 0 0 auto;
   min-height: 1.6em;
+  font-size: clamp(12px, 5cqw, 20px);
+  font-weight: 800;
 }
 
 .widget-alarms .widget-value {
@@ -17,8 +19,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: min(26cqi, 40cqb);
-  font-weight: 700;
+  font-size: min(32cqi, 48cqb);
+  font-weight: 800;
   color: var(--widget-text-primary);
   line-height: 1;
   text-align: center;

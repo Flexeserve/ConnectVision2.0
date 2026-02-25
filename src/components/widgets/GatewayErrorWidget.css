@@ -2,6 +2,16 @@
   background: var(--widget-bg);
 }
 
+.widget-alarm-gateway .widget-title {
+  font-size: clamp(12px, 5cqw, 20px);
+  font-weight: 800;
+}
+
+.widget-alarm-gateway .widget-value {
+  font-size: min(30cqi, 46cqb);
+  font-weight: 800;
+}
+
 .alarm-value-gateway {
   color: #d94d14;
 }
