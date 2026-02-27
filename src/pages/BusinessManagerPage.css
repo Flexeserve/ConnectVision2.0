@@ -20,7 +20,7 @@
   color: var(--text-primary);
   padding: 0;
   animation: shrinkLeftPanel 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  justify-content: space-between;
+  
 }
 
 .greetings {
@@ -434,13 +434,12 @@
 
 .greetings-search {
   display: flex;
-  justify-content: space-around; /* Left and right alignment */
+  justify-content: flex-start;
   align-items: center;
-  margin: 32px 32px;
-  padding: 0 24px;
-  gap: 48px;
-  flex-wrap: wrap;
-  max-width: 100%;
+  width: 100%;
+  margin: 12px 0 20px;
+  padding: 0 clamp(1.5rem, 4vw, 3rem);
+  box-sizing: border-box;
 }
 
 body.dark .view-all-logo {

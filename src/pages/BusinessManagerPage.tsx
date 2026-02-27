@@ -25,6 +25,7 @@ import CommanderOfflineWidget from "../components/widgets/CommanderOfflineWidget
 import CloudConnectedWidget from "../components/widgets/CloudConnectedWidget";
 import AlarmSummaryWidget from "../components/widgets/AlarmSummaryWidget";
 import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget";
+import EnergyWidget from "../components/widgets/EnergyWidget";
 import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
@@ -176,6 +177,7 @@ export default function BusinessManagerPage({
       { id: "cloud", element: <CloudConnectedWidget /> },
       { id: "alarm-summary", element: <AlarmSummaryWidget /> },
       { id: "door-opened", element: <DoorOpenedAlarmsWidget /> },
+      { id: "energy-widget", element: <EnergyWidget /> },
     ],
     [totalActiveAlarms, totalOfflineDevices],
   );
@@ -281,6 +283,7 @@ export default function BusinessManagerPage({
       { i: "alarm-summary", x: 0, y: 22, w: 12, h: 6 },
       { i: "door-opened", x: 0, y: 5, w: 12, h: 6 },
       { i: "energy-cost", x: 0, y: 28, w: 12, h: 6 },
+      { i: "energy-widget", x: 0, y: 34, w: 12, h: 6 },
     ],
     [],
   );
@@ -386,6 +389,83 @@ export default function BusinessManagerPage({
           {isHebHeader ? "Good Morning, Texas." : "Good morning, Dusseldorf"}
         </div>
         <div className="app-left">
+          <div className="greetings-search">
+            <Box className="search-beacon-target beacon-host beacon-host--search">
+              <Beacon
+                label="Search tour"
+                beaconId="search"
+                onClick={() => startTourFrom(6)}
+                devMode={isBeaconDevMode}
+                offset={beaconOffsets.search}
+                onOffsetChange={(next) => handleBeaconOffsetChange("search", next)}
+              />
+              <TextField
+                variant="outlined"
+                size="small"
+                placeholder="Write to start search"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment
+                      position="end"
+                      sx={{
+                        m: 0,
+                        height: "100%",
+                        alignSelf: "stretch",
+                        display: "flex",
+                        alignItems: "center",
+                        color: "#333333",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        aria-label="Search"
+                        className="search-button"
+                      >
+                        <SearchIcon fontSize="small" sx={{ color: "#fff" }} />
+                      </button>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  width: { xs: "100%", sm: 360, md: 460 },
+                  maxWidth: { xs: "100%", sm: 420, md: 500 },
+                  "& .MuiInputBase-root": {
+                    color: "var(--text-primary)",
+                    backgroundColor: "var(--panel-bg)",
+                    paddingRight: 0,
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                  },
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "var(--text-muted)",
+                    opacity: 1,
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    paddingRight: 0,
+                    height: 36,
+                  },
+                  "& .MuiOutlinedInput-input": {
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                  "& .MuiInputAdornment-positionEnd": {
+                    marginRight: 0,
+                    height: "100%",
+                    alignSelf: "stretch",
+                  },
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "var(--border-strong)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "var(--text-primary)",
+                  },
+                }}
+              />
+            </Box>
+          </div>
           <Container maxWidth="lg" sx={{ mt: 2 }}>
             <Box
               className="beacon-host beacon-host--header"
@@ -492,84 +572,6 @@ export default function BusinessManagerPage({
         </div>
         
         <div className="app-right">
-          <div className="greetings-search">
-
-            <Box className="search-beacon-target beacon-host beacon-host--search">
-              <Beacon
-                label="Search tour"
-                beaconId="search"
-                onClick={() => startTourFrom(6)}
-                devMode={isBeaconDevMode}
-                offset={beaconOffsets.search}
-                onOffsetChange={(next) => handleBeaconOffsetChange("search", next)}
-              />
-              <TextField
-                variant="outlined"
-                size="small"
-                placeholder="Write to start search"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment
-                      position="end"
-                      sx={{
-                        m: 0,
-                        height: "100%",
-                        alignSelf: "stretch",
-                        display: "flex",
-                        alignItems: "center",
-                        color: "#333333",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        aria-label="Search"
-                        className="search-button"
-                      >
-                        <SearchIcon fontSize="small" sx={{ color: "#fff" }} />
-                      </button>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  width: { xs: "100%", sm: 360, md: 460 },
-                  maxWidth: { xs: "100%", sm: 420, md: 500 },
-                  "& .MuiInputBase-root": {
-                    color: "var(--text-primary)",
-                    backgroundColor: "var(--panel-bg)",
-                    paddingRight: 0,
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                  },
-                  "& .MuiInputBase-input::placeholder": {
-                    color: "var(--text-muted)",
-                    opacity: 1,
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    paddingRight: 0,
-                    height: 36,
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                  "& .MuiInputAdornment-positionEnd": {
-                    marginRight: 0,
-                    height: "100%",
-                    alignSelf: "stretch",
-                  },
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "var(--border-strong)",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "var(--text-primary)",
-                  },
-                }}
-              />
-            </Box>
-          </div>
           <Box
             className="widgets-panel widgets-scroll widgets-beacon-target beacon-host"
             ref={widgetsPanelRef}
