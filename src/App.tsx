@@ -372,7 +372,7 @@ export default function App() {
   });
   const [areBeaconsEnabled, setAreBeaconsEnabled] = React.useState(() => {
     if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) !== "1";
+    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) === "0";
   });
   const helperTipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -412,7 +412,7 @@ export default function App() {
   React.useEffect(() => {
     const syncBeaconSetting = () => {
       if (typeof window === "undefined") return;
-      setAreBeaconsEnabled(window.localStorage.getItem(BEACONS_HIDDEN_KEY) !== "1");
+      setAreBeaconsEnabled(window.localStorage.getItem(BEACONS_HIDDEN_KEY) === "0");
     };
     syncBeaconSetting();
     window.addEventListener("storage", syncBeaconSetting);

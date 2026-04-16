@@ -150,7 +150,7 @@ export default function StoreViewPage({
   const [isBeaconDevMode, setIsBeaconDevMode] = React.useState(false);
   const [isBeaconsHidden, setIsBeaconsHidden] = React.useState(() => {
     if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) === "1";
+    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) !== "0";
   });
   const [beaconOffsets, setBeaconOffsets] = React.useState<
     Record<string, BeaconOffset>
