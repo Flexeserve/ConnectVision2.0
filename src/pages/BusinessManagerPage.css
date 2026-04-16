@@ -159,13 +159,13 @@
   place-items: center;
   width: 56px;
   height: 56px;
-  opacity: 0.28;
+  opacity: 0.12;
 }
 
 .dev-radial-main,
 .dev-radial-item {
-  border: 1px solid var(--border-strong);
-  background: rgba(255, 255, 255, 0.72);
+  border: none;
+  background: transparent;
   color: var(--text-primary);
   font-family: "Inter", "Inter var", sans-serif;
   font-weight: 700;
@@ -173,22 +173,21 @@
 }
 
 .dev-radial-main {
-  width: 56px;
-  height: 56px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  font-size: 0.8rem;
+  font-size: 0.6rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
 }
 
 .dev-radial-item {
   position: absolute;
-  min-width: 104px;
-  height: 34px;
-  padding: 0 10px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
   border-radius: 999px;
-  font-size: 0.68rem;
+  font-size: 0.5rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   opacity: 0;
@@ -196,6 +195,9 @@
   transition:
     transform 220ms ease,
     opacity 220ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dev-radial-item--left {

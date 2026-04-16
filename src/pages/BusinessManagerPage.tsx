@@ -386,7 +386,7 @@ export default function BusinessManagerPage({
       <div className="beacon-host beacon-host--app">
       <div className="app-container bm-container-beacon">
         <div className="greetings">
-          {isHebHeader ? "Good Morning, Texas." : "Good morning, Dusseldorf"}
+          {isHebHeader ? "Good Morning, Texas" : "Good Morning, Texas"}
         </div>
         <div className="app-left">
           <div className="greetings-search">

@@ -371,7 +371,7 @@ export default function App() {
     return window.localStorage.getItem(HEADER_BRAND_KEY) === "heb";
   });
   const [areBeaconsEnabled, setAreBeaconsEnabled] = React.useState(() => {
-    if (typeof window === "undefined") return true;
+    if (typeof window === "undefined") return false;
     return window.localStorage.getItem(BEACONS_HIDDEN_KEY) !== "1";
   });
   const helperTipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
