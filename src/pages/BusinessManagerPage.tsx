@@ -114,21 +114,21 @@ export type BURow = {
 const DEFAULT_BU_ROWS: BURow[] = [
   {
     id: "east",
-    title: "Central",
+    title: "Central China",
     subtitle: "3 Stores",
     alarms: 2,
     notices: 3,
   },
   {
     id: "gulf",
-    title: "North",
+    title: "North China",
     subtitle: "2 Stores",
     alarms: 1368,
     notices: 135,
   },
   {
     id: "tx",
-    title: "South",
+    title: "South China",
     subtitle: "2 Stores",
     alarms: 1564,
     notices: 93,
