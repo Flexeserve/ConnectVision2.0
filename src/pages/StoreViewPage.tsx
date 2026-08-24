@@ -11,7 +11,7 @@ import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import Header from "../components/Header";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
-import storeIcon from "../assets/storeIcon.svg";
+import storeIcon from "../assets/StoreIcon.svg";
 import "./StoreViewPage.css";
 import "../styles/tour.css";
 
