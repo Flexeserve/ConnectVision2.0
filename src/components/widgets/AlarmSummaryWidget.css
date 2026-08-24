@@ -56,7 +56,7 @@
 .alarm-summary-table thead th {
   position: sticky;
   top: 0;
-  background: var(--widget-bg);
+  background: var(--panel-bg-hover, #d3d3d3);
   font-weight: 700;
   color: var(--widget-text-primary);
   letter-spacing: 0.04em;
