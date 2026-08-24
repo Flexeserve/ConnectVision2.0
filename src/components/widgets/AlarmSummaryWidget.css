@@ -30,13 +30,16 @@
   color: var(--widget-text-secondary);
 }
 
-.alarm-summary-table-wrap {
+.widget-alarm-summary .alarm-summary-table-wrap {
   flex: 1 1 auto;
   min-height: 0;
   max-height: 220px;
   overflow: auto;
   border: 1px solid var(--widget-border-subtle);
   border-radius: 8px;
+  /* Override the generic widget-card padding (.widget-card > :not(.widget-title)):
+     it would sit above the sticky thead, leaving a gap scrolled rows are visible through. */
+  padding: 0;
 }
 
 .alarm-summary-table {
