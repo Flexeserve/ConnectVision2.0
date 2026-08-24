@@ -710,6 +710,11 @@ export default function OperatorPage({
   deferSceneLoadMs = 0,
 }: OperatorPageProps) {
   const [mountScene, setMountScene] = useState(deferSceneLoadMs <= 0);
+  const [lastDeferSceneLoadMs, setLastDeferSceneLoadMs] = useState(deferSceneLoadMs);
+  if (deferSceneLoadMs !== lastDeferSceneLoadMs) {
+    setLastDeferSceneLoadMs(deferSceneLoadMs);
+    setMountScene(deferSceneLoadMs <= 0);
+  }
   const [temps, setTemps] = useState(["75", "75", "75", "75"]);
   const [unit, setUnit] = useState<"C" | "F">("C");
   const [lightAnchors, setLightAnchors] = useState<LightAnchors>({});
@@ -717,11 +722,7 @@ export default function OperatorPage({
   const [sceneReady, setSceneReady] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
   useEffect(() => {
-    if (deferSceneLoadMs <= 0) {
-      setMountScene(true);
-      return;
-    }
-    setMountScene(false);
+    if (deferSceneLoadMs <= 0) return;
     const timer = setTimeout(() => setMountScene(true), deferSceneLoadMs);
     return () => clearTimeout(timer);
   }, [deferSceneLoadMs]);
