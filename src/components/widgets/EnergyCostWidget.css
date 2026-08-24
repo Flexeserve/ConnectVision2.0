@@ -10,12 +10,22 @@
   gap: 16px;
 }
 
+.energy-cost-body--compact {
+  justify-content: center;
+}
+
 .energy-cost-left {
   flex: 0 0 36%;
   display: flex;
   flex-direction: column;
   gap: 6px;
   justify-content: center;
+}
+
+.energy-cost-body--compact .energy-cost-left {
+  flex: 0 0 auto;
+  align-items: center;
+  text-align: center;
 }
 
 .energy-cost-label {

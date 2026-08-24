@@ -20,14 +20,14 @@ import EnergyUsageWidget from "../components/widgets/EnergyUsageWidget";
 import EnergyCostWidget from "../components/widgets/EnergyCostWidget";
 import ElementLifeWidget from "../components/widgets/ElementLifeWidget";
 import AlarmsWidget from "../components/widgets/AlarmsWidget";
-import GatewayErrorWidget from "../components/widgets/GatewayErrorWidget";
-import CommanderOfflineWidget from "../components/widgets/CommanderOfflineWidget";
+import OfflineDevicesWidget from "../components/widgets/OfflineDevicesWidget";
 import CloudConnectedWidget from "../components/widgets/CloudConnectedWidget";
 import AlarmSummaryWidget from "../components/widgets/AlarmSummaryWidget";
 import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget";
 import EnergyWidget from "../components/widgets/EnergyWidget";
 import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
+import TypewriterText from "../components/TypewriterText";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -41,7 +41,7 @@ const GRID_ROW_HEIGHT = 20; // Halved from 40px for tighter widget grid sizing
 const GRID_MARGIN: [number, number] = [8, 8];
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
 const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
-const LAYOUT_VERSION = "v2";
+const LAYOUT_VERSION = "v3";
 const LAYOUT_VERSION_KEY = "cv_widget_layout_version";
 const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
 const LAYOUT_SYNC_EVENT = "cv_widget_layout_updated";
@@ -50,6 +50,8 @@ const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
 const BEACONS_VISIBILITY_EVENT = "cv_beacons_visibility_updated";
 const HEADER_BRAND_KEY = "cv_header_brand";
 const HEADER_BRAND_EVENT = "cv_header_brand_updated";
+const HIDDEN_WIDGETS_KEY = "cv_hidden_widgets";
+const SHOW_DEV_MENU = false;
 
 const clampNumber = (value: number | undefined, min: number, max: number) => {
   if (typeof value !== "number" || Number.isNaN(value)) return undefined;
@@ -147,13 +149,29 @@ export default function BusinessManagerPage({
   onOpen,
   rows,
   heading,
+  levelKey,
+  storeIds,
 }: {
   onBack?: () => void;
   onOpen?: (id: string) => void;
   rows?: BURow[];
   heading?: string;
+  levelKey?: string;
+  storeIds?: string[];
 }) {
   const buRows = rows ?? DEFAULT_BU_ROWS;
+  const scopeSeed = levelKey ?? heading ?? "root";
+  // The stores that make up the current scope. Metrics below are computed
+  // per-store and summed/averaged upward, so a region shows the cumulative
+  // of its stores while a single-store scope shows that store's own reading.
+  const scopeStoreIds = React.useMemo(
+    () => (storeIds?.length ? storeIds : [scopeSeed]),
+    [storeIds, scopeSeed],
+  );
+  const scopeLocations = React.useMemo(
+    () => buRows.map((row) => row.title),
+    [buRows],
+  );
   const totalOfflineDevices = React.useMemo(
     () => buRows.reduce((sum, row) => sum + (row.alarms ?? 0), 0),
     [buRows],
@@ -164,25 +182,72 @@ export default function BusinessManagerPage({
   );
   const widgetComponents = React.useMemo(
     () => [
-      { id: "fan-life", element: <FanLifeWidget /> },
-      { id: "energy", element: <EnergyUsageWidget /> },
-      { id: "energy-cost", element: <EnergyCostWidget /> },
-      { id: "element", element: <ElementLifeWidget /> },
-      { id: "alarms", element: <AlarmsWidget value={totalActiveAlarms} /> },
-      { id: "gateway", element: <GatewayErrorWidget /> },
+      { id: "fan-life", label: "Fan Life", element: <FanLifeWidget storeIds={scopeStoreIds} /> },
       {
-        id: "commander",
-        element: <CommanderOfflineWidget value={totalOfflineDevices} />,
+        id: "energy",
+        label: "Schedule Compliance",
+        element: <EnergyUsageWidget storeIds={scopeStoreIds} />,
       },
-      { id: "cloud", element: <CloudConnectedWidget /> },
-      { id: "alarm-summary", element: <AlarmSummaryWidget /> },
-      { id: "door-opened", element: <DoorOpenedAlarmsWidget /> },
-      { id: "energy-widget", element: <EnergyWidget /> },
+      {
+        id: "energy-cost",
+        label: "Energy Consumption / Cost",
+        element: <EnergyCostWidget storeIds={scopeStoreIds} />,
+      },
+      {
+        id: "element",
+        label: "Element Life",
+        element: <ElementLifeWidget storeIds={scopeStoreIds} />,
+      },
+      {
+        id: "alarms",
+        label: "Active Alarms",
+        element: <AlarmsWidget value={totalActiveAlarms} />,
+      },
+      {
+        id: "offline-devices",
+        label: "Offline Devices",
+        element: (
+          <OfflineDevicesWidget storeIds={scopeStoreIds} commanderOffline={totalOfflineDevices} />
+        ),
+      },
+      {
+        id: "cloud",
+        label: "Cloud Connected",
+        element: <CloudConnectedWidget storeIds={scopeStoreIds} />,
+      },
+      {
+        id: "alarm-summary",
+        label: "Alarm Summary",
+        element: (
+          <AlarmSummaryWidget key={scopeSeed} seed={scopeSeed} locations={scopeLocations} />
+        ),
+      },
+      {
+        id: "door-opened",
+        label: "Temperature",
+        element: <DoorOpenedAlarmsWidget storeIds={scopeStoreIds} />,
+      },
+      {
+        id: "energy-widget",
+        label: "Energy Widget",
+        element: <EnergyWidget storeIds={scopeStoreIds} />,
+      },
     ],
-    [totalActiveAlarms, totalOfflineDevices],
+    [totalActiveAlarms, totalOfflineDevices, scopeSeed, scopeStoreIds, scopeLocations],
   );
 
   const [isEditing, setIsEditing] = React.useState(false);
+  const [hiddenWidgetIds, setHiddenWidgetIds] = React.useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(HIDDEN_WIDGETS_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : [];
+    } catch {
+      return [];
+    }
+  });
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [isWidgetsScrolled, setIsWidgetsScrolled] = React.useState(false);
   const [isBeaconDevMode, setIsBeaconDevMode] = React.useState(false);
@@ -244,6 +309,22 @@ export default function BusinessManagerPage({
   }, [beaconOffsets]);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(HIDDEN_WIDGETS_KEY, JSON.stringify(hiddenWidgetIds));
+  }, [hiddenWidgetIds]);
+
+  const toggleWidgetVisibility = React.useCallback((id: string) => {
+    setHiddenWidgetIds((prev) =>
+      prev.includes(id) ? prev.filter((hiddenId) => hiddenId !== id) : [...prev, id],
+    );
+  }, []);
+
+  const visibleWidgetComponents = React.useMemo(
+    () => widgetComponents.filter((widget) => !hiddenWidgetIds.includes(widget.id)),
+    [widgetComponents, hiddenWidgetIds],
+  );
+
+  React.useEffect(() => {
     if (typeof document === "undefined") return;
     document.body.classList.toggle("beacons-hidden", isBeaconsHidden);
     if (typeof window !== "undefined") {
@@ -273,17 +354,16 @@ export default function BusinessManagerPage({
 
   const DEFAULT_LAYOUT: Layout[] = React.useMemo(
     () => [
-      { i: "fan-life", x: 0, y: 0, w: 6, h: 5 },
-      { i: "energy", x: 4, y: 11, w: 8, h: 4 },
-      { i: "element", x: 0, y: 11, w: 4, h: 7 },
-      { i: "alarms", x: 4, y: 15, w: 4, h: 3 },
-      { i: "gateway", x: 6, y: 0, w: 6, h: 5 },
-      { i: "commander", x: 8, y: 15, w: 4, h: 7 },
-      { i: "cloud", x: 0, y: 18, w: 8, h: 4 },
-      { i: "alarm-summary", x: 0, y: 22, w: 12, h: 6 },
-      { i: "door-opened", x: 0, y: 5, w: 12, h: 6 },
-      { i: "energy-cost", x: 0, y: 28, w: 12, h: 6 },
-      { i: "energy-widget", x: 0, y: 34, w: 12, h: 6 },
+      { i: "fan-life", x: 0, y: 0, w: 6, h: 5, minW: 3, minH: 4 },
+      { i: "offline-devices", x: 6, y: 0, w: 6, h: 6, minW: 3, minH: 6 },
+      { i: "door-opened", x: 0, y: 6, w: 12, h: 8, minW: 4, minH: 5 },
+      { i: "element", x: 0, y: 14, w: 6, h: 5, minW: 3, minH: 4 },
+      { i: "alarms", x: 6, y: 14, w: 6, h: 5, minW: 3, minH: 4 },
+      { i: "energy", x: 0, y: 19, w: 6, h: 8, minW: 3, minH: 6 },
+      { i: "cloud", x: 6, y: 19, w: 6, h: 8, minW: 3, minH: 6 },
+      { i: "alarm-summary", x: 0, y: 27, w: 12, h: 11, minW: 5, minH: 5 },
+      { i: "energy-cost", x: 0, y: 38, w: 12, h: 12, minW: 4, minH: 6 },
+      { i: "energy-widget", x: 0, y: 50, w: 12, h: 8, minW: 4, minH: 5 },
     ],
     [],
   );
@@ -303,9 +383,9 @@ export default function BusinessManagerPage({
         const incoming = persistedMap.get(base.i);
         if (!incoming) return base;
 
-        const width = clampNumber(incoming.w, 1, GRID_COLS) ?? base.w;
+        const width = clampNumber(incoming.w, base.minW ?? 1, GRID_COLS) ?? base.w;
         const height =
-          clampNumber(incoming.h, 1, Number.MAX_SAFE_INTEGER) ?? base.h;
+          clampNumber(incoming.h, base.minH ?? 1, Number.MAX_SAFE_INTEGER) ?? base.h;
         const maxX = Math.max(GRID_COLS - width, 0);
         const x = clampNumber(incoming.x, 0, maxX) ?? base.x;
         const y = clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;
@@ -332,13 +412,18 @@ export default function BusinessManagerPage({
   }, [mergeLayoutWithDefaults]);
 
   const handleLayoutChange = React.useCallback((next: Layout[]) => {
-    setWidgetLayout(next);
-    saveLayoutCookie(next);
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent(LAYOUT_SYNC_EVENT, { detail: next }),
-      );
-    }
+    // `next` only covers currently-visible widgets (RGL only knows about the
+    // children it's given), so merge into the full layout rather than
+    // replacing it, or hidden widgets would lose their saved position/size.
+    setWidgetLayout((prev) => {
+      const nextById = new Map(next.map((item) => [item.i, item]));
+      const merged = prev.map((item) => nextById.get(item.i) ?? item);
+      saveLayoutCookie(merged);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent(LAYOUT_SYNC_EVENT, { detail: merged }));
+      }
+      return merged;
+    });
   }, []);
 
   React.useEffect(() => {
@@ -359,15 +444,22 @@ export default function BusinessManagerPage({
     return () => window.removeEventListener(LAYOUT_SYNC_EVENT, handleSync);
   }, [widgetLayout]);
 
+  const visibleWidgetLayout = React.useMemo(
+    () => widgetLayout.filter((item) => !hiddenWidgetIds.includes(item.i)),
+    [widgetLayout, hiddenWidgetIds],
+  );
+
   const dynamicBottomPadding = React.useMemo(() => {
-    const maxRow = widgetLayout.reduce((max, item) => {
+    const maxRow = visibleWidgetLayout.reduce((max, item) => {
       const bottom = (item.y ?? 0) + (item.h ?? 0);
       return Math.max(max, bottom);
     }, 0);
     const gridHeight =
       maxRow * GRID_ROW_HEIGHT + Math.max(0, maxRow - 1) * GRID_MARGIN[1];
-    return Math.max(300, Math.ceil(gridHeight * 0.5) + 80);
-  }, [widgetLayout]);
+    // Small headroom so a widget can be dragged past the last row while
+    // editing — not a multiple of the whole grid's height.
+    return Math.max(100, Math.ceil(gridHeight * 0.08) + 40);
+  }, [visibleWidgetLayout]);
 
   const handleBeaconOffsetChange = React.useCallback(
     (beaconId: string, next: BeaconOffset) => {
@@ -386,7 +478,7 @@ export default function BusinessManagerPage({
       <div className="beacon-host beacon-host--app">
       <div className="app-container bm-container-beacon">
         <div className="greetings">
-          {isHebHeader ? "Good Morning, China" : "Good Morning, China"}
+          <TypewriterText text="Good Morning, London" />
         </div>
         <div className="app-left">
           <div className="greetings-search">
@@ -467,11 +559,12 @@ export default function BusinessManagerPage({
             </Box>
           </div>
           <Container maxWidth="lg" sx={{ mt: 2 }}>
+            <Box key={levelKey ?? heading ?? "root"} className="bu-panel-transition">
             <Box
               className="beacon-host beacon-host--header"
               sx={{ display: "flex", alignItems: "center", gap: 4, mb: 3 }}
             >
-              
+
               <Box
                 component="img"
                 src={viewAllBUsLogo}
@@ -568,6 +661,7 @@ export default function BusinessManagerPage({
                 </Box>
               ))}
             </Box>
+            </Box>
           </Container>
         </div>
         
@@ -650,16 +744,35 @@ export default function BusinessManagerPage({
                 {isEditing ? "✓" : "✎"}
               </button>
             </Box>
+            {isEditing && (
+              <Box className="widget-visibility-panel" role="group" aria-label="Show or hide widgets">
+                <span className="widget-visibility-panel-label">Widgets</span>
+                {widgetComponents.map((widget) => {
+                  const isHidden = hiddenWidgetIds.includes(widget.id);
+                  return (
+                    <button
+                      key={widget.id}
+                      type="button"
+                      className={`widget-visibility-chip ${isHidden ? "widget-visibility-chip--hidden" : ""}`}
+                      aria-pressed={!isHidden}
+                      onClick={() => toggleWidgetVisibility(widget.id)}
+                    >
+                      <span className="widget-visibility-chip-dot" aria-hidden />
+                      {widget.label}
+                    </button>
+                  );
+                })}
+              </Box>
+            )}
             <Box
               sx={{
                 flex: 1,
                 padding: "8px 12px 48px 0",
-                minHeight: "140vh",
               }}
             >
               <ReactGridLayout
                 className={`widgets-grid ${isEditing ? "widgets-grid--editing" : ""}`}
-                layout={widgetLayout}
+                layout={visibleWidgetLayout}
                 cols={GRID_COLS}
                 rowHeight={GRID_ROW_HEIGHT}
                 margin={GRID_MARGIN}
@@ -673,7 +786,7 @@ export default function BusinessManagerPage({
                 measureBeforeMount={false}
                 autoSize
               >
-                {widgetComponents.map((widget) => (
+                {visibleWidgetComponents.map((widget) => (
                   <div
                     key={widget.id}
                     className={`widget-cell ${isEditing ? "widget-cell--editing" : ""}`}
@@ -695,61 +808,63 @@ export default function BusinessManagerPage({
           offset={beaconOffsets.settings}
           onOffsetChange={(next) => handleBeaconOffsetChange("settings", next)}
         />
-        <div
-          className={`dev-radial-menu ${isDevMenuOpen ? "is-open" : ""}`}
-          aria-label="Developer controls"
-        >
-          <button
-            type="button"
-            className="dev-radial-main"
-            onClick={() => setIsDevMenuOpen((prev) => !prev)}
-            aria-label="Toggle dev menu"
+        {SHOW_DEV_MENU && (
+          <div
+            className={`dev-radial-menu ${isDevMenuOpen ? "is-open" : ""}`}
+            aria-label="Developer controls"
           >
-            Dev
-          </button>
-          <button
-            type="button"
-            className="dev-radial-item dev-radial-item--left"
-            onClick={() => setIsBeaconsHidden((prev) => !prev)}
-            aria-label="Toggle beacons visibility"
-          >
-            {isBeaconsHidden ? "Beacons Off" : "Beacons On"}
-          </button>
-          <button
-            type="button"
-            className="dev-radial-item dev-radial-item--top"
-            onClick={() => setIsBeaconDevMode((prev) => !prev)}
-            aria-label="Toggle beacon drag mode"
-          >
-            {isBeaconDevMode ? "Drag On" : "Drag Off"}
-          </button>
-          <button
-            type="button"
-            className="dev-radial-item dev-radial-item--right"
-            onClick={() => setBeaconOffsets({})}
-            aria-label="Reset beacon offsets"
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            className="dev-radial-item dev-radial-item--bottom"
-            onClick={() => {
-              const nextIsHeb = !isHebHeader;
-              setIsHebHeader(nextIsHeb);
-              if (typeof window !== "undefined") {
-                window.localStorage.setItem(
-                  HEADER_BRAND_KEY,
-                  nextIsHeb ? "heb" : "default",
-                );
-                window.dispatchEvent(new Event(HEADER_BRAND_EVENT));
-              }
-            }}
-            aria-label="Toggle HEB header"
-          >
-            {isHebHeader ? "HEB On" : "HEB Off"}
-          </button>
-        </div>
+            <button
+              type="button"
+              className="dev-radial-main"
+              onClick={() => setIsDevMenuOpen((prev) => !prev)}
+              aria-label="Toggle dev menu"
+            >
+              Dev
+            </button>
+            <button
+              type="button"
+              className="dev-radial-item dev-radial-item--left"
+              onClick={() => setIsBeaconsHidden((prev) => !prev)}
+              aria-label="Toggle beacons visibility"
+            >
+              {isBeaconsHidden ? "Beacons Off" : "Beacons On"}
+            </button>
+            <button
+              type="button"
+              className="dev-radial-item dev-radial-item--top"
+              onClick={() => setIsBeaconDevMode((prev) => !prev)}
+              aria-label="Toggle beacon drag mode"
+            >
+              {isBeaconDevMode ? "Drag On" : "Drag Off"}
+            </button>
+            <button
+              type="button"
+              className="dev-radial-item dev-radial-item--right"
+              onClick={() => setBeaconOffsets({})}
+              aria-label="Reset beacon offsets"
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              className="dev-radial-item dev-radial-item--bottom"
+              onClick={() => {
+                const nextIsHeb = !isHebHeader;
+                setIsHebHeader(nextIsHeb);
+                if (typeof window !== "undefined") {
+                  window.localStorage.setItem(
+                    HEADER_BRAND_KEY,
+                    nextIsHeb ? "heb" : "default",
+                  );
+                  window.dispatchEvent(new Event(HEADER_BRAND_EVENT));
+                }
+              }}
+              aria-label="Toggle HEB header"
+            >
+              {isHebHeader ? "HEB On" : "HEB Off"}
+            </button>
+          </div>
+        )}
       </div>
       <footer className="page-footer">
         <span>© {new Date().getFullYear()} Flexeserve Connect</span>

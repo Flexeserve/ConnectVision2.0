@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import "./WidgetBase.css";
 import "./DoorOpenedAlarmsWidget.css";
+import { createSeededRandom } from "../../lib/seededRandom";
 
 const TIME_SLOTS = ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "00:00", "03:00"];
 
@@ -10,20 +11,21 @@ const buildRangeLabels = (days: number) =>
     TIME_SLOTS.map((slot) => `D${dayIndex + 1} ${slot}`),
   );
 
-const generateSeries = (days: number) => {
+const generateStoreSeries = (days: number, storeId: string) => {
+  const rand = createSeededRandom(`${storeId}:temperature`);
   const pointsPerDay = TIME_SLOTS.length;
   const values: number[] = [];
   const base = 80;
 
   for (let day = 0; day < days; day += 1) {
     const dayStart = values.length;
-    const doorIndex = dayStart + 2 + Math.floor(Math.random() * 3);
-    const dropDepth = 10 + Math.floor(Math.random() * 6); // 10-15C drop
-    const recoverySteps = 2 + Math.floor(Math.random() * 2); // 2-3 points
+    const doorIndex = dayStart + 2 + Math.floor(rand() * 3);
+    const dropDepth = 10 + Math.floor(rand() * 6); // 10-15C drop
+    const recoverySteps = 2 + Math.floor(rand() * 2); // 2-3 points
 
     for (let i = 0; i < pointsPerDay; i += 1) {
       const idx = dayStart + i;
-      const noise = Math.floor(Math.random() * 3) - 1;
+      const noise = Math.floor(rand() * 3) - 1;
       let value = base + noise;
 
       if (idx === doorIndex) {
@@ -40,18 +42,44 @@ const generateSeries = (days: number) => {
   return values;
 };
 
-export default function DoorOpenedAlarmsWidget() {
+// Temperature is a sensor reading, not a countable quantity, so the scope's
+// series is the pointwise average of its stores' own series — a single
+// store shows its own native reading, a region/root shows the blended trend.
+const generateAggregateSeries = (days: number, storeIds: string[]) => {
+  const perStoreSeries = storeIds.map((id) => generateStoreSeries(days, id));
+  const length = perStoreSeries[0]?.length ?? 0;
+  return Array.from({ length }, (_, i) =>
+    Math.round(
+      perStoreSeries.reduce((sum, series) => sum + series[i], 0) / perStoreSeries.length,
+    ),
+  );
+};
+
+type DoorOpenedAlarmsWidgetProps = {
+  storeIds?: string[];
+};
+
+// Below this, the chart's axes and labels can't render legibly — fall back
+// to just the latest reading instead.
+const MIN_CHART_HEIGHT = 180;
+const MIN_CHART_WIDTH = 260;
+
+export default function DoorOpenedAlarmsWidget({
+  storeIds = ["root"],
+}: DoorOpenedAlarmsWidgetProps) {
   const widgetRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState({ width: 320, height: 160 });
   const [range, setRange] = useState("last-week");
+  const [isCompact, setIsCompact] = useState(false);
   const seriesData = useMemo(() => {
-    if (range === "last-3-days") return generateSeries(3);
-    return generateSeries(7);
-  }, [range]);
+    if (range === "last-3-days") return generateAggregateSeries(3, storeIds);
+    return generateAggregateSeries(7, storeIds);
+  }, [range, storeIds]);
   const xLabels = useMemo(
     () => buildRangeLabels(range === "last-3-days" ? 3 : 7),
     [range],
   );
+  const latestReading = seriesData[seriesData.length - 1] ?? 0;
 
   const isPeakIndex = (index: number) => {
     if (seriesData.length < 3) return true;
@@ -67,6 +95,7 @@ export default function DoorOpenedAlarmsWidget() {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
+        setIsCompact(height < MIN_CHART_HEIGHT || width < MIN_CHART_WIDTH);
         const nextWidth = Math.max(220, width - 12);
         const nextHeight = Math.max(140, height - 90);
         setChartSize({ width: nextWidth, height: nextHeight });
@@ -81,17 +110,25 @@ export default function DoorOpenedAlarmsWidget() {
     <div ref={widgetRef} className="widget-card widget-door-opened">
       <div className="widget-title widget-title-row">
         <span>Temperature</span>
-        <select
-          className="alarm-range-select"
-          value={range}
-          onChange={(event) => setRange(event.target.value)}
-          aria-label="Select time range"
-        >
-          <option value="last-3-days">Last 3 days</option>
-          <option value="last-week">Last week</option>
-        </select>
+        {!isCompact && (
+          <select
+            className="alarm-range-select"
+            value={range}
+            onChange={(event) => setRange(event.target.value)}
+            aria-label="Select time range"
+          >
+            <option value="last-3-days">Last 3 days</option>
+            <option value="last-week">Last week</option>
+          </select>
+        )}
       </div>
 
+      {isCompact ? (
+        <div className="door-opened-compact">
+          <span className="door-opened-compact-value">{latestReading}°C</span>
+          <span className="door-opened-compact-label">Latest reading</span>
+        </div>
+      ) : (
       <div className="door-opened-chart">
         <svg width="0" height="0" aria-hidden="true">
           <defs>
@@ -157,6 +194,7 @@ export default function DoorOpenedAlarmsWidget() {
         />
 
       </div>
+      )}
     </div>
   );
 }

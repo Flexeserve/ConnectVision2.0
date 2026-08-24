@@ -9,12 +9,6 @@
   gap: 12px;
 }
 
-.cloud-visual {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 .cloud-title-icon {
   width: 32px;
   height: 32px;
@@ -79,6 +73,10 @@ body.dark .cloud-title-icon {
   flex-wrap: wrap;
 }
 
+.cloud-gauge--compact {
+  justify-content: center;
+}
+
 .cloud-gauge-value {
   display: flex;
   flex-direction: column;
@@ -86,6 +84,15 @@ body.dark .cloud-title-icon {
   gap: 4px;
   width: auto;
   flex: 0 1 220px;
+}
+
+.cloud-gauge--compact .cloud-gauge-value {
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.cloud-gauge--compact .cloud-gauge-number {
+  font-size: clamp(24px, min(20cqi, 34cqb), 88px);
 }
 
 .cloud-pie-wrapper {

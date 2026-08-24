@@ -4,6 +4,32 @@
   gap: 8px;
 }
 
+.alarm-summary-compact {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.alarm-summary-compact-value {
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: clamp(24px, min(20cqi, 34cqb), 88px);
+  font-weight: 800;
+  color: #d94d14;
+  line-height: 1;
+}
+
+.alarm-summary-compact-label {
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: clamp(10px, 3cqw, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--widget-text-secondary);
+}
+
 .alarm-summary-table-wrap {
   flex: 1 1 auto;
   min-height: 0;

@@ -2,16 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import "./WidgetBase.css";
 import "./EnergyCostWidget.css";
+import { seededInt } from "../../lib/seededRandom";
 
-const DATASET = [
-  { day: "Mon", current: 180, last: 160 },
-  { day: "Tue", current: 220, last: 200 },
-  { day: "Wed", current: 190, last: 180 },
-  { day: "Thu", current: 250, last: 220 },
-  { day: "Fri", current: 240, last: 210 },
-  { day: "Sat", current: 280, last: 240 },
-  { day: "Sun", current: 210, last: 190 },
-];
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const CURRENCY_OPTIONS = [
   { code: "GBP", symbol: "£", rate: 0.18 },
@@ -19,18 +12,50 @@ const CURRENCY_OPTIONS = [
   { code: "USD", symbol: "$", rate: 0.23 },
 ];
 
-export default function EnergyCostWidget() {
+// Each store contributes its own daily kWh usage; the scope's dataset is the
+// sum across its stores, so a region/root shows cumulative energy cost while
+// a single-store scope shows just that store's own consumption.
+const buildDataset = (storeIds: string[]) =>
+  DAYS.map((day) => ({
+    day,
+    current: storeIds.reduce(
+      (sum, id) => sum + seededInt(`${id}:energy-current:${day}`, 15, 45),
+      0,
+    ),
+    last: storeIds.reduce(
+      (sum, id) => sum + seededInt(`${id}:energy-last:${day}`, 14, 42),
+      0,
+    ),
+  }));
+
+type EnergyCostWidgetProps = {
+  storeIds?: string[];
+};
+
+// Below this, the line chart can't render legibly alongside the value
+// column — fall back to just the headline cost instead.
+const MIN_CHART_HEIGHT = 165;
+const MIN_CHART_WIDTH = 260;
+
+export default function EnergyCostWidget({
+  storeIds = ["root"],
+}: EnergyCostWidgetProps) {
+  const DATASET = useMemo(() => buildDataset(storeIds), [storeIds]);
   const widgetRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState({ width: 320, height: 160 });
   const [currency, setCurrency] = useState(CURRENCY_OPTIONS[0]);
+  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
     if (!widgetRef.current) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
+        setIsCompact(height < MIN_CHART_HEIGHT || width < MIN_CHART_WIDTH);
         const nextWidth = Math.max(240, width * 0.55);
-        const nextHeight = Math.max(140, height - 80);
+        // Extra buffer beyond title/padding accounts for the two-series
+        // legend MUI renders above the plot, which isn't part of `height`.
+        const nextHeight = Math.max(140, height - 110);
         setChartSize({ width: nextWidth, height: nextHeight });
       }
     });
@@ -40,7 +65,7 @@ export default function EnergyCostWidget() {
 
   const totalKwh = useMemo(
     () => DATASET.reduce((sum, v) => sum + v.current, 0),
-    [],
+    [DATASET],
   );
   const totalCost = useMemo(
     () => totalKwh * currency.rate,
@@ -91,7 +116,7 @@ export default function EnergyCostWidget() {
         <span>Energy Consumption / Cost</span>
       </div>
 
-      <div className="energy-cost-body">
+      <div className={`energy-cost-body ${isCompact ? "energy-cost-body--compact" : ""}`}>
         <div className="energy-cost-left">
           <div className="energy-cost-label">Cost</div>
           <div className="energy-cost-value">
@@ -99,25 +124,28 @@ export default function EnergyCostWidget() {
             {totalCost.toFixed(1)}
           </div>
           <div className="energy-cost-sub">{totalKwh} kWh</div>
-          <select
-            className="energy-currency-select"
-            value={currency.code}
-            onChange={(event) => {
-              const next =
-                CURRENCY_OPTIONS.find((opt) => opt.code === event.target.value) ??
-                CURRENCY_OPTIONS[0];
-              setCurrency(next);
-            }}
-            aria-label="Select currency"
-          >
-            {CURRENCY_OPTIONS.map((opt) => (
-              <option key={opt.code} value={opt.code}>
-                {opt.code}
-              </option>
-            ))}
-          </select>
+          {!isCompact && (
+            <select
+              className="energy-currency-select"
+              value={currency.code}
+              onChange={(event) => {
+                const next =
+                  CURRENCY_OPTIONS.find((opt) => opt.code === event.target.value) ??
+                  CURRENCY_OPTIONS[0];
+                setCurrency(next);
+              }}
+              aria-label="Select currency"
+            >
+              {CURRENCY_OPTIONS.map((opt) => (
+                <option key={opt.code} value={opt.code}>
+                  {opt.code}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
+        {!isCompact && (
         <div className="energy-cost-chart">
           <LineChart
             dataset={DATASET}
@@ -146,6 +174,7 @@ export default function EnergyCostWidget() {
             }}
           />
         </div>
+        )}
       </div>
     </div>
   );

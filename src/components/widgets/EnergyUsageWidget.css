@@ -8,12 +8,6 @@
   gap: 12px;
 }
 
-.energy-visual {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 .schedule-icon {
   width: 32px;
   height: 32px;
@@ -22,12 +16,6 @@
 
 body.dark .schedule-icon {
   filter: invert(1) brightness(1.1);
-}
-
-.energy-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .energy-label {
@@ -59,12 +47,24 @@ body.dark .schedule-icon {
   height: auto;
 }
 
+.energy-gauge--compact {
+  justify-content: center;
+}
+
 .energy-value {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
   width: auto;
+}
+
+.energy-gauge--compact .energy-value {
+  align-items: center;
+}
+
+.energy-gauge--compact .energy-gauge-number {
+  font-size: clamp(24px, min(20cqi, 34cqb), 88px);
 }
 
 .energy-gauge-number {

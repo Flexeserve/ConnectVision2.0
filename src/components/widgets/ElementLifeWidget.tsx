@@ -1,8 +1,22 @@
+import { useMemo } from "react";
 import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
 import "./WidgetBase.css";
 import "./ElementLifeWidget.css";
+import { seededInt } from "../../lib/seededRandom";
 
-export default function ElementLifeWidget() {
+type ElementLifeWidgetProps = {
+  storeIds?: string[];
+};
+
+// Per-store cumulative element-operating hours, summed the same way as
+// FanLifeWidget: rolls up across the current scope, native at a single store.
+export default function ElementLifeWidget({ storeIds = ["root"] }: ElementLifeWidgetProps) {
+  const hours = useMemo(
+    () =>
+      storeIds.reduce((sum, id) => sum + seededInt(`${id}:element-life`, 5, 22), 0),
+    [storeIds],
+  );
+
   return (
     <div className="widget-card widget-element">
       <div className="widget-title">
@@ -10,10 +24,8 @@ export default function ElementLifeWidget() {
         Element Life
       </div>
       <div className="widget-value">
-        45 <span>hrs</span>
+        {hours} <span>hrs</span>
       </div>
-      
-      
     </div>
   );
 }

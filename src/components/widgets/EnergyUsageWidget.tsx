@@ -1,22 +1,47 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import "./WidgetBase.css";
 import "./EnergyUsageWidget.css";
 import scheduleIcon from "../../assets/ScheduleEnergyIcon.svg";
+import { seededInt } from "../../lib/seededRandom";
 
-const complianceData = [
-  { id: 0, value: 52, color: "#1e7d3f", label: "Below" },
-  { id: 1, value: 34, color: "#e28e04", label: "Expected" },
-  { id: 2, value: 14, color: "#a4130e", label: "Above" },
-];
+type EnergyUsageWidgetProps = {
+  storeIds?: string[];
+};
 
-const belowRate = complianceData[0]?.value ?? 0;
+// A percentage can't be summed across stores, so the scope's rate is the
+// average of each store's own compliance rate — a single store shows its
+// own native rate, a region/root shows the blended average of its stores.
+const buildComplianceData = (storeIds: string[]) => {
+  const below = Math.round(
+    storeIds.reduce((sum, id) => sum + seededInt(`${id}:compliance-below`, 30, 68), 0) /
+      storeIds.length,
+  );
+  const above = Math.round(
+    storeIds.reduce((sum, id) => sum + seededInt(`${id}:compliance-above`, 5, 22), 0) /
+      storeIds.length,
+  );
+  const expected = Math.max(0, 100 - below - above);
+  return [
+    { id: 0, value: below, color: "#1e7d3f", label: "Below" },
+    { id: 1, value: expected, color: "#e28e04", label: "Expected" },
+    { id: 2, value: above, color: "#a4130e", label: "Above" },
+  ];
+};
 
-export default function EnergyUsageWidget() {
+// Below this, a pie chart plus its legend can't render without clipping —
+// fall back to just the headline number instead.
+const MIN_CHART_HEIGHT = 165;
+const MIN_CHART_WIDTH = 150;
+
+export default function EnergyUsageWidget({ storeIds = ["root"] }: EnergyUsageWidgetProps) {
+  const complianceData = useMemo(() => buildComplianceData(storeIds), [storeIds]);
+  const belowRate = complianceData[0]?.value ?? 0;
   const widgetRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState(100);
   const [innerRadius, setInnerRadius] = useState(30);
   const [outerRadius, setOuterRadius] = useState(50);
+  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
     if (!widgetRef.current) return;
@@ -25,6 +50,10 @@ export default function EnergyUsageWidget() {
       for (const entry of entries) {
         const containerWidth = entry.contentRect.width;
         const containerHeight = entry.contentRect.height;
+
+        setIsCompact(
+          containerHeight < MIN_CHART_HEIGHT || containerWidth < MIN_CHART_WIDTH,
+        );
 
         // Calculate chart size based on container dimensions
         // Use smaller dimension and scale appropriately
@@ -41,8 +70,6 @@ export default function EnergyUsageWidget() {
     return () => observer.disconnect();
   }, []);
 
-
-
   return (
     <div ref={widgetRef} className="widget-card widget-energy">
       <div className="widget-title">
@@ -51,15 +78,13 @@ export default function EnergyUsageWidget() {
       </div>
 
       <div className="energy-body">
-        <div className="energy-info"></div>
+        <div className={`energy-gauge ${isCompact ? "energy-gauge--compact" : ""}`}>
+          <div className="energy-value">
+            <span className="energy-gauge-number">{belowRate}%</span>
+            <span className="energy-gauge-label">Below schedule</span>
+          </div>
 
-        <div className="energy-visual">
-          <div className="energy-gauge">
-            <div className="energy-value">
-              <span className="energy-gauge-number">{belowRate}%</span>
-              <span className="energy-gauge-label">Below schedule</span>
-            </div>
-
+          {!isCompact && (
             <div className="energy-pie-wrapper">
               <PieChart
                 series={[
@@ -81,9 +106,7 @@ export default function EnergyUsageWidget() {
                 height={chartSize}
               />
             </div>
-
-
-          </div>
+          )}
         </div>
       </div>
     </div>

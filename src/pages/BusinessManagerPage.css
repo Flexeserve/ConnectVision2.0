@@ -35,6 +35,28 @@
   box-sizing: border-box;
 }
 
+.typewriter-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  font-weight: 400;
+  opacity: 1;
+}
+
+.bu-panel-transition {
+  animation: buPanelFade 260ms ease;
+}
+
+@keyframes buPanelFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 
 
@@ -119,6 +141,71 @@
   transition:
     background 150ms ease,
     color 150ms ease;
+}
+
+.widget-visibility-panel {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: -8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--panel-bg);
+  animation: fadeWidgets 220ms ease;
+}
+
+.widget-visibility-panel-label {
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.widget-visibility-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--app-bg);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.widget-visibility-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1e7d3f;
+  flex: 0 0 auto;
+}
+
+.widget-visibility-chip--hidden {
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+.widget-visibility-chip--hidden .widget-visibility-chip-dot {
+  background: var(--text-muted);
+}
+
+.widget-visibility-chip:hover {
+  border-color: var(--text-primary);
 }
 
 .dashboard-edit-fab {

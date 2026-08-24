@@ -342,6 +342,24 @@ const HEB_STORE_TITLE_BY_ID = HEB_REGIONS.flatMap((region) => region.stores).red
   return acc;
 }, {});
 
+// Flat store-id lists per scope, used so widget metrics can be computed per
+// individual store and summed/averaged upward (region/root show the
+// cumulative of their stores; a single store shows its own native reading).
+const STORE_IDS_BY_REGION = REGIONS.reduce<Record<string, string[]>>((acc, region) => {
+  acc[region.id] = region.subRegions.flatMap((subRegion) =>
+    subRegion.stores.map((store) => store.id),
+  );
+  return acc;
+}, {});
+
+const ALL_STORE_IDS: string[] = REGIONS.flatMap((region) =>
+  region.subRegions.flatMap((subRegion) => subRegion.stores.map((store) => store.id)),
+);
+
+const HEB_ALL_STORE_IDS: string[] = HEB_REGIONS.flatMap((region) =>
+  region.stores.map((store) => store.id),
+);
+
 export default function App() {
   const [heroVisible, setHeroVisible] = React.useState(true);
   const [selectorVisible, setSelectorVisible] = React.useState(false);
@@ -355,8 +373,6 @@ export default function App() {
   const [selectedStoreId, setSelectedStoreId] = React.useState<string | null>(
     null,
   );
-  const [regionLayerEnter, setRegionLayerEnter] = React.useState(false);
-  const [subRegionLayerEnter, setSubRegionLayerEnter] = React.useState(false);
   const [storeLayerEnter, setStoreLayerEnter] = React.useState(false);
   const [enterDirection, setEnterDirection] = React.useState<
     "left" | "right" | null
@@ -501,8 +517,6 @@ export default function App() {
     //console.log("App: Back to selector");
     // start exit animation
     setPageEnter(false);
-    setRegionLayerEnter(false);
-    setSubRegionLayerEnter(false);
     setStoreLayerEnter(false);
     // after transition finishes, clear role and show selector
     setTimeout(() => {
@@ -520,27 +534,16 @@ export default function App() {
       setSelectedRegionId(null);
       setSelectedSubRegionId(id);
       setSelectedStoreId(null);
-      setRegionLayerEnter(false);
-      setStoreLayerEnter(false);
-      setSubRegionLayerEnter(false);
-      requestAnimationFrame(() => setSubRegionLayerEnter(true));
       return;
     }
     setSelectedRegionId(id);
     setSelectedSubRegionId(null);
     setSelectedStoreId(null);
-    setSubRegionLayerEnter(false);
-    setStoreLayerEnter(false);
-    setRegionLayerEnter(false);
-    requestAnimationFrame(() => setRegionLayerEnter(true));
   };
 
   const handleOpenSubRegion = (id: string) => {
     setSelectedSubRegionId(id);
     setSelectedStoreId(null);
-    setStoreLayerEnter(false);
-    setSubRegionLayerEnter(false);
-    requestAnimationFrame(() => setSubRegionLayerEnter(true));
   };
 
   const handleOpenStore = (id: string) => {
@@ -557,32 +560,14 @@ export default function App() {
   };
 
   const handleBackToRegion = () => {
-    if (isHebMode) {
-      setSubRegionLayerEnter(false);
-      setStoreLayerEnter(false);
-      setTimeout(() => {
-        setSelectedStoreId(null);
-        setSelectedSubRegionId(null);
-      }, SLIDE_MS);
-      return;
-    }
-    setSubRegionLayerEnter(false);
-    setStoreLayerEnter(false);
-    setTimeout(() => {
-      setSelectedStoreId(null);
-      setSelectedSubRegionId(null);
-    }, SLIDE_MS);
+    setSelectedStoreId(null);
+    setSelectedSubRegionId(null);
   };
 
   const handleBackToBusinessManager = () => {
-    setRegionLayerEnter(false);
-    setSubRegionLayerEnter(false);
-    setStoreLayerEnter(false);
-    setTimeout(() => {
-      setSelectedStoreId(null);
-      setSelectedSubRegionId(null);
-      setSelectedRegionId(null);
-    }, SLIDE_MS);
+    setSelectedStoreId(null);
+    setSelectedSubRegionId(null);
+    setSelectedRegionId(null);
   };
 
   const handleBackToHero = () => {
@@ -638,47 +623,55 @@ export default function App() {
       )}
 
       {/* Show selected role page */}
-      {selectedRole === "manager" && (
+      {selectedRole === "manager" && (() => {
+        let bmHeading: string | undefined;
+        let bmRows: BURow[];
+        let bmOnOpen: (id: string) => void;
+        let bmOnBack: () => void;
+        let bmLevelKey: string;
+        let bmStoreIds: string[];
+
+        if (selectedSubRegionId) {
+          bmHeading = isHebMode
+            ? HEB_REGION_TITLE_BY_ID[selectedSubRegionId] ?? "View All Stores"
+            : SUB_REGION_TITLE_BY_ID[selectedSubRegionId] ?? "View All Stores";
+          bmRows = isHebMode
+            ? HEB_STORE_ROWS_BY_REGION[selectedSubRegionId] ?? []
+            : STORE_ROWS_BY_SUB_REGION[selectedSubRegionId] ?? [];
+          bmOnOpen = handleOpenStore;
+          bmOnBack = isHebMode ? handleBackToBusinessManager : handleBackToRegion;
+          bmLevelKey = `subregion-${selectedSubRegionId}`;
+          // Deepest level within Business Manager: the stores themselves —
+          // metrics here are the stores' own native readings, not a rollup.
+          bmStoreIds = bmRows.map((row) => row.id);
+        } else if (!isHebMode && selectedRegionId) {
+          bmHeading = REGION_TITLE_BY_ID[selectedRegionId] ?? "View All Markets";
+          bmRows = SUB_REGION_ROWS_BY_REGION[selectedRegionId] ?? [];
+          bmOnOpen = handleOpenSubRegion;
+          bmOnBack = handleBackToBusinessManager;
+          bmLevelKey = `region-${selectedRegionId}`;
+          bmStoreIds = STORE_IDS_BY_REGION[selectedRegionId] ?? [];
+        } else {
+          bmHeading = undefined;
+          bmRows = isHebMode ? HEB_REGION_ROWS : REGION_ROWS;
+          bmOnOpen = handleOpenRegion;
+          bmOnBack = handleBackToSelector;
+          bmLevelKey = "root";
+          bmStoreIds = isHebMode ? HEB_ALL_STORE_IDS : ALL_STORE_IDS;
+        }
+
+        return (
         <div
           className={`page-slide ${enterDirection === "left" ? "from-left" : ""} ${pageEnter ? "enter" : ""}`}
         >
           <BusinessManagerPage
-            onBack={handleBackToSelector}
-            rows={isHebMode ? HEB_REGION_ROWS : REGION_ROWS}
-            onOpen={handleOpenRegion}
+            onBack={bmOnBack}
+            heading={bmHeading}
+            rows={bmRows}
+            onOpen={bmOnOpen}
+            levelKey={bmLevelKey}
+            storeIds={bmStoreIds}
           />
-          {!isHebMode && selectedRegionId && (
-            <div
-              className={`subpage-slide from-right ${regionLayerEnter ? "enter" : ""}`}
-            >
-              <BusinessManagerPage
-                onBack={handleBackToBusinessManager}
-                heading={REGION_TITLE_BY_ID[selectedRegionId] ?? "View All Markets"}
-                rows={SUB_REGION_ROWS_BY_REGION[selectedRegionId] ?? []}
-                onOpen={handleOpenSubRegion}
-              />
-            </div>
-          )}
-          {selectedSubRegionId && (
-            <div
-              className={`subpage-slide from-right ${subRegionLayerEnter ? "enter" : ""}`}
-            >
-              <BusinessManagerPage
-                onBack={isHebMode ? handleBackToBusinessManager : handleBackToRegion}
-                heading={
-                  isHebMode
-                    ? HEB_REGION_TITLE_BY_ID[selectedSubRegionId] ?? "View All Stores"
-                    : SUB_REGION_TITLE_BY_ID[selectedSubRegionId] ?? "View All Stores"
-                }
-                rows={
-                  isHebMode
-                    ? HEB_STORE_ROWS_BY_REGION[selectedSubRegionId] ?? []
-                    : STORE_ROWS_BY_SUB_REGION[selectedSubRegionId] ?? []
-                }
-                onOpen={handleOpenStore}
-              />
-            </div>
-          )}
           {selectedStoreId && (
             <div
               className={`subpage-slide from-right ${storeLayerEnter ? "enter" : ""}`}
@@ -694,7 +687,8 @@ export default function App() {
             </div>
           )}
         </div>
-      )}
+        );
+      })()}
       {selectedRole === "operator" && (
         <div
           className={`page-slide ${enterDirection === "right" ? "from-right" : ""} ${pageEnter ? "enter" : ""}`}
