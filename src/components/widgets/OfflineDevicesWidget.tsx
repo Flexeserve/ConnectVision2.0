@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./OfflineDevicesWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -22,7 +23,7 @@ export default function OfflineDevicesWidget({
   const total = gatewayErrors + commanderOffline;
 
   return (
-    <div className="widget-card widget-offline-devices">
+    <Card className="widget-card widget-offline-devices">
       <div className="widget-title">Offline Devices</div>
       <div className="offline-devices-body">
         <div className="offline-devices-total">
@@ -40,6 +41,6 @@ export default function OfflineDevicesWidget({
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -17,6 +17,10 @@
   --widget-hover-duration: 180ms;
 }
 
+/* The card's own background/border/radius/hover-lift now come from the MUI
+   theme (see src/theme.ts, MuiCard styleOverrides) since .widget-card
+   renders as an MUI <Card> — one source of truth instead of a CSS variable
+   any file could silently break. This class now only carries layout. */
 .widget-card {
   --widget-text-primary: var(--widget-text, #333333);
   --widget-text-secondary: var(--text-muted, #5d5d5d);
@@ -24,11 +28,7 @@
   --widget-body-bg: #f0f0f0;
   --widget-border-subtle: var(--widget-border, rgba(0, 0, 0, 0.08));
 
-  background: var(--widget-bg);
-  border: 1px solid var(--widget-border-subtle);
   padding: var(--widget-padding) var(--widget-padding) 10px;
-  border-radius: var(--widget-border-radius);
-  position: relative;
   overflow: hidden;
   height: 100%;
   display: flex;
@@ -37,15 +37,6 @@
   /* Enable container queries for dynamic content scaling */
   container-type: size;
   container-name: widget;
-
-  transition:
-    transform var(--widget-hover-duration) ease,
-    box-shadow var(--widget-hover-duration) ease;
-}
-
-.widget-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
 }
 
 body.dark .widget-card {

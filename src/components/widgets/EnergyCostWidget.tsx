@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./EnergyCostWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -111,7 +112,7 @@ export default function EnergyCostWidget({
   );
 
   return (
-    <div ref={widgetRef} className="widget-card widget-energy-cost">
+    <Card ref={widgetRef} className="widget-card widget-energy-cost">
       <div className="widget-title">
         <span>Energy Consumption / Cost</span>
       </div>
@@ -176,6 +177,6 @@ export default function EnergyCostWidget({
         </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

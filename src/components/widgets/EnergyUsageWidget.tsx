@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./EnergyUsageWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -70,7 +71,7 @@ export default function EnergyUsageWidget({ storeIds = ["root"] }: EnergyUsageWi
   }, []);
 
   return (
-    <div ref={widgetRef} className="widget-card widget-energy">
+    <Card ref={widgetRef} className="widget-card widget-energy">
       <div className="widget-title">
         <span>Schedule compliance</span>
       </div>
@@ -107,6 +108,6 @@ export default function EnergyUsageWidget({ storeIds = ["root"] }: EnergyUsageWi
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

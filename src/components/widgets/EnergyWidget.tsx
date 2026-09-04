@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Card, Typography } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
 import "./WidgetBase.css";
 import "./EnergyWidget.css";
@@ -55,7 +55,7 @@ export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps)
   }, []);
 
   return (
-    <div ref={widgetRef} className="widget-card widget-energy-widget">
+    <Card ref={widgetRef} className="widget-card widget-energy-widget">
       <div className="widget-title">
         <span>Energy widget</span>
       </div>
@@ -111,6 +111,6 @@ export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps)
           </Box>
         )}
       </Box>
-    </div>
+    </Card>
   );
 }

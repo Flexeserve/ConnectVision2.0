@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./FanLifeWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -18,11 +19,11 @@ export default function FanLifeWidget({ storeIds = ["root"] }: FanLifeWidgetProp
   );
 
   return (
-    <div className="widget-card widget-fan">
+    <Card className="widget-card widget-fan">
       <div className="widget-title">Fan Life</div>
       <div className="widget-value">
         {hours} <span>hrs</span>
       </div>
-    </div>
+    </Card>
   );
 }

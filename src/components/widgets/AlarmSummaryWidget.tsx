@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./AlarmSummaryWidget.css";
 import { createSeededRandom, seededPick } from "../../lib/seededRandom";
@@ -90,7 +91,7 @@ export default function AlarmSummaryWidget({
   }, []);
 
   return (
-    <div ref={widgetRef} className="widget-card widget-alarm-summary">
+    <Card ref={widgetRef} className="widget-card widget-alarm-summary">
       <div className="widget-title">
         <span>Alarm Summary</span>
       </div>
@@ -152,6 +153,6 @@ export default function AlarmSummaryWidget({
           </div>
         </>
       )}
-    </div>
+    </Card>
   );
 }

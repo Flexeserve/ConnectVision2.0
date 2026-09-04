@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { BarChart } from "@mui/x-charts/BarChart";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./TemperatureAlarmsWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -88,7 +89,7 @@ export default function TemperatureAlarmsWidget({
   const ringSize = Math.max(72, Math.min(panelSize.width, panelSize.height - 40, 176));
 
   return (
-    <div className="widget-card widget-temp-alarms">
+    <Card className="widget-card widget-temp-alarms">
       <div className="widget-title">Temperature Alarms</div>
       <div className="temp-alarms-body">
         <div className="temp-alarms-panel" ref={panelRef}>
@@ -155,6 +156,6 @@ export default function TemperatureAlarmsWidget({
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

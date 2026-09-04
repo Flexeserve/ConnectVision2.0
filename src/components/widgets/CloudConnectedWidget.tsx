@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./CloudConnectedWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -76,7 +77,7 @@ export default function CloudConnectedWidget({
   }, []);
 
   return (
-    <div ref={widgetRef} className="widget-card widget-cloud">
+    <Card ref={widgetRef} className="widget-card widget-cloud">
       <div className="widget-title">
         <span>Cloud Connected</span>
       </div>
@@ -112,6 +113,6 @@ export default function CloudConnectedWidget({
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

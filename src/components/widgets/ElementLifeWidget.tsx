@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./ElementLifeWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -17,11 +18,11 @@ export default function ElementLifeWidget({ storeIds = ["root"] }: ElementLifeWi
   );
 
   return (
-    <div className="widget-card widget-element">
+    <Card className="widget-card widget-element">
       <div className="widget-title">Element Life</div>
       <div className="widget-value">
         {hours} <span>hrs</span>
       </div>
-    </div>
+    </Card>
   );
 }

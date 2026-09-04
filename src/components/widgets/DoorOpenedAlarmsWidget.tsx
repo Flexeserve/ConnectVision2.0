@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
+import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./DoorOpenedAlarmsWidget.css";
 import { createSeededRandom } from "../../lib/seededRandom";
@@ -107,7 +108,7 @@ export default function DoorOpenedAlarmsWidget({
 
 
   return (
-    <div ref={widgetRef} className="widget-card widget-door-opened">
+    <Card ref={widgetRef} className="widget-card widget-door-opened">
       <div className="widget-title widget-title-row">
         <span>Temperature</span>
         {!isCompact && (
@@ -195,6 +196,6 @@ export default function DoorOpenedAlarmsWidget({
 
       </div>
       )}
-    </div>
+    </Card>
   );
 }
