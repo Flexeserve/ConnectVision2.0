@@ -32,6 +32,7 @@ import Beacon, { type BeaconOffset } from "../components/Beacon";
 import TypewriterText from "../components/TypewriterText";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 
 const ReactGridLayout = WidthProvider(RGL);
@@ -365,18 +366,21 @@ export default function BusinessManagerPage({
 
   const DEFAULT_LAYOUT: Layout[] = React.useMemo(
     () => [
-      { i: "fan-life", x: 0, y: 0, w: 6, h: 5, minW: 3, minH: 4 },
-      { i: "offline-devices", x: 6, y: 0, w: 6, h: 6, minW: 3, minH: 6 },
-      { i: "door-opened", x: 0, y: 6, w: 12, h: 8, minW: 4, minH: 5 },
-      { i: "element", x: 0, y: 14, w: 6, h: 5, minW: 3, minH: 4 },
-      { i: "alarms", x: 6, y: 14, w: 6, h: 5, minW: 3, minH: 4 },
-      { i: "energy", x: 0, y: 19, w: 6, h: 8, minW: 3, minH: 6 },
-      { i: "cloud", x: 6, y: 19, w: 6, h: 8, minW: 3, minH: 6 },
-      { i: "alarm-summary", x: 0, y: 27, w: 12, h: 11, minW: 5, minH: 5 },
-      { i: "energy-cost", x: 0, y: 38, w: 12, h: 12, minW: 4, minH: 6 },
-      { i: "energy-widget", x: 0, y: 50, w: 12, h: 8, minW: 4, minH: 5 },
-      { i: "stores-online", x: 0, y: 58, w: 6, h: 9, minW: 4, minH: 6 },
-      { i: "temp-alarms", x: 6, y: 58, w: 5, h: 8, minW: 4, minH: 6, maxW: 8, maxH: 13 },
+      // minW/minH keep each widget's chart/table above its own compact-fallback
+      // threshold; maxW/maxH cap how far it can be resized so nothing grows
+      // unbounded — checked empirically per widget, not just guessed.
+      { i: "fan-life", x: 0, y: 0, w: 6, h: 4, minW: 3, minH: 4, maxW: 8, maxH: 8 },
+      { i: "offline-devices", x: 6, y: 0, w: 6, h: 6, minW: 3, minH: 6, maxW: 8, maxH: 9 },
+      { i: "door-opened", x: 0, y: 6, w: 12, h: 8, minW: 4, minH: 8, maxW: 12, maxH: 11 },
+      { i: "element", x: 0, y: 13, w: 6, h: 4, minW: 3, minH: 4, maxW: 8, maxH: 8 },
+      { i: "alarms", x: 6, y: 13, w: 6, h: 4, minW: 3, minH: 4, maxW: 8, maxH: 8 },
+      { i: "energy", x: 0, y: 17, w: 6, h: 8, minW: 3, minH: 8, maxW: 9, maxH: 11 },
+      { i: "cloud", x: 6, y: 17, w: 6, h: 8, minW: 3, minH: 8, maxW: 9, maxH: 11 },
+      { i: "alarm-summary", x: 0, y: 25, w: 12, h: 8, minW: 5, minH: 8, maxW: 12, maxH: 13 },
+      { i: "energy-cost", x: 0, y: 33, w: 12, h: 9, minW: 4, minH: 9, maxW: 12, maxH: 14 },
+      { i: "energy-widget", x: 0, y: 42, w: 12, h: 7, minW: 4, minH: 7, maxW: 12, maxH: 11 },
+      { i: "stores-online", x: 0, y: 49, w: 6, h: 8, minW: 4, minH: 8, maxW: 8, maxH: 12 },
+      { i: "temp-alarms", x: 6, y: 49, w: 5, h: 8, minW: 4, minH: 6, maxW: 8, maxH: 13 },
     ],
     [],
   );
@@ -793,8 +797,9 @@ export default function BusinessManagerPage({
                 margin={GRID_MARGIN}
                 onLayoutChange={handleLayoutChange}
                 onDragStop={handleLayoutChange}
+                onResizeStop={handleLayoutChange}
                 isDraggable={isEditing}
-                isResizable={false}
+                isResizable={isEditing}
                 draggableHandle=".widget-drag-handle"
                 compactType="vertical"
                 measureBeforeMount={false}
