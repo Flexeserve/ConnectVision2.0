@@ -1,0 +1,119 @@
+.widget-stores-online {
+  background: var(--widget-bg);
+}
+
+.widget-stores-online .widget-title {
+  font-size: clamp(12px, 5cqw, 20px);
+  font-weight: 800;
+}
+
+/* Override the generic widget-card padding/background
+   (.widget-card > :not(.widget-title)): this row lays out its own
+   icon column and panel card, each with their own spacing. */
+.widget-stores-online .stores-online-body {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.stores-online-icon {
+  flex: 0 0 auto;
+  width: clamp(64px, 30cqw, 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: var(--widget-text-primary);
+}
+
+.stores-online-icon-back,
+.stores-online-icon-front {
+  position: absolute;
+}
+
+.stores-online-icon-back {
+  font-size: clamp(36px, 20cqw, 72px) !important;
+  opacity: 0.55;
+  transform: translate(-38%, -34%);
+}
+
+.stores-online-icon-front {
+  font-size: clamp(48px, 26cqw, 92px) !important;
+  transform: translate(12%, 12%);
+}
+
+.stores-online-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--panel-bg-hover, #d3d3d3);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.stores-online-ring-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.stores-online-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: clamp(20px, min(16cqi, 26cqb), 40px);
+  font-weight: 800;
+  color: var(--widget-text-primary);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.stores-online-value--compact {
+  position: static;
+  font-size: clamp(28px, min(20cqi, 34cqb), 64px);
+}
+
+.stores-online-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stores-online-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(10px, 3cqw, 13px);
+  color: var(--widget-text-primary);
+}
+
+.stores-online-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.stores-online-dot--online {
+  background: #1fb05c;
+}
+
+.stores-online-dot--offline {
+  background: #adadad;
+}

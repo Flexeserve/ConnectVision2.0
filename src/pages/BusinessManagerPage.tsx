@@ -22,6 +22,7 @@ import ElementLifeWidget from "../components/widgets/ElementLifeWidget";
 import AlarmsWidget from "../components/widgets/AlarmsWidget";
 import OfflineDevicesWidget from "../components/widgets/OfflineDevicesWidget";
 import CloudConnectedWidget from "../components/widgets/CloudConnectedWidget";
+import StoresOnlineWidget from "../components/widgets/StoresOnlineWidget";
 import AlarmSummaryWidget from "../components/widgets/AlarmSummaryWidget";
 import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget";
 import EnergyWidget from "../components/widgets/EnergyWidget";
@@ -216,6 +217,11 @@ export default function BusinessManagerPage({
         element: <CloudConnectedWidget storeIds={scopeStoreIds} />,
       },
       {
+        id: "stores-online",
+        label: "Stores Online",
+        element: <StoresOnlineWidget storeIds={scopeStoreIds} />,
+      },
+      {
         id: "alarm-summary",
         label: "Alarm Summary",
         element: (
@@ -364,6 +370,7 @@ export default function BusinessManagerPage({
       { i: "alarm-summary", x: 0, y: 27, w: 12, h: 11, minW: 5, minH: 5 },
       { i: "energy-cost", x: 0, y: 38, w: 12, h: 12, minW: 4, minH: 6 },
       { i: "energy-widget", x: 0, y: 50, w: 12, h: 8, minW: 4, minH: 5 },
+      { i: "stores-online", x: 0, y: 58, w: 6, h: 9, minW: 4, minH: 6 },
     ],
     [],
   );
