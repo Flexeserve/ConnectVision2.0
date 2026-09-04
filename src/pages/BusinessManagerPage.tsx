@@ -6,7 +6,6 @@ import {
   Stack,
   TextField,
   InputAdornment,
-  Alert,
 } from "@mui/material";
 import connectLogo from "../assets/connect_flexeserve.svg";
 import connectLogoInversed from "../assets/connect_flexeserve_inversed.svg";
@@ -247,6 +246,24 @@ export default function BusinessManagerPage({
     ],
     [totalActiveAlarms, totalOfflineDevices, scopeSeed, scopeStoreIds, scopeLocations],
   );
+
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  // Drilling into a different region/store shouldn't leave a stale filter
+  // silently hiding rows at the new level.
+  React.useEffect(() => {
+    setSearchQuery("");
+  }, [levelKey, heading]);
+
+  const visibleBuRows = React.useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return buRows;
+    return buRows.filter(
+      (row) =>
+        row.title.toLowerCase().includes(query) ||
+        (row.subtitle ?? "").toLowerCase().includes(query),
+    );
+  }, [buRows, searchQuery]);
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [hiddenWidgetIds, setHiddenWidgetIds] = React.useState<string[]>(() => {
@@ -525,6 +542,8 @@ export default function BusinessManagerPage({
                 variant="outlined"
                 size="small"
                 placeholder="Write to start search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment
@@ -622,7 +641,15 @@ export default function BusinessManagerPage({
                 offset={beaconOffsets["bu-list"]}
                 onOffsetChange={(next) => handleBeaconOffsetChange("bu-list", next)}
               />
-              {buRows.map((r, index) => (
+              {visibleBuRows.length === 0 && (
+                <Typography
+                  variant="body2"
+                  sx={{ color: "var(--text-muted)", padding: "12px 4px" }}
+                >
+                  No matches for "{searchQuery}"
+                </Typography>
+              )}
+              {visibleBuRows.map((r, index) => (
                 <Box
                   key={r.id}
                   className="bu-row"
@@ -745,10 +772,7 @@ export default function BusinessManagerPage({
                 {isEditing ? "✓" : "✎"}
               </button>
             </div>
-            <Alert severity="info" variant="outlined" sx={{ mb: 2, color: "var(--text-primary)" }}>
-              Data shown here is not sourced from any connected devices.
-              Demonstration purposes only.
-            </Alert>
+            
             <Box
               sx={{
                 width: "100%",
