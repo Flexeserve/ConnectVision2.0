@@ -145,15 +145,27 @@ export default function HeroSlide({ visible, onClose }: Props) {
           type="button"
           className="hero-theme-toggle"
           onClick={() => setIsDarkMode((prev) => !prev)}
-          aria-label="Toggle dark mode"
+          aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+          title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
-          <span className="hero-theme-label">
-            {isDarkMode ? "Dark" : "Light"} mode
-          </span>
-          <span
-            className={`hero-theme-switch ${isDarkMode ? "is-on" : ""}`}
-            aria-hidden
-          />
+          {isDarkMode ? (
+            // Moon icon: shown while dark mode is active; click switches to light.
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden>
+              <path
+                d="M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 1 0 20.354 15.354Z"
+                fill="currentColor"
+              />
+            </svg>
+          ) : (
+            // Sun icon: shown while light mode is active; click switches to dark.
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden>
+              <circle cx="12" cy="12" r="4.5" fill="currentColor" />
+              <g stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                <path d="M12 2.5v2.4M12 19.1v2.4M21.5 12h-2.4M4.9 12H2.5" />
+                <path d="M18.36 5.64l-1.7 1.7M7.34 16.66l-1.7 1.7M18.36 18.36l-1.7-1.7M7.34 7.34l-1.7-1.7" />
+              </g>
+            </svg>
+          )}
         </button>
       </Box>
     </div>
