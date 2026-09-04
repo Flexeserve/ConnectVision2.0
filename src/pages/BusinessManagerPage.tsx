@@ -32,7 +32,6 @@ import Beacon, { type BeaconOffset } from "../components/Beacon";
 import TypewriterText from "../components/TypewriterText";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 
 const ReactGridLayout = WidthProvider(RGL);
@@ -794,9 +793,8 @@ export default function BusinessManagerPage({
                 margin={GRID_MARGIN}
                 onLayoutChange={handleLayoutChange}
                 onDragStop={handleLayoutChange}
-                onResizeStop={handleLayoutChange}
                 isDraggable={isEditing}
-                isResizable={isEditing}
+                isResizable={false}
                 draggableHandle=".widget-drag-handle"
                 compactType="vertical"
                 measureBeforeMount={false}
