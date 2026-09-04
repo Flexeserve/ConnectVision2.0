@@ -37,7 +37,7 @@ import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 const ReactGridLayout = WidthProvider(RGL);
 
 // Grid configuration constants
-const GRID_COLS = 12; // Increased from 6 for finer horizontal positioning
+const GRID_COLS = 20; // Increased from 6 for finer horizontal positioning
 const GRID_ROW_HEIGHT = 20; // Halved from 40px for tighter widget grid sizing
 const GRID_MARGIN: [number, number] = [8, 8];
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
@@ -394,21 +394,24 @@ export default function BusinessManagerPage({
       // to a bare number — found empirically per widget (not guessed), so
       // the dashboard still shows its charts/gauges/table by default; minH
       // still lets each one be dragged smaller into its compact view.
-      { i: "fan-life", x: 0, y: 0, w: 6, h: 3, minW: 4, minH: 3, maxW: 7, maxH: 6 },
-      { i: "offline-devices", x: 6, y: 0, w: 6, h: 6, minW: 4, minH: 6, maxW: 7, maxH: 8 },
-      { i: "door-opened", x: 0, y: 6, w: 12, h: 8, minW: 9, minH: 4, maxW: 12, maxH: 10 },
-      { i: "element", x: 0, y: 14, w: 6, h: 3, minW: 4, minH: 3, maxW: 7, maxH: 6 },
-      { i: "alarms", x: 6, y: 14, w: 6, h: 3, minW: 4, minH: 3, maxW: 7, maxH: 6 },
-      { i: "energy", x: 0, y: 17, w: 6, h: 7, minW: 4, minH: 4, maxW: 7, maxH: 9 },
-      { i: "cloud", x: 6, y: 17, w: 6, h: 8, minW: 4, minH: 4, maxW: 7, maxH: 10 },
-      { i: "alarm-summary", x: 0, y: 25, w: 12, h: 7, minW: 9, minH: 4, maxW: 12, maxH: 9 },
-      { i: "energy-cost", x: 0, y: 32, w: 12, h: 7, minW: 9, minH: 4, maxW: 12, maxH: 9 },
-      { i: "energy-widget", x: 0, y: 39, w: 12, h: 7, minW: 9, minH: 4, maxW: 12, maxH: 9 },
-      { i: "stores-online", x: 0, y: 46, w: 6, h: 8, minW: 4, minH: 4, maxW: 7, maxH: 10 },
+      // x/w/minW/maxW below are scaled for GRID_COLS=20 (factor 5/3 from the
+      // 12-col values these were originally tuned at) — h/minH/maxH are row
+      // units, unrelated to column count, so those are untouched.
+      { i: "fan-life", x: 0, y: 0, w: 10, h: 3, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      { i: "offline-devices", x: 10, y: 0, w: 10, h: 6, minW: 7, minH: 6, maxW: 12, maxH: 8 },
+      { i: "door-opened", x: 0, y: 6, w: 20, h: 8, minW: 15, minH: 4, maxW: 20, maxH: 10 },
+      { i: "element", x: 0, y: 14, w: 10, h: 3, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      { i: "alarms", x: 10, y: 14, w: 10, h: 3, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      { i: "energy", x: 0, y: 17, w: 10, h: 7, minW: 7, minH: 4, maxW: 12, maxH: 9 },
+      { i: "cloud", x: 10, y: 17, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
+      { i: "alarm-summary", x: 0, y: 25, w: 20, h: 7, minW: 15, minH: 4, maxW: 20, maxH: 9 },
+      { i: "energy-cost", x: 0, y: 32, w: 20, h: 7, minW: 15, minH: 4, maxW: 20, maxH: 9 },
+      { i: "energy-widget", x: 0, y: 39, w: 20, h: 7, minW: 15, minH: 4, maxW: 20, maxH: 9 },
+      { i: "stores-online", x: 0, y: 46, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
       // maxH raised a bit above the other widgets' ~2-3 unit window: it needs
       // to clear its own bar-chart alternation threshold (EXPAND_HEIGHT),
       // which the tighter cap used elsewhere wasn't enough to reach.
-      { i: "temp-alarms", x: 6, y: 46, w: 5, h: 7, minW: 4, minH: 4, maxW: 7, maxH: 11 },
+      { i: "temp-alarms", x: 10, y: 46, w: 8, h: 7, minW: 7, minH: 4, maxW: 12, maxH: 11 },
     ],
     [],
   );
