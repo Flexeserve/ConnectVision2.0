@@ -75,16 +75,23 @@ export default function HeroSlide({ visible, onClose }: Props) {
                   aria-label="Get started"
                   className="hero-get-connected"
                   sx={{
-                    px: 2,
-                    py: 1,
-                    minWidth: "12rem",
-                    fontSize: "1.05rem",
+                    // Sized as a kiosk touch target, not a desktop link: tall
+                    // enough to comfortably tap (≈60px) and wide enough to
+                    // read at a distance, well past the ~44px accessibility
+                    // minimum.
+                    px: 4,
+                    py: 2,
+                    minWidth: "16rem",
+                    minHeight: "3.75rem",
+                    fontSize: "1.25rem",
                     fontWeight: 800,
+                    letterSpacing: "0.01em",
                     textTransform: "none",
                     color: "#fff",
-                    borderRadius: "16px",
+                    borderRadius: "18px",
                     position: "relative",
                     background: "#d94d14",
+                    boxShadow: "0 10px 24px rgba(217, 77, 20, 0.4)",
                     transition:
                       "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease",
                     "&::after": {
@@ -103,12 +110,20 @@ export default function HeroSlide({ visible, onClose }: Props) {
                       pointerEvents: "none",
                     },
                     "&:hover": {
+                      background: "#d94d14",
                       transform: "translateY(-4px) scale(1.03)",
+                      boxShadow: "0 14px 28px rgba(217, 77, 20, 0.48)",
                     },
                     "&:active": {
-                      transform: "translateY(-1px) scale(0.99)",
+                      transform: "translateY(-1px) scale(0.97)",
+                      boxShadow: "0 6px 16px rgba(217, 77, 20, 0.4)",
                     },
-                    "&:focus-visible": {},
+                    "&:focus-visible": {
+                      outline: "3px solid #fff",
+                      outlineOffset: "3px",
+                      boxShadow:
+                        "0 0 0 6px rgba(217, 77, 20, 0.35), 0 10px 24px rgba(217, 77, 20, 0.4)",
+                    },
                   }}
                 >
                   Get Connected
