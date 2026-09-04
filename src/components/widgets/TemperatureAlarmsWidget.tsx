@@ -1,0 +1,173 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { PieChart } from "@mui/x-charts/PieChart";
+import { BarChart } from "@mui/x-charts/BarChart";
+import DeviceThermostatOutlinedIcon from "@mui/icons-material/DeviceThermostatOutlined";
+import WarningIcon from "@mui/icons-material/Warning";
+import "./WidgetBase.css";
+import "./TemperatureAlarmsWidget.css";
+import { seededInt } from "../../lib/seededRandom";
+
+type TemperatureAlarmsWidgetProps = {
+  storeIds?: string[];
+};
+
+// The icon's warning badge is a universal "this reading has an alarm"
+// indicator, independent of which direction (high/low) the alarm is for.
+const ALERT_BADGE_COLOR = "#f14734";
+const HIGH_COLOR = "#f14734";
+const LOW_COLOR = "#205ffd";
+const NONE_COLOR = "#adadad";
+
+const DAYS = 7;
+const DAY_LABELS = ["D1", "D2", "D3", "D4", "D5", "D6", "Today"];
+
+// Most days a store raises no temperature alarms; each store independently
+// has a small seeded chance of raising 1-3 on a given day, so a region/root
+// scope's daily count is the sum across however many stores it covers.
+const buildDailyCounts = (storeIds: string[], seedKey: string) =>
+  Array.from({ length: DAYS }, (_, dayIndex) =>
+    storeIds.reduce((sum, id) => {
+      const raised = seededInt(`${id}:${seedKey}:day${dayIndex}:roll`, 0, 99) < 12;
+      return (
+        sum + (raised ? seededInt(`${id}:${seedKey}:day${dayIndex}:count`, 1, 3) : 0)
+      );
+    }, 0),
+  );
+
+// Below this, the ring/legend (or the bar chart, once expanded) can't
+// render without clipping — fall back to just the headline total instead.
+const MIN_PANEL_HEIGHT = 130;
+const MIN_PANEL_WIDTH = 120;
+// Past this, the panel has room to expand from the ring into a 7-day
+// breakdown bar chart instead.
+const EXPAND_HEIGHT = 260;
+const EXPAND_WIDTH = 360;
+
+export default function TemperatureAlarmsWidget({
+  storeIds = ["root"],
+}: TemperatureAlarmsWidgetProps) {
+  const highDaily = useMemo(
+    () => buildDailyCounts(storeIds, "temp-alarm-high"),
+    [storeIds],
+  );
+  const lowDaily = useMemo(
+    () => buildDailyCounts(storeIds, "temp-alarm-low"),
+    [storeIds],
+  );
+  const highCount = highDaily[highDaily.length - 1] ?? 0;
+  const lowCount = lowDaily[lowDaily.length - 1] ?? 0;
+  const totalCount = highCount + lowCount;
+
+  const slices = useMemo(
+    () =>
+      totalCount === 0
+        ? [{ id: 0, value: 1, color: NONE_COLOR, label: "No alarms" }]
+        : [
+            { id: 0, value: highCount, color: HIGH_COLOR, label: "High" },
+            { id: 1, value: lowCount, color: LOW_COLOR, label: "Low" },
+          ],
+    [highCount, lowCount, totalCount],
+  );
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelSize, setPanelSize] = useState({ width: 200, height: 200 });
+  const [isCompact, setIsCompact] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!panelRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setIsCompact(height < MIN_PANEL_HEIGHT || width < MIN_PANEL_WIDTH);
+        setIsExpanded(width >= EXPAND_WIDTH && height >= EXPAND_HEIGHT);
+        setPanelSize({ width, height });
+      }
+    });
+
+    observer.observe(panelRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const ringSize = Math.max(72, Math.min(panelSize.width, panelSize.height - 40, 176));
+
+  return (
+    <div className="widget-card widget-temp-alarms">
+      <div className="widget-title">Temperature Alarms</div>
+      <div className="temp-alarms-body">
+        <div className="temp-alarms-icon" aria-hidden>
+          <DeviceThermostatOutlinedIcon className="temp-alarms-icon-thermo" />
+          <WarningIcon
+            className="temp-alarms-icon-badge"
+            style={{ color: ALERT_BADGE_COLOR }}
+          />
+        </div>
+
+        <div className="temp-alarms-panel" ref={panelRef}>
+          {isCompact ? (
+            <span
+              className="temp-alarms-value temp-alarms-value--compact"
+              style={{ color: totalCount === 0 ? "#1fb05c" : "var(--widget-text-primary)" }}
+            >
+              {totalCount}
+            </span>
+          ) : isExpanded ? (
+            <BarChart
+              series={[
+                { data: highDaily, color: HIGH_COLOR, label: "High" },
+                { data: lowDaily, color: LOW_COLOR, label: "Low" },
+              ]}
+              xAxis={[{ scaleType: "band", data: DAY_LABELS }]}
+              width={panelSize.width}
+              height={panelSize.height}
+              slotProps={{ legend: { sx: { color: "var(--text-primary)" } } }}
+              sx={{
+                "& .MuiChartsAxis-tickLabel": { fill: "var(--widget-text-primary)" },
+                "& .MuiChartsAxis-label": { fill: "var(--widget-text-primary)" },
+                "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
+                  stroke: "var(--widget-text-primary)",
+                },
+                "& .MuiChartsGrid-line": { stroke: "rgba(0, 0, 0, 0.08)" },
+                ".dark & .MuiChartsGrid-line": { stroke: "rgba(255, 255, 255, 0.12)" },
+              }}
+              grid={{ horizontal: true }}
+            />
+          ) : (
+            <>
+              <div
+                className="temp-alarms-ring-wrap"
+                style={{ width: ringSize, height: ringSize }}
+              >
+                <PieChart
+                  series={[
+                    {
+                      data: slices,
+                      innerRadius: ringSize * 0.36,
+                      outerRadius: ringSize * 0.48,
+                      cornerRadius: 2,
+                    },
+                  ]}
+                  hideLegend
+                  width={ringSize}
+                  height={ringSize}
+                />
+                <div className="temp-alarms-value">{totalCount}</div>
+              </div>
+              <div className="temp-alarms-legend">
+                <span className="temp-alarms-legend-item">
+                  <span className="temp-alarms-dot temp-alarms-dot--high" />
+                  High
+                </span>
+                <span className="temp-alarms-legend-item">
+                  <span className="temp-alarms-dot temp-alarms-dot--low" />
+                  Low
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
