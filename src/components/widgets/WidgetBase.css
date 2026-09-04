@@ -1,7 +1,7 @@
 :root {
   /* Widget spacing */
   --widget-padding: 12px;
-  --widget-border-radius: 2px;
+  --widget-border-radius: 12px;
   --widget-gap: 8px;
 
   /* Widget typography - increased sizes for better visibility */
