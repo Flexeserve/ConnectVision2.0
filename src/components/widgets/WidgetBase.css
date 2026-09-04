@@ -5,7 +5,7 @@
   --widget-gap: 8px;
 
   /* Widget typography - increased sizes for better visibility */
-  --widget-title-size: 14px;
+  --widget-title-size: 11px;
   --widget-value-size: 48px;
   --widget-sub-size: 12px;
   --widget-title-letter-spacing: 0.08em;
@@ -25,7 +25,6 @@
   --widget-text-primary: var(--widget-text, #333333);
   --widget-text-secondary: var(--text-muted, #5d5d5d);
   --widget-bg: var(--widget-bg, #ffffff);
-  --widget-body-bg: #f0f0f0;
   --widget-border-subtle: var(--widget-border, rgba(0, 0, 0, 0.08));
 
   padding: var(--widget-padding) var(--widget-padding) 10px;
@@ -39,10 +38,6 @@
   container-name: widget;
 }
 
-body.dark .widget-card {
-  --widget-body-bg: #3a3a3a;
-}
-
 .widget-title {
   display: flex;
   align-items: center;
@@ -50,7 +45,7 @@ body.dark .widget-card {
   font-family: "Inter", "Inter var", sans-serif;
   text-transform: uppercase;
   letter-spacing: var(--widget-title-letter-spacing);
-  font-size: clamp(10px, 4cqw, var(--widget-title-size));  /* Scales with container width */
+  font-size: clamp(9px, 4cqw, var(--widget-title-size));  /* Scales with container width */
   color: var(--widget-text-primary);
   background: var(--widget-bg);
   padding: 6px 8px;
@@ -63,12 +58,6 @@ body.dark .widget-card {
   max-width: 100%;
   flex: 0 0 auto;
   min-height: 1.6em;
-}
-
-.widget-card > :not(.widget-title) {
-  background: var(--widget-body-bg);
-  border-radius: var(--widget-border-radius);
-  padding: 10px;
 }
 
 .widget-value {
@@ -141,7 +130,7 @@ body.dark .widget-card {
   /* Very small widgets */
   .widget-title {
     gap: 4px;
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .widget-value {
@@ -171,7 +160,7 @@ body.dark .widget-card {
   /* Large widgets */
   .widget-title {
     gap: 12px;
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .widget-value {

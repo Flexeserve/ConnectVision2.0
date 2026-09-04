@@ -3,7 +3,7 @@
 }
 
 .widget-offline-devices .widget-title {
-  font-size: clamp(12px, 5cqw, 20px);
+  font-size: clamp(10px, 4cqw, 15px);
   font-weight: 800;
 }
 

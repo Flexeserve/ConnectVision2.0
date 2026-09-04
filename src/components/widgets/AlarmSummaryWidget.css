@@ -66,14 +66,6 @@
   z-index: 2;
 }
 
-.alarm-summary-table tbody tr {
-  background: var(--widget-body-bg, #e3e3e3);
-}
-
-.alarm-summary-table tbody td {
-  background: var(--widget-body-bg, #e3e3e3);
-}
-
 .alarm-summary-table tbody tr:last-child td {
   border-bottom: none;
 }

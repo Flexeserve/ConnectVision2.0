@@ -3,20 +3,15 @@
 }
 
 .widget-temp-alarms .widget-title {
-  font-size: clamp(12px, 5cqw, 20px);
+  font-size: clamp(10px, 4cqw, 15px);
   font-weight: 800;
 }
 
-/* Override the generic widget-card padding/background
-   (.widget-card > :not(.widget-title)): the panel below it draws its own
-   background so this row itself stays unstyled. */
 .widget-temp-alarms .temp-alarms-body {
   display: flex;
   align-items: stretch;
   flex: 1 1 auto;
   min-height: 0;
-  background: transparent;
-  padding: 0;
 }
 
 .temp-alarms-panel {
@@ -28,9 +23,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--widget-body-bg);
-  border-radius: var(--widget-border-radius);
-  padding: 16px;
+  padding: 8px;
   overflow: hidden;
 }
 
