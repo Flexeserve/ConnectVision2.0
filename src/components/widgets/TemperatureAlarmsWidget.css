@@ -27,6 +27,30 @@
   overflow: hidden;
 }
 
+.temp-alarms-alternator {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.temp-alarms-alternator-pane {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 700ms ease;
+  pointer-events: none;
+}
+
+.temp-alarms-alternator-pane.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .temp-alarms-ring-wrap {
   position: relative;
   display: flex;

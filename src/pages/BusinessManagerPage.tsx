@@ -388,7 +388,10 @@ export default function BusinessManagerPage({
       { i: "energy-cost", x: 0, y: 32, w: 12, h: 7, minW: 9, minH: 4, maxW: 12, maxH: 9 },
       { i: "energy-widget", x: 0, y: 39, w: 12, h: 7, minW: 9, minH: 4, maxW: 12, maxH: 9 },
       { i: "stores-online", x: 0, y: 46, w: 6, h: 8, minW: 4, minH: 4, maxW: 7, maxH: 10 },
-      { i: "temp-alarms", x: 6, y: 46, w: 5, h: 7, minW: 4, minH: 4, maxW: 7, maxH: 9 },
+      // maxH raised a bit above the other widgets' ~2-3 unit window: it needs
+      // to clear its own bar-chart alternation threshold (EXPAND_HEIGHT),
+      // which the tighter cap used elsewhere wasn't enough to reach.
+      { i: "temp-alarms", x: 6, y: 46, w: 5, h: 7, minW: 4, minH: 4, maxW: 7, maxH: 11 },
     ],
     [],
   );

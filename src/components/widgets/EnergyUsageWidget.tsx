@@ -3,6 +3,7 @@ import { PieChart } from "@mui/x-charts/PieChart";
 import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./EnergyUsageWidget.css";
+import scheduleIcon from "../../assets/ScheduleEnergyIcon.svg";
 import { seededInt } from "../../lib/seededRandom";
 
 type EnergyUsageWidgetProps = {
@@ -58,7 +59,10 @@ export default function EnergyUsageWidget({
 
   return (
     <Card className="widget-card widget-energy">
-      <div className="widget-title">Schedule Compliance</div>
+      <div className="widget-title">
+        <span>Schedule Compliance</span>
+        <img src={scheduleIcon} alt="" className="widget-title-icon-img" />
+      </div>
       <div className="schedule-compliance-body">
         <div className="schedule-compliance-panel" ref={panelRef}>
           {isCompact ? (

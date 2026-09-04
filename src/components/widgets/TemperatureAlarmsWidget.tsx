@@ -34,10 +34,13 @@ const buildDailyCounts = (storeIds: string[], seedKey: string) =>
 // render without clipping — fall back to just the headline total instead.
 const MIN_PANEL_HEIGHT = 110;
 const MIN_PANEL_WIDTH = 120;
-// Past this, the panel has room to expand from the ring into a 7-day
-// breakdown bar chart instead.
+// Past this, the panel has room for the 7-day breakdown bar chart, so it
+// alternates with the ring instead of showing the ring only.
 const EXPAND_HEIGHT = 200;
 const EXPAND_WIDTH = 360;
+// How long each view (ring, then bar chart) stays up before crossfading
+// to the other.
+const ALTERNATE_INTERVAL_MS = 6000;
 
 export default function TemperatureAlarmsWidget({
   storeIds = ["root"],
@@ -69,6 +72,12 @@ export default function TemperatureAlarmsWidget({
   const [panelSize, setPanelSize] = useState({ width: 200, height: 200 });
   const [isCompact, setIsCompact] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showBarChart, setShowBarChart] = useState(false);
+  const [lastIsExpanded, setLastIsExpanded] = useState(isExpanded);
+  if (isExpanded !== lastIsExpanded) {
+    setLastIsExpanded(isExpanded);
+    if (!isExpanded) setShowBarChart(false);
+  }
 
   useEffect(() => {
     if (!panelRef.current) return;
@@ -86,7 +95,71 @@ export default function TemperatureAlarmsWidget({
     return () => observer.disconnect();
   }, []);
 
+  // Only alternate once there's room for both views — below that, the ring
+  // is the only one that fits, so it just stays put.
+  useEffect(() => {
+    if (!isExpanded) return;
+    const interval = setInterval(() => {
+      setShowBarChart((prev) => !prev);
+    }, ALTERNATE_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [isExpanded]);
+
   const ringSize = Math.max(72, Math.min(panelSize.width, panelSize.height - 40, 176));
+
+  const ringView = (
+    <>
+      <div className="temp-alarms-ring-wrap" style={{ width: ringSize, height: ringSize }}>
+        <PieChart
+          series={[
+            {
+              data: slices,
+              innerRadius: ringSize * 0.36,
+              outerRadius: ringSize * 0.48,
+              cornerRadius: 2,
+            },
+          ]}
+          hideLegend
+          width={ringSize}
+          height={ringSize}
+        />
+        <div className="temp-alarms-value">{totalCount}</div>
+      </div>
+      <div className="temp-alarms-legend">
+        <span className="temp-alarms-legend-item">
+          <span className="temp-alarms-dot temp-alarms-dot--high" />
+          High
+        </span>
+        <span className="temp-alarms-legend-item">
+          <span className="temp-alarms-dot temp-alarms-dot--low" />
+          Low
+        </span>
+      </div>
+    </>
+  );
+
+  const barView = (
+    <BarChart
+      series={[
+        { data: highDaily, color: HIGH_COLOR, label: "High" },
+        { data: lowDaily, color: LOW_COLOR, label: "Low" },
+      ]}
+      xAxis={[{ scaleType: "band", data: DAY_LABELS }]}
+      width={panelSize.width}
+      height={panelSize.height}
+      slotProps={{ legend: { sx: { color: "var(--text-primary)" } } }}
+      sx={{
+        "& .MuiChartsAxis-tickLabel": { fill: "var(--widget-text-primary)" },
+        "& .MuiChartsAxis-label": { fill: "var(--widget-text-primary)" },
+        "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
+          stroke: "var(--widget-text-primary)",
+        },
+        "& .MuiChartsGrid-line": { stroke: "rgba(0, 0, 0, 0.08)" },
+        ".dark & .MuiChartsGrid-line": { stroke: "rgba(255, 255, 255, 0.12)" },
+      }}
+      grid={{ horizontal: true }}
+    />
+  );
 
   return (
     <Card className="widget-card widget-temp-alarms">
@@ -101,58 +174,23 @@ export default function TemperatureAlarmsWidget({
               {totalCount}
             </span>
           ) : isExpanded ? (
-            <BarChart
-              series={[
-                { data: highDaily, color: HIGH_COLOR, label: "High" },
-                { data: lowDaily, color: LOW_COLOR, label: "Low" },
-              ]}
-              xAxis={[{ scaleType: "band", data: DAY_LABELS }]}
-              width={panelSize.width}
-              height={panelSize.height}
-              slotProps={{ legend: { sx: { color: "var(--text-primary)" } } }}
-              sx={{
-                "& .MuiChartsAxis-tickLabel": { fill: "var(--widget-text-primary)" },
-                "& .MuiChartsAxis-label": { fill: "var(--widget-text-primary)" },
-                "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
-                  stroke: "var(--widget-text-primary)",
-                },
-                "& .MuiChartsGrid-line": { stroke: "rgba(0, 0, 0, 0.08)" },
-                ".dark & .MuiChartsGrid-line": { stroke: "rgba(255, 255, 255, 0.12)" },
-              }}
-              grid={{ horizontal: true }}
-            />
-          ) : (
-            <>
+            // Both views stay mounted and crossfade via opacity instead of
+            // swapping — remounting the chart on every alternation would
+            // restart its own enter animation and lose the smooth fade.
+            <div className="temp-alarms-alternator">
               <div
-                className="temp-alarms-ring-wrap"
-                style={{ width: ringSize, height: ringSize }}
+                className={`temp-alarms-alternator-pane ${!showBarChart ? "is-visible" : ""}`}
               >
-                <PieChart
-                  series={[
-                    {
-                      data: slices,
-                      innerRadius: ringSize * 0.36,
-                      outerRadius: ringSize * 0.48,
-                      cornerRadius: 2,
-                    },
-                  ]}
-                  hideLegend
-                  width={ringSize}
-                  height={ringSize}
-                />
-                <div className="temp-alarms-value">{totalCount}</div>
+                {ringView}
               </div>
-              <div className="temp-alarms-legend">
-                <span className="temp-alarms-legend-item">
-                  <span className="temp-alarms-dot temp-alarms-dot--high" />
-                  High
-                </span>
-                <span className="temp-alarms-legend-item">
-                  <span className="temp-alarms-dot temp-alarms-dot--low" />
-                  Low
-                </span>
+              <div
+                className={`temp-alarms-alternator-pane ${showBarChart ? "is-visible" : ""}`}
+              >
+                {barView}
               </div>
-            </>
+            </div>
+          ) : (
+            ringView
           )}
         </div>
       </div>

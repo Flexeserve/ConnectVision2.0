@@ -3,6 +3,7 @@ import { PieChart } from "@mui/x-charts/PieChart";
 import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./CloudConnectedWidget.css";
+import cloudConnectLogo from "../../assets/CloudConnect.svg";
 import { seededInt } from "../../lib/seededRandom";
 
 type CloudConnectedWidgetProps = {
@@ -80,6 +81,7 @@ export default function CloudConnectedWidget({
     <Card ref={widgetRef} className="widget-card widget-cloud">
       <div className="widget-title">
         <span>Cloud Connected</span>
+        <img src={cloudConnectLogo} alt="" className="widget-title-icon-img" />
       </div>
       <div className="cloud-body">
         <div className={`cloud-gauge ${isCompact ? "cloud-gauge--compact" : ""}`}>

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import Card from "@mui/material/Card";
+import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
 import "./WidgetBase.css";
 import "./ElementLifeWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -19,7 +20,10 @@ export default function ElementLifeWidget({ storeIds = ["root"] }: ElementLifeWi
 
   return (
     <Card className="widget-card widget-element">
-      <div className="widget-title">Element Life</div>
+      <div className="widget-title">
+        <span>Element Life</span>
+        <DeviceThermostatIcon className="widget-title-icon" fontSize="small" />
+      </div>
       <div className="widget-value">
         {hours} <span>hrs</span>
       </div>
