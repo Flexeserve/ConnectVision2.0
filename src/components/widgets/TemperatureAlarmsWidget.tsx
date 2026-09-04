@@ -16,13 +16,13 @@ const NONE_COLOR = "#adadad";
 
 const DAYS = 7;
 const WEEKDAY_NAMES = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
 ];
 
 // The last label is always "Today"; the rest are the actual weekday names
