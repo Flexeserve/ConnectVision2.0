@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import AirIcon from "@mui/icons-material/Air";
 import "./WidgetBase.css";
 import "./FanLifeWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -20,10 +19,7 @@ export default function FanLifeWidget({ storeIds = ["root"] }: FanLifeWidgetProp
 
   return (
     <div className="widget-card widget-fan">
-      <div className="widget-title">
-        <AirIcon fontSize="small" />
-        Fan Life
-      </div>
+      <div className="widget-title">Fan Life</div>
       <div className="widget-value">
         {hours} <span>hrs</span>
       </div>

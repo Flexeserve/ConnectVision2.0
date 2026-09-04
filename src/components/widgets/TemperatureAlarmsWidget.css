@@ -8,12 +8,11 @@
 }
 
 /* Override the generic widget-card padding/background
-   (.widget-card > :not(.widget-title)): this row lays out its own
-   icon column and panel card, each with their own spacing. */
+   (.widget-card > :not(.widget-title)): the panel below it draws its own
+   background so this row itself stays unstyled. */
 .widget-temp-alarms .temp-alarms-body {
   display: flex;
   align-items: stretch;
-  gap: 12px;
   flex: 1 1 auto;
   min-height: 0;
   background: transparent;
@@ -29,14 +28,10 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: #f0f0f0;
-  border-radius: 16px;
+  background: var(--widget-body-bg);
+  border-radius: var(--widget-border-radius);
   padding: 16px;
   overflow: hidden;
-}
-
-body.dark .temp-alarms-panel {
-  background: #3a3a3a;
 }
 
 .temp-alarms-ring-wrap {

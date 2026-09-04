@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import "./WidgetBase.css";
 import "./OfflineDevicesWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -24,10 +23,7 @@ export default function OfflineDevicesWidget({
 
   return (
     <div className="widget-card widget-offline-devices">
-      <div className="widget-title">
-        <WarningAmberIcon fontSize="small" />
-        Offline Devices
-      </div>
+      <div className="widget-title">Offline Devices</div>
       <div className="offline-devices-body">
         <div className="offline-devices-total">
           <span className="offline-devices-total-value">{total}</span>

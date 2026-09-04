@@ -8,42 +8,15 @@
 }
 
 /* Override the generic widget-card padding/background
-   (.widget-card > :not(.widget-title)): this row lays out its own
-   icon column and panel card, each with their own spacing. */
+   (.widget-card > :not(.widget-title)): the panel below it draws its own
+   background so this row itself stays unstyled. */
 .widget-stores-online .stores-online-body {
   display: flex;
   align-items: stretch;
-  gap: 12px;
   flex: 1 1 auto;
   min-height: 0;
   background: transparent;
   padding: 0;
-}
-
-.stores-online-icon {
-  flex: 0 0 auto;
-  width: clamp(64px, 30cqw, 120px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  color: var(--widget-text-primary);
-}
-
-.stores-online-icon-back,
-.stores-online-icon-front {
-  position: absolute;
-}
-
-.stores-online-icon-back {
-  font-size: clamp(36px, 20cqw, 72px) !important;
-  opacity: 0.55;
-  transform: translate(-38%, -34%);
-}
-
-.stores-online-icon-front {
-  font-size: clamp(48px, 26cqw, 92px) !important;
-  transform: translate(12%, 12%);
 }
 
 .stores-online-panel {
@@ -55,8 +28,8 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--panel-bg-hover, #d3d3d3);
-  border-radius: 16px;
+  background: var(--widget-body-bg);
+  border-radius: var(--widget-border-radius);
   padding: 16px;
 }
 

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import "./WidgetBase.css";
 import "./StoresOnlineWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -62,11 +61,6 @@ export default function StoresOnlineWidget({
     <div className="widget-card widget-stores-online">
       <div className="widget-title">Stores Online</div>
       <div className="stores-online-body">
-        <div className="stores-online-icon" aria-hidden>
-          <StorefrontOutlinedIcon className="stores-online-icon-back" />
-          <StorefrontOutlinedIcon className="stores-online-icon-front" />
-        </div>
-
         <div className="stores-online-panel" ref={panelRef}>
           {isCompact ? (
             <div className="stores-online-value stores-online-value--compact">

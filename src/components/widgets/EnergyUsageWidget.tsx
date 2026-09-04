@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import "./WidgetBase.css";
 import "./EnergyUsageWidget.css";
-import scheduleIcon from "../../assets/ScheduleEnergyIcon.svg";
 import { seededInt } from "../../lib/seededRandom";
 
 type EnergyUsageWidgetProps = {
@@ -73,7 +72,6 @@ export default function EnergyUsageWidget({ storeIds = ["root"] }: EnergyUsageWi
   return (
     <div ref={widgetRef} className="widget-card widget-energy">
       <div className="widget-title">
-        <img src={scheduleIcon} alt="" className="schedule-icon" aria-hidden />
         <span>Schedule compliance</span>
       </div>
 

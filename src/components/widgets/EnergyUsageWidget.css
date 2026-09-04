@@ -8,16 +8,6 @@
   gap: 12px;
 }
 
-.schedule-icon {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-
-body.dark .schedule-icon {
-  filter: invert(1) brightness(1.1);
-}
-
 .energy-label {
   margin-top: 4px;
   font-size: 5px;

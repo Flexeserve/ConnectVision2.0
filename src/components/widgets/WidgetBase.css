@@ -21,7 +21,7 @@
   --widget-text-primary: var(--widget-text, #333333);
   --widget-text-secondary: var(--text-muted, #5d5d5d);
   --widget-bg: var(--widget-bg, #ffffff);
-  --widget-body-bg: transparent;
+  --widget-body-bg: #f0f0f0;
   --widget-border-subtle: var(--widget-border, rgba(0, 0, 0, 0.08));
 
   background: var(--widget-bg);
@@ -48,6 +48,10 @@
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
 }
 
+body.dark .widget-card {
+  --widget-body-bg: #3a3a3a;
+}
+
 .widget-title {
   display: flex;
   align-items: center;
@@ -71,8 +75,8 @@
 }
 
 .widget-card > :not(.widget-title) {
-  background: var(--widget-body-bg, #e3e3e3);
-  border-radius: 8px;
+  background: var(--widget-body-bg);
+  border-radius: var(--widget-border-radius);
   padding: 10px;
 }
 

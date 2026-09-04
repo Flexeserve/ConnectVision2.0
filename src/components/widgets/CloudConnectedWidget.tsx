@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import "./WidgetBase.css";
 import "./CloudConnectedWidget.css";
-import cloudConnectLogo from "../../assets/CloudConnect.svg";
 import { seededInt } from "../../lib/seededRandom";
 
 type CloudConnectedWidgetProps = {
@@ -79,11 +78,6 @@ export default function CloudConnectedWidget({
   return (
     <div ref={widgetRef} className="widget-card widget-cloud">
       <div className="widget-title">
-        <img
-          src={cloudConnectLogo}
-          alt="Cloud Connect"
-          className="cloud-title-icon"
-        />
         <span>Cloud Connected</span>
       </div>
       <div className="cloud-body">
