@@ -2,97 +2,79 @@
   background: var(--widget-bg);
 }
 
-.energy-body {
+.widget-energy .schedule-compliance-body {
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.schedule-compliance-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.energy-label {
-  margin-top: 4px;
-  font-size: 5px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.energy-highlight {
-  color: #1e7d3f;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.energy-footnote {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.energy-gauge {
-  width: 100%;
-  display: flex;
   align-items: center;
-  gap: 16px;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  height: auto;
-}
-
-.energy-gauge--compact {
   justify-content: center;
+  gap: 10px;
+  padding: 8px;
 }
 
-.energy-value {
+.schedule-compliance-ring-wrap {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  width: auto;
-}
-
-.energy-gauge--compact .energy-value {
   align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
 }
 
-.energy-gauge--compact .energy-gauge-number {
-  font-size: clamp(24px, min(20cqi, 34cqb), 88px);
-}
-
-.energy-gauge-number {
-  font-size: clamp(24px, min(12cqi, 20cqb), 88px);
-  font-weight: 700;
+.schedule-compliance-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", "Inter var", sans-serif;
+  font-size: clamp(20px, min(16cqi, 26cqb), 40px);
+  font-weight: 800;
   color: var(--widget-text-primary);
   line-height: 1;
+  pointer-events: none;
 }
 
-.energy-gauge-label {
-  /* Container-relative sizing - scales with widget width - increased */
-  font-size: clamp(10px, 3.2cqw, 14px);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--widget-text-secondary);
+.schedule-compliance-value--compact {
+  position: static;
+  font-size: clamp(28px, min(20cqi, 34cqb), 64px);
 }
 
-.energy-pie-wrapper {
+.schedule-compliance-legend {
   display: flex;
-  justify-content: center;
   align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-
-/* Mobile responsive breakpoint */
-@media (max-width: 600px) {
-  .energy-gauge-number {
-    font-size: clamp(28px, 5vw, 40px);
-  }
-
-  .energy-gauge-label {
-    font-size: clamp(10px, 2.5vw, 12px);
-  }
-
-  .energy-gauge {
-    gap: 12px;
-  }
+.schedule-compliance-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(10px, 3cqw, 13px);
+  color: var(--widget-text-primary);
 }
 
+.schedule-compliance-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
 
+.schedule-compliance-dot--compliant {
+  background: #1fb05c;
+}
 
+.schedule-compliance-dot--not-compliant {
+  background: #f0c419;
+}

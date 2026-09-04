@@ -54,9 +54,9 @@ export default function EnergyCostWidget({
         const { width, height } = entry.contentRect;
         setIsCompact(height < MIN_CHART_HEIGHT || width < MIN_CHART_WIDTH);
         const nextWidth = Math.max(240, width * 0.55);
-        // Extra buffer beyond title/padding accounts for the two-series
-        // legend MUI renders above the plot, which isn't part of `height`.
-        const nextHeight = Math.max(140, height - 110);
+        // Extra buffer beyond title/padding accounts for the custom dot
+        // legend rendered below the plot, which isn't part of `height`.
+        const nextHeight = Math.max(110, height - 134);
         setChartSize({ width: nextWidth, height: nextHeight });
       }
     });
@@ -156,6 +156,7 @@ export default function EnergyCostWidget({
             width={chartSize.width}
             height={chartSize.height}
             grid={{ vertical: true, horizontal: true }}
+            hideLegend
             sx={{
               "& .MuiChartsAxis-tickLabel": {
                 fill: "var(--widget-text-primary)",
@@ -174,6 +175,16 @@ export default function EnergyCostWidget({
               },
             }}
           />
+          <div className="energy-cost-legend">
+            <span className="energy-cost-legend-item">
+              <span className="energy-cost-dot energy-cost-dot--current" />
+              This week
+            </span>
+            <span className="energy-cost-legend-item">
+              <span className="energy-cost-dot energy-cost-dot--last" />
+              Last week
+            </span>
+          </div>
         </div>
         )}
       </div>

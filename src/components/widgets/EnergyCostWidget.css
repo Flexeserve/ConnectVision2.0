@@ -61,4 +61,39 @@
 .energy-cost-chart {
   flex: 1 1 auto;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.energy-cost-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.energy-cost-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(10px, 3cqw, 13px);
+  color: var(--widget-text-primary);
+}
+
+.energy-cost-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.energy-cost-dot--current {
+  background: #d94d14;
+}
+
+.energy-cost-dot--last {
+  background: #7a7a7a;
 }
