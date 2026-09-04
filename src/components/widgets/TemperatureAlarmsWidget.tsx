@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { BarChart } from "@mui/x-charts/BarChart";
-import DeviceThermostatOutlinedIcon from "@mui/icons-material/DeviceThermostatOutlined";
-import WarningIcon from "@mui/icons-material/Warning";
 import "./WidgetBase.css";
 import "./TemperatureAlarmsWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -11,9 +9,6 @@ type TemperatureAlarmsWidgetProps = {
   storeIds?: string[];
 };
 
-// The icon's warning badge is a universal "this reading has an alarm"
-// indicator, independent of which direction (high/low) the alarm is for.
-const ALERT_BADGE_COLOR = "#f14734";
 const HIGH_COLOR = "#f14734";
 const LOW_COLOR = "#205ffd";
 const NONE_COLOR = "#adadad";
@@ -36,11 +31,11 @@ const buildDailyCounts = (storeIds: string[], seedKey: string) =>
 
 // Below this, the ring/legend (or the bar chart, once expanded) can't
 // render without clipping — fall back to just the headline total instead.
-const MIN_PANEL_HEIGHT = 130;
+const MIN_PANEL_HEIGHT = 110;
 const MIN_PANEL_WIDTH = 120;
 // Past this, the panel has room to expand from the ring into a 7-day
 // breakdown bar chart instead.
-const EXPAND_HEIGHT = 260;
+const EXPAND_HEIGHT = 200;
 const EXPAND_WIDTH = 360;
 
 export default function TemperatureAlarmsWidget({
@@ -96,14 +91,6 @@ export default function TemperatureAlarmsWidget({
     <div className="widget-card widget-temp-alarms">
       <div className="widget-title">Temperature Alarms</div>
       <div className="temp-alarms-body">
-        <div className="temp-alarms-icon" aria-hidden>
-          <DeviceThermostatOutlinedIcon className="temp-alarms-icon-thermo" />
-          <WarningIcon
-            className="temp-alarms-icon-badge"
-            style={{ color: ALERT_BADGE_COLOR }}
-          />
-        </div>
-
         <div className="temp-alarms-panel" ref={panelRef}>
           {isCompact ? (
             <span

@@ -377,7 +377,7 @@ export default function BusinessManagerPage({
       { i: "energy-cost", x: 0, y: 38, w: 12, h: 12, minW: 4, minH: 6 },
       { i: "energy-widget", x: 0, y: 50, w: 12, h: 8, minW: 4, minH: 5 },
       { i: "stores-online", x: 0, y: 58, w: 6, h: 9, minW: 4, minH: 6 },
-      { i: "temp-alarms", x: 6, y: 58, w: 6, h: 9, minW: 4, minH: 6 },
+      { i: "temp-alarms", x: 6, y: 58, w: 5, h: 8, minW: 4, minH: 6, maxW: 8, maxH: 13 },
     ],
     [],
   );
@@ -397,9 +397,11 @@ export default function BusinessManagerPage({
         const incoming = persistedMap.get(base.i);
         if (!incoming) return base;
 
-        const width = clampNumber(incoming.w, base.minW ?? 1, GRID_COLS) ?? base.w;
+        const width =
+          clampNumber(incoming.w, base.minW ?? 1, base.maxW ?? GRID_COLS) ?? base.w;
         const height =
-          clampNumber(incoming.h, base.minH ?? 1, Number.MAX_SAFE_INTEGER) ?? base.h;
+          clampNumber(incoming.h, base.minH ?? 1, base.maxH ?? Number.MAX_SAFE_INTEGER) ??
+          base.h;
         const maxX = Math.max(GRID_COLS - width, 0);
         const x = clampNumber(incoming.x, 0, maxX) ?? base.x;
         const y = clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;

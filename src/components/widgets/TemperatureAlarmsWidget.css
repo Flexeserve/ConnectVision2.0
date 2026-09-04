@@ -20,31 +20,6 @@
   padding: 0;
 }
 
-.temp-alarms-icon {
-  flex: 0 0 auto;
-  width: clamp(64px, 30cqw, 120px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  color: var(--widget-text-primary);
-}
-
-.temp-alarms-icon-thermo,
-.temp-alarms-icon-badge {
-  position: absolute;
-}
-
-.temp-alarms-icon-thermo {
-  font-size: clamp(48px, 26cqw, 88px) !important;
-}
-
-.temp-alarms-icon-badge {
-  font-size: clamp(20px, 12cqw, 32px) !important;
-  transform: translate(-85%, 45%);
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
-}
-
 .temp-alarms-panel {
   flex: 1 1 auto;
   min-width: 0;
@@ -54,10 +29,14 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--panel-bg-hover, #d3d3d3);
+  background: #f0f0f0;
   border-radius: 16px;
   padding: 16px;
   overflow: hidden;
+}
+
+body.dark .temp-alarms-panel {
+  background: #3a3a3a;
 }
 
 .temp-alarms-ring-wrap {
