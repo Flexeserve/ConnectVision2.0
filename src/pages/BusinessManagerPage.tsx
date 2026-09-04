@@ -366,24 +366,24 @@ export default function BusinessManagerPage({
 
   const DEFAULT_LAYOUT: Layout[] = React.useMemo(
     () => [
-      // minW/minH are deliberately low: every chart/gauge widget has its own
-      // compact-fallback view (a plain number) designed to hold up at small
-      // sizes, so it's fine to let them shrink into that rather than locking
-      // height at the default. Offline Devices is the one exception — it has
-      // no such fallback and visibly overlaps below h6, verified empirically.
-      // maxW/maxH still cap how far each can grow so nothing scales unbounded.
-      { i: "fan-life", x: 0, y: 0, w: 6, h: 4, minW: 3, minH: 3, maxW: 8, maxH: 8 },
-      { i: "offline-devices", x: 6, y: 0, w: 6, h: 6, minW: 3, minH: 6, maxW: 8, maxH: 9 },
-      { i: "door-opened", x: 0, y: 6, w: 12, h: 8, minW: 4, minH: 4, maxW: 12, maxH: 11 },
-      { i: "element", x: 0, y: 13, w: 6, h: 4, minW: 3, minH: 3, maxW: 8, maxH: 8 },
-      { i: "alarms", x: 6, y: 13, w: 6, h: 4, minW: 3, minH: 3, maxW: 8, maxH: 8 },
-      { i: "energy", x: 0, y: 17, w: 6, h: 8, minW: 3, minH: 4, maxW: 9, maxH: 11 },
-      { i: "cloud", x: 6, y: 17, w: 6, h: 8, minW: 3, minH: 4, maxW: 9, maxH: 11 },
-      { i: "alarm-summary", x: 0, y: 25, w: 12, h: 8, minW: 4, minH: 4, maxW: 12, maxH: 13 },
-      { i: "energy-cost", x: 0, y: 33, w: 12, h: 9, minW: 4, minH: 4, maxW: 12, maxH: 14 },
-      { i: "energy-widget", x: 0, y: 42, w: 12, h: 7, minW: 4, minH: 4, maxW: 12, maxH: 11 },
-      { i: "stores-online", x: 0, y: 49, w: 6, h: 8, minW: 4, minH: 4, maxW: 8, maxH: 12 },
-      { i: "temp-alarms", x: 6, y: 49, w: 5, h: 8, minW: 4, minH: 4, maxW: 8, maxH: 13 },
+      // A narrow min–max window per widget (~2-3 grid units either side of
+      // its default) rather than a wide one — every widget has a compact-
+      // fallback view it can drop into, but the resize range itself doesn't
+      // need to span that whole distance. Offline Devices keeps a floor at
+      // its default: it has no compact fallback and visibly overlaps below
+      // h6, verified empirically.
+      { i: "fan-life", x: 0, y: 0, w: 6, h: 4, minW: 4, minH: 3, maxW: 7, maxH: 6 },
+      { i: "offline-devices", x: 6, y: 0, w: 6, h: 6, minW: 4, minH: 6, maxW: 7, maxH: 8 },
+      { i: "door-opened", x: 0, y: 6, w: 12, h: 8, minW: 9, minH: 6, maxW: 12, maxH: 9 },
+      { i: "element", x: 0, y: 13, w: 6, h: 4, minW: 4, minH: 3, maxW: 7, maxH: 6 },
+      { i: "alarms", x: 6, y: 13, w: 6, h: 4, minW: 4, minH: 3, maxW: 7, maxH: 6 },
+      { i: "energy", x: 0, y: 17, w: 6, h: 8, minW: 4, minH: 6, maxW: 7, maxH: 9 },
+      { i: "cloud", x: 6, y: 17, w: 6, h: 8, minW: 4, minH: 6, maxW: 7, maxH: 9 },
+      { i: "alarm-summary", x: 0, y: 25, w: 12, h: 8, minW: 9, minH: 6, maxW: 12, maxH: 9 },
+      { i: "energy-cost", x: 0, y: 33, w: 12, h: 9, minW: 9, minH: 7, maxW: 12, maxH: 10 },
+      { i: "energy-widget", x: 0, y: 42, w: 12, h: 7, minW: 9, minH: 5, maxW: 12, maxH: 8 },
+      { i: "stores-online", x: 0, y: 49, w: 6, h: 8, minW: 4, minH: 5, maxW: 7, maxH: 8 },
+      { i: "temp-alarms", x: 6, y: 49, w: 5, h: 8, minW: 4, minH: 5, maxW: 7, maxH: 8 },
     ],
     [],
   );
