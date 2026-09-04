@@ -126,6 +126,12 @@
   background: transparent;
   padding: 0;
   cursor: pointer;
+  border-radius: 50%;
+}
+
+.connect-helper.docked .connect-helper-trigger:focus-visible {
+  outline: 2px solid #d94d14;
+  outline-offset: 4px;
 }
 
 .connect-helper-tip {
@@ -153,12 +159,40 @@
   justify-content: center;
   background: transparent;
   box-shadow: none;
+  transition:
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+/* Give the docked corner trigger real button chrome — undressed, it read
+   as a stray icon rather than something clickable. The intro (centered)
+   phase stays bare since the pulsing callout text already frames it. */
+.connect-helper.docked .connect-helper-icon-wrap {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+}
+
+.connect-helper.docked .connect-helper-trigger:hover .connect-helper-icon-wrap,
+.connect-helper.docked .connect-helper-trigger:focus-visible .connect-helper-icon-wrap {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .connect-helper-icon {
   width: 68px;
   height: 68px;
   animation: helperSpin 2.1s linear infinite;
+}
+
+/* Docked, the perpetual spin read as a stuck loading spinner rather than
+   a help affordance — settle it, and spin briefly again on interaction. */
+.connect-helper.docked .connect-helper-icon {
+  animation: none;
+}
+
+.connect-helper.docked .connect-helper-trigger:hover .connect-helper-icon,
+.connect-helper.docked .connect-helper-trigger:focus-visible .connect-helper-icon {
+  animation: helperSpin 700ms ease-in-out;
 }
 
 @keyframes helperSpin {
