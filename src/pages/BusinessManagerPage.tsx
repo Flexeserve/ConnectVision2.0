@@ -366,24 +366,29 @@ export default function BusinessManagerPage({
 
   const DEFAULT_LAYOUT: Layout[] = React.useMemo(
     () => [
-      // A narrow min–max window per widget (~2-3 grid units either side of
-      // its default) rather than a wide one — every widget has a compact-
-      // fallback view it can drop into, but the resize range itself doesn't
-      // need to span that whole distance. Offline Devices keeps a floor at
-      // its default: it has no compact fallback and visibly overlaps below
-      // h6, verified empirically.
-      { i: "fan-life", x: 0, y: 0, w: 6, h: 4, minW: 4, minH: 3, maxW: 7, maxH: 6 },
+      // Simple number widgets (no chart) get the smallest default — verified
+      // clean down to h3 after fixing a couple of CSS bugs the reduction
+      // surfaced (a redundant gap doubling title/value spacing, and a
+      // container-query rule for "wide" widgets winning over "short" by
+      // source order rather than by actually applying). Offline Devices
+      // stays at h6: it has no compact fallback and visibly overlaps below
+      // that. Every chart/gauge/table widget's default sits at the exact
+      // height where its own chart still renders rather than falling back
+      // to a bare number — found empirically per widget (not guessed), so
+      // the dashboard still shows its charts/gauges/table by default; minH
+      // still lets each one be dragged smaller into its compact view.
+      { i: "fan-life", x: 0, y: 0, w: 6, h: 3, minW: 4, minH: 3, maxW: 7, maxH: 6 },
       { i: "offline-devices", x: 6, y: 0, w: 6, h: 6, minW: 4, minH: 6, maxW: 7, maxH: 8 },
-      { i: "door-opened", x: 0, y: 6, w: 12, h: 8, minW: 9, minH: 6, maxW: 12, maxH: 9 },
-      { i: "element", x: 0, y: 13, w: 6, h: 4, minW: 4, minH: 3, maxW: 7, maxH: 6 },
-      { i: "alarms", x: 6, y: 13, w: 6, h: 4, minW: 4, minH: 3, maxW: 7, maxH: 6 },
-      { i: "energy", x: 0, y: 17, w: 6, h: 8, minW: 4, minH: 6, maxW: 7, maxH: 9 },
-      { i: "cloud", x: 6, y: 17, w: 6, h: 8, minW: 4, minH: 6, maxW: 7, maxH: 9 },
-      { i: "alarm-summary", x: 0, y: 25, w: 12, h: 8, minW: 9, minH: 6, maxW: 12, maxH: 9 },
-      { i: "energy-cost", x: 0, y: 33, w: 12, h: 9, minW: 9, minH: 7, maxW: 12, maxH: 10 },
-      { i: "energy-widget", x: 0, y: 42, w: 12, h: 7, minW: 9, minH: 5, maxW: 12, maxH: 8 },
-      { i: "stores-online", x: 0, y: 49, w: 6, h: 8, minW: 4, minH: 5, maxW: 7, maxH: 8 },
-      { i: "temp-alarms", x: 6, y: 49, w: 5, h: 8, minW: 4, minH: 5, maxW: 7, maxH: 8 },
+      { i: "door-opened", x: 0, y: 6, w: 12, h: 8, minW: 9, minH: 4, maxW: 12, maxH: 10 },
+      { i: "element", x: 0, y: 14, w: 6, h: 3, minW: 4, minH: 3, maxW: 7, maxH: 6 },
+      { i: "alarms", x: 6, y: 14, w: 6, h: 3, minW: 4, minH: 3, maxW: 7, maxH: 6 },
+      { i: "energy", x: 0, y: 17, w: 6, h: 7, minW: 4, minH: 4, maxW: 7, maxH: 9 },
+      { i: "cloud", x: 6, y: 17, w: 6, h: 8, minW: 4, minH: 4, maxW: 7, maxH: 10 },
+      { i: "alarm-summary", x: 0, y: 25, w: 12, h: 7, minW: 9, minH: 4, maxW: 12, maxH: 9 },
+      { i: "energy-cost", x: 0, y: 32, w: 12, h: 7, minW: 9, minH: 4, maxW: 12, maxH: 9 },
+      { i: "energy-widget", x: 0, y: 39, w: 12, h: 7, minW: 9, minH: 4, maxW: 12, maxH: 9 },
+      { i: "stores-online", x: 0, y: 46, w: 6, h: 8, minW: 4, minH: 4, maxW: 7, maxH: 10 },
+      { i: "temp-alarms", x: 6, y: 46, w: 5, h: 7, minW: 4, minH: 4, maxW: 7, maxH: 9 },
     ],
     [],
   );

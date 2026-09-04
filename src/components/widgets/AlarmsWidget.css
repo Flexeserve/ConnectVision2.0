@@ -19,12 +19,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: min(32cqi, 48cqb);
+  font-size: min(32cqi, 34cqb);
   font-weight: 800;
   color: var(--widget-text-primary);
   line-height: 1;
   text-align: center;
   align-self: stretch;
+}
+
+@container widget (max-height: 90px) {
+  .widget-alarms .widget-title {
+    min-height: 1.3em;
+  }
 }
 
 .alarm-list {

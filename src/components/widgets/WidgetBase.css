@@ -156,8 +156,29 @@
   }
 }
 
-@container widget (min-width: 400px) {
-  /* Large widgets */
+@container widget (max-height: 90px) {
+  /* Very short widgets: the title's own padding/min-height already eats a
+     big share of the available height at this point, so shrink it too
+     instead of just the value — otherwise there's nothing left to clip. */
+  .widget-title {
+    padding: 3px 6px;
+    min-height: 1.3em;
+  }
+
+  .widget-value {
+    font-size: 1.1rem;
+  }
+
+  .gauge-number {
+    font-size: 1rem;
+  }
+}
+
+@container widget (min-width: 400px) and (min-height: 180px) {
+  /* Large widgets — requires height too, not just width: a wide-but-short
+     widget (e.g. a small default height at full column width) should keep
+     the compact typography, not the enlarged one, or its title/value can
+     end up taller than the card has room for. */
   .widget-title {
     gap: 12px;
     font-size: 13px;
