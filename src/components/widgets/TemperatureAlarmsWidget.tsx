@@ -15,7 +15,30 @@ const LOW_COLOR = "#205ffd";
 const NONE_COLOR = "#adadad";
 
 const DAYS = 7;
-const DAY_LABELS = ["D1", "D2", "D3", "D4", "D5", "D6", "Today"];
+const WEEKDAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+// The last label is always "Today"; the rest are the actual weekday names
+// for the preceding days (not just "D1, D2, ..."), based on today's real
+// date rather than a fixed Monday-Sunday sequence.
+const buildDayLabels = (): string[] => {
+  const today = new Date();
+  return Array.from({ length: DAYS }, (_, i) => {
+    const offset = DAYS - 1 - i;
+    if (offset === 0) return "Today";
+    const date = new Date(today);
+    date.setDate(date.getDate() - offset);
+    return WEEKDAY_NAMES[date.getDay()];
+  });
+};
+const DAY_LABELS = buildDayLabels();
 
 // Most days a store raises no temperature alarms; each store independently
 // has a small seeded chance of raising 1-3 on a given day, so a region/root
