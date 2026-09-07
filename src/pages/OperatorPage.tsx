@@ -1038,11 +1038,12 @@ export default function OperatorPage({
         <Header onBack={onBack} title={title ?? "Operator View"} />
       </div>
 
+      <div className="operator-greeting">
+        <TypewriterText text="Good Morning, London" />
+      </div>
+
       <div className="operator-content">
         <div className="operator-left">
-          <div className="operator-greeting">
-            <TypewriterText text="Good Morning, London" />
-          </div>
           <div className="tablet">
             <div className="tablet-unit-toggle-wrap">
               <span className="tablet-unit-label">°C</span>
