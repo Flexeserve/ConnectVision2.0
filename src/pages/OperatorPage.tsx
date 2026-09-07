@@ -15,6 +15,7 @@ import {
   type RefObject,
 } from "react";
 import AnimatedContent from "../components/AnimatedContent";
+import TypewriterText from "../components/TypewriterText";
 import operatorScene from "../assets/operator_scene.glb?url";
 //import hdrTextureUrl from "../assets/wooden_studio_07_1k.hdr?url";
 //import { HDRLoader } from "../lib/HDRLoader";
@@ -1039,6 +1040,9 @@ export default function OperatorPage({
 
       <div className="operator-content">
         <div className="operator-left">
+          <div className="operator-greeting">
+            <TypewriterText text="Good Morning, London" />
+          </div>
           <div className="tablet">
             <div className="tablet-unit-toggle-wrap">
               <span className="tablet-unit-label">°C</span>
