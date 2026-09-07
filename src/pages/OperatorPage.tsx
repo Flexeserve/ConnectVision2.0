@@ -118,7 +118,12 @@ type StatusBubble = {
 };
 
 type FanFlowFieldProps = {
-  emitter?: FanEmitter;
+  // The light helper planes (Light1-4 in the model) are already authored
+  // and corrected (via defaultLightRotation, same as AnchoredRectLight) to
+  // face straight down at the shelf — reusing that orientation instead of
+  // the fan emitter's own plane means the flow lines get the "coming from
+  // top" orientation for free, with no extra rotation hack needed here.
+  anchor?: LightAnchor;
   active: boolean;
   color: string;
   width?: number;
@@ -128,16 +133,15 @@ type FanFlowFieldProps = {
 
 type ZoneFlowLayout = {
   zoneIndex: number;
-  emitterKey: string;
-  fallbackKey?: string;
+  lightKey: keyof LightAnchors;
   offset?: [number, number, number];
 };
 
 const zoneFlowLayout: ZoneFlowLayout[] = [
-  { emitterKey: "fanemitterzone1", fallbackKey: "fan1", zoneIndex: 0 },
-  { emitterKey: "fanemitterzone2", fallbackKey: "fan2", zoneIndex: 1 },
-  { emitterKey: "fanemitterzone3", fallbackKey: "fan3", zoneIndex: 2 },
-  { emitterKey: "fanemitterzone4", fallbackKey: "fan4", zoneIndex: 3 },
+  { lightKey: "light1", zoneIndex: 0 },
+  { lightKey: "light2", zoneIndex: 1 },
+  { lightKey: "light3", zoneIndex: 2 },
+  { lightKey: "light4", zoneIndex: 3 },
 ];
 
 // const getOperatorEnvironment = (() => {
@@ -524,7 +528,7 @@ const deterministicSeed = (index: number, offset: number) => {
 };
 
 const FanFlowField = memo(function FanFlowField({
-  emitter,
+  anchor,
   active,
   color,
   width = 1.8,
@@ -533,6 +537,10 @@ const FanFlowField = memo(function FanFlowField({
 }: FanFlowFieldProps) {
   const groupRef = useRef<Group | null>(null);
   const lineCount = 10;
+  const rotationQuaternion = useMemo(() => {
+    const [rx, ry, rz] = defaultLightRotation;
+    return new Quaternion().setFromEuler(new Euler(rx, ry, rz));
+  }, []);
 
   const gradientTexture = useMemo(() => {
     const canvas = document.createElement("canvas");
@@ -606,41 +614,35 @@ const FanFlowField = memo(function FanFlowField({
   }, [color]);
 
   useEffect(() => {
-    if (!groupRef.current || !emitter) return;
-    const position = new Vector3(...(emitter?.position ?? [0, 0, 0]));
+    if (!groupRef.current || !anchor) return;
+    const position = new Vector3(...(anchor?.position ?? [0, 0, 0]));
     const forwardOffset = new Vector3(0, 0, 0.05);
     const zoneOffset = new Vector3(...offset);
-    if (emitter?.quaternion) {
-      const quat = new Quaternion(...emitter.quaternion);
+    if (anchor?.quaternion) {
+      const quat = new Quaternion(...anchor.quaternion);
+      quat.multiply(rotationQuaternion);
       forwardOffset.applyQuaternion(quat);
       zoneOffset.applyQuaternion(quat);
       groupRef.current.quaternion.copy(quat);
-    } else if (emitter?.rotation) {
-      groupRef.current.rotation.set(...emitter.rotation);
     } else {
       groupRef.current.rotation.set(0, 0, 0);
     }
-    // The lines' long axis (local Y, where basePositions' `height` extent
-    // lives) reads as horizontal once oriented by the emitter above — swap
-    // it to vertical, streaming down from the top, by rotating the whole
-    // group 90 degrees around its local Z axis on top of that orientation.
-    groupRef.current.rotateZ(Math.PI / 2);
     position.add(forwardOffset).add(zoneOffset);
     groupRef.current.position.copy(position);
-  }, [emitter, offset]);
+  }, [anchor, offset, rotationQuaternion]);
 
   useFrame(({ clock }) => {
-    if (!emitter && intensityRef.current < 0.01) {
+    if (!anchor && intensityRef.current < 0.01) {
       if (groupRef.current) groupRef.current.visible = false;
       return;
     }
-    const target = active && emitter ? 1 : 0;
+    const target = active && anchor ? 1 : 0;
     intensityRef.current = MathUtils.lerp(intensityRef.current, target, 0.08);
-    const visible = Boolean(emitter) && intensityRef.current > 0.02;
+    const visible = Boolean(anchor) && intensityRef.current > 0.02;
     if (groupRef.current) {
       groupRef.current.visible = visible;
     }
-    if (!emitter) {
+    if (!anchor) {
       materialsRef.current.forEach((material) => {
         if (material) material.opacity = 0;
       });
@@ -686,7 +688,7 @@ const FanFlowField = memo(function FanFlowField({
     });
   });
 
-  if (!emitter) return null;
+  if (!anchor) return null;
 
   return (
     <group ref={groupRef}>
@@ -1232,14 +1234,12 @@ export default function OperatorPage({
                     rotationOffset={defaultLightRotation}
                   />
                   {zoneFlowLayout.map(
-                    ({ emitterKey, fallbackKey, zoneIndex, offset }) => {
-                      const resolvedEmitter =
-                        fanEmitters[emitterKey] ??
-                        (fallbackKey ? fanEmitters[fallbackKey] : undefined);
+                    ({ lightKey, zoneIndex, offset }) => {
+                      const resolvedAnchor = lightAnchors[lightKey];
                       return (
                         <FanFlowField
-                          key={`fan-flow-${emitterKey}-${zoneIndex}`}
-                          emitter={resolvedEmitter}
+                          key={`fan-flow-${lightKey}-${zoneIndex}`}
+                          anchor={resolvedAnchor}
                           active={zoneStates[zoneIndex]?.fanActive ?? false}
                           color={zoneStates[zoneIndex]?.color ?? "#8d8d8d"}
                           offset={offset}
