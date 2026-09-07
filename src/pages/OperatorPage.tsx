@@ -703,7 +703,8 @@ const FanFlowField = memo(function FanFlowField({
     const spotSpeed = 0.3; // progress units/sec
     const spotLoop = 1.8; // > the ~1.0 visible progress span, so there's a
     // gap between one pulse vanishing past the tip and the next emerging
-    const spotWidth = 0.45; // half-width of the transparent band
+    const spotWidth = 0.45
+    ; // half-width of the transparent band
     lineConfigs.forEach((config) => {
       const positions = config.geometry.getAttribute(
         "position",
@@ -920,9 +921,9 @@ export default function OperatorPage({
     if (lower === "off") return "#8d8d8d";
     const numeric = parseInt(lower, 10);
     if (!Number.isNaN(numeric)) {
-      if (numeric >= 90) return "#ff5b2e";
-      if (numeric >= 85) return "#ff7a45";
-      if (numeric >= 75) return "#ff934f";
+      if (numeric >= 90) return "#a4130e";
+      if (numeric >= 85) return "#d94d14";
+      if (numeric >= 75) return "#e28e04";
     }
     return "#ffd8b2";
   };
