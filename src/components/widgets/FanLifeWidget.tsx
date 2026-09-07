@@ -40,8 +40,13 @@ const NEAR_END_OF_LIFE_THRESHOLD = 80;
 const CRITICAL_THRESHOLD = 95;
 
 // Past this width, there's room to list every nearing-end-of-life fan with
-// its own progress bar instead of just the headline count.
-const EXPAND_WIDTH = 850;
+// its own progress bar instead of just the headline count. Matches the
+// other widgets' MIN_CHART_WIDTH/MIN_TABLE_WIDTH (500) — the list itself is
+// a single stacked column (percent/bar/name) that doesn't need much more
+// room than that, and a higher value risked never being reachable at all
+// on narrower browser windows, since it's well above what doubling the
+// shared default width (state 1) actually produces there.
+const EXPAND_WIDTH = 500;
 
 export default function FanLifeWidget({
   storeIds = ["root"],
