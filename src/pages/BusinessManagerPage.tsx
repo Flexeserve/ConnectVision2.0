@@ -398,7 +398,7 @@ export default function BusinessManagerPage({
       // bar-chart alternation needs a couple more rows), get maxW/maxH
       // raised past the shared 12/10 ceiling so their own state-2 trigger
       // is actually reachable.
-      { i: "fan-life", x: 0, y: 0, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
+      { i: "fan-life", x: 0, y: 0, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
       { i: "offline-devices", x: 10, y: 0, w: 10, h: 8, minW: 7, minH: 6, maxW: 12, maxH: 10 },
       { i: "door-opened", x: 0, y: 8, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
       { i: "element", x: 0, y: 16, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
