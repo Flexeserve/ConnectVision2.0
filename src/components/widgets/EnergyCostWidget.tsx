@@ -34,9 +34,12 @@ type EnergyCostWidgetProps = {
 };
 
 // Below this, the line chart can't render legibly alongside the value
-// column — fall back to just the headline cost instead.
+// column — fall back to just the headline cost instead. Width is set well
+// above the shared default (state 1) so the chart only appears once
+// resized wider (state 2), rather than always squeezing in at half-row
+// width.
 const MIN_CHART_HEIGHT = 165;
-const MIN_CHART_WIDTH = 260;
+const MIN_CHART_WIDTH = 500;
 
 export default function EnergyCostWidget({
   storeIds = ["root"],

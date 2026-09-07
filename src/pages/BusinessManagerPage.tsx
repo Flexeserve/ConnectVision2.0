@@ -387,38 +387,32 @@ export default function BusinessManagerPage({
 
   const DEFAULT_LAYOUT: Layout[] = React.useMemo(
     () => [
-      // Simple number widgets (no chart) get the smallest default — verified
-      // clean down to h3 after fixing a couple of CSS bugs the reduction
-      // surfaced (a redundant gap doubling title/value spacing, and a
-      // container-query rule for "wide" widgets winning over "short" by
-      // source order rather than by actually applying). Offline Devices
-      // stays at h6: it has no compact fallback and visibly overlaps below
-      // that. Every chart/gauge/table widget's default sits at the exact
-      // height where its own chart still renders rather than falling back
-      // to a bare number — found empirically per widget (not guessed), so
-      // the dashboard still shows its charts/gauges/table by default; minH
-      // still lets each one be dragged smaller into its compact view.
-      // x/w/minW/maxW below are scaled for GRID_COLS=20 (factor 5/3 from the
-      // 12-col values these were originally tuned at) — h/minH/maxH are row
-      // units, unrelated to column count, so those are untouched.
-      // Default size matches Stores Online (state 1); maxW is raised well
-      // past the others so it can actually reach ~2x its default width,
-      // which is what triggers its state-2 progress-bar list.
+      // Every widget now defaults to Stores Online's size/bounds — w:10 h:8,
+      // minW:7 minH:4, maxW:12 maxH:10 — as the shared "state 1". Widgets
+      // that used to be full-width with their own chart/table (Temperature,
+      // Alarm Summary, Energy Cost, Energy Widget) already have a compact
+      // single-number fallback from earlier work; that fallback is now what
+      // shows at this smaller default, and their existing full chart/table
+      // becomes "state 2" once resized past their own MIN_CHART_HEIGHT/WIDTH
+      // — those thresholds were raised alongside this (well above the w:10
+      // default) so state 2 only shows once actually resized wider, not
+      // squeezed in at half-row width. Those same 4, plus Fan Life (whose
+      // progress-bar list needs similar room) and Temperature Alarms (whose
+      // bar-chart alternation needs a couple more rows), get maxW/maxH
+      // raised past the shared 12/10 ceiling so their own state-2 trigger
+      // is actually reachable.
       { i: "fan-life", x: 0, y: 0, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
-      { i: "offline-devices", x: 10, y: 0, w: 10, h: 6, minW: 7, minH: 6, maxW: 12, maxH: 8 },
-      { i: "door-opened", x: 0, y: 6, w: 20, h: 8, minW: 15, minH: 4, maxW: 20, maxH: 10 },
-      { i: "element", x: 0, y: 14, w: 10, h: 3, minW: 7, minH: 3, maxW: 12, maxH: 6 },
-      { i: "alarms", x: 10, y: 14, w: 10, h: 3, minW: 7, minH: 3, maxW: 12, maxH: 6 },
-      { i: "energy", x: 0, y: 17, w: 10, h: 7, minW: 7, minH: 4, maxW: 12, maxH: 9 },
-      { i: "cloud", x: 10, y: 17, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
-      { i: "alarm-summary", x: 0, y: 25, w: 20, h: 7, minW: 15, minH: 4, maxW: 20, maxH: 9 },
-      { i: "energy-cost", x: 0, y: 32, w: 20, h: 7, minW: 15, minH: 4, maxW: 20, maxH: 9 },
-      { i: "energy-widget", x: 0, y: 39, w: 20, h: 7, minW: 15, minH: 4, maxW: 20, maxH: 9 },
-      { i: "stores-online", x: 0, y: 46, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
-      // maxH raised a bit above the other widgets' ~2-3 unit window: it needs
-      // to clear its own bar-chart alternation threshold (EXPAND_HEIGHT),
-      // which the tighter cap used elsewhere wasn't enough to reach.
-      { i: "temp-alarms", x: 10, y: 46, w: 8, h: 7, minW: 7, minH: 4, maxW: 12, maxH: 11 },
+      { i: "offline-devices", x: 10, y: 0, w: 10, h: 8, minW: 7, minH: 6, maxW: 12, maxH: 10 },
+      { i: "door-opened", x: 0, y: 8, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
+      { i: "element", x: 0, y: 16, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
+      { i: "alarms", x: 10, y: 16, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
+      { i: "energy", x: 0, y: 24, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
+      { i: "cloud", x: 10, y: 24, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
+      { i: "alarm-summary", x: 0, y: 32, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
+      { i: "energy-cost", x: 0, y: 40, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
+      { i: "energy-widget", x: 0, y: 48, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
+      { i: "stores-online", x: 0, y: 56, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
+      { i: "temp-alarms", x: 10, y: 56, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 11 },
     ],
     [],
   );

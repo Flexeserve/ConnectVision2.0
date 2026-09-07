@@ -29,9 +29,12 @@ type EnergyWidgetProps = {
 };
 
 // Below this, the chart can't render legibly next to the KPI value — fall
-// back to just the value, expanded to fill the card.
+// back to just the value, expanded to fill the card. Width is set well
+// above the shared default (state 1) so the chart only appears once
+// resized wider (state 2), rather than always squeezing in at half-row
+// width.
 const MIN_CHART_HEIGHT = 150;
-const MIN_CHART_WIDTH = 260;
+const MIN_CHART_WIDTH = 500;
 
 export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps) {
   const avgTemp = useMemo(() => buildAvgTemp(storeIds), [storeIds]);

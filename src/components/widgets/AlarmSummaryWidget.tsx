@@ -47,9 +47,12 @@ const buildRows = (seed: string, locations: string[]): AlarmRow[] => {
 const PAGE_SIZE = 5;
 
 // Below this, the table's columns and pagination controls can't fit
-// legibly — fall back to just an active-alarm count instead.
+// legibly — fall back to just an active-alarm count instead. Width is set
+// well above the shared default (state 1) so the table only appears once
+// resized wider (state 2), rather than always squeezing in at half-row
+// width.
 const MIN_TABLE_HEIGHT = 160;
-const MIN_TABLE_WIDTH = 260;
+const MIN_TABLE_WIDTH = 500;
 
 type AlarmSummaryWidgetProps = {
   seed?: string;

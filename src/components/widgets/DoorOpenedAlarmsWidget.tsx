@@ -61,9 +61,11 @@ type DoorOpenedAlarmsWidgetProps = {
 };
 
 // Below this, the chart's axes and labels can't render legibly — fall back
-// to just the latest reading instead.
+// to just the latest reading instead. Width is set well above the shared
+// default (state 1) so the chart only appears once resized wider (state 2),
+// rather than always squeezing in at half-row width.
 const MIN_CHART_HEIGHT = 180;
-const MIN_CHART_WIDTH = 260;
+const MIN_CHART_WIDTH = 500;
 
 export default function DoorOpenedAlarmsWidget({
   storeIds = ["root"],
