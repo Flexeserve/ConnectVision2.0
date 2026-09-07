@@ -5,6 +5,12 @@ import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./TemperatureAlarmsWidget.css";
 import { seededInt } from "../../lib/seededRandom";
+import {
+  RING_COMPACT_MIN_WIDTH,
+  RING_COMPACT_MIN_HEIGHT,
+  ALTERNATE_VIEW_MIN_WIDTH,
+  ALTERNATE_VIEW_MIN_HEIGHT,
+} from "../../lib/widgetSizing";
 
 type TemperatureAlarmsWidgetProps = {
   storeIds?: string[];
@@ -53,14 +59,6 @@ const buildDailyCounts = (storeIds: string[], seedKey: string) =>
     }, 0),
   );
 
-// Below this, the ring/legend (or the bar chart, once expanded) can't
-// render without clipping — fall back to just the headline total instead.
-const MIN_PANEL_HEIGHT = 110;
-const MIN_PANEL_WIDTH = 120;
-// Past this, the panel has room for the 7-day breakdown bar chart, so it
-// alternates with the ring instead of showing the ring only.
-const EXPAND_HEIGHT = 200;
-const EXPAND_WIDTH = 360;
 // How long each view (ring, then bar chart) stays up before crossfading
 // to the other.
 const ALTERNATE_INTERVAL_MS = 6000;
@@ -108,8 +106,8 @@ export default function TemperatureAlarmsWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < MIN_PANEL_HEIGHT || width < MIN_PANEL_WIDTH);
-        setIsExpanded(width >= EXPAND_WIDTH && height >= EXPAND_HEIGHT);
+        setIsCompact(height < RING_COMPACT_MIN_HEIGHT || width < RING_COMPACT_MIN_WIDTH);
+        setIsExpanded(width >= ALTERNATE_VIEW_MIN_WIDTH && height >= ALTERNATE_VIEW_MIN_HEIGHT);
         setPanelSize({ width, height });
       }
     });

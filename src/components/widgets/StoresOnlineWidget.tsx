@@ -4,6 +4,7 @@ import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./StoresOnlineWidget.css";
 import { seededInt } from "../../lib/seededRandom";
+import { RING_COMPACT_MIN_WIDTH, RING_COMPACT_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 type StoresOnlineWidgetProps = {
   storeIds?: string[];
@@ -20,11 +21,6 @@ const buildStoresOnline = (storeIds: string[]) => {
   );
   return { total, online: total - offline, offline };
 };
-
-// Below this, the ring plus its legend can't render without clipping —
-// fall back to just the headline number instead.
-const MIN_RING_HEIGHT = 120;
-const MIN_RING_WIDTH = 110;
 
 export default function StoresOnlineWidget({
   storeIds = ["root"],
@@ -48,7 +44,7 @@ export default function StoresOnlineWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < MIN_RING_HEIGHT || width < MIN_RING_WIDTH);
+        setIsCompact(height < RING_COMPACT_MIN_HEIGHT || width < RING_COMPACT_MIN_WIDTH);
         const available = Math.min(width, height - 32);
         setRingSize(Math.max(72, Math.min(available, 176)));
       }

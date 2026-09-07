@@ -4,6 +4,7 @@ import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./DoorOpenedAlarmsWidget.css";
 import { createSeededRandom } from "../../lib/seededRandom";
+import { DETAIL_VIEW_MIN_WIDTH, DETAIL_VIEW_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 const TIME_SLOTS = ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "00:00", "03:00"];
 
@@ -60,13 +61,6 @@ type DoorOpenedAlarmsWidgetProps = {
   storeIds?: string[];
 };
 
-// Below this, the chart's axes and labels can't render legibly — fall back
-// to just the latest reading instead. Width is set well above the shared
-// default (state 1) so the chart only appears once resized wider (state 2),
-// rather than always squeezing in at half-row width.
-const MIN_CHART_HEIGHT = 180;
-const MIN_CHART_WIDTH = 500;
-
 export default function DoorOpenedAlarmsWidget({
   storeIds = ["root"],
 }: DoorOpenedAlarmsWidgetProps) {
@@ -98,7 +92,7 @@ export default function DoorOpenedAlarmsWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < MIN_CHART_HEIGHT || width < MIN_CHART_WIDTH);
+        setIsCompact(height < DETAIL_VIEW_MIN_HEIGHT || width < DETAIL_VIEW_MIN_WIDTH);
         const nextWidth = Math.max(220, width - 12);
         const nextHeight = Math.max(140, height - 90);
         setChartSize({ width: nextWidth, height: nextHeight });

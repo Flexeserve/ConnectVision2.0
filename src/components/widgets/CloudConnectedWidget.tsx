@@ -5,6 +5,7 @@ import "./WidgetBase.css";
 import "./CloudConnectedWidget.css";
 import cloudConnectLogo from "../../assets/CloudConnect.svg";
 import { seededInt } from "../../lib/seededRandom";
+import { RING_COMPACT_MIN_WIDTH, RING_COMPACT_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 type CloudConnectedWidgetProps = {
   storeIds?: string[];
@@ -34,16 +35,14 @@ const buildGauge = (storeIds: string[]) => {
   ];
 };
 
-// Below this, a pie chart plus its legend can't render without clipping —
-// fall back to just the headline number instead.
-const MIN_CHART_HEIGHT = 165;
-const MIN_CHART_WIDTH = 150;
-
 export default function CloudConnectedWidget({
   storeIds = ["root"],
 }: CloudConnectedWidgetProps) {
   const gaugeSlices = useMemo(() => buildGauge(storeIds), [storeIds]);
   const connectedCount = gaugeSlices[0]?.value ?? 0;
+  // Measures the whole card (title included), unlike Stores Online/Schedule
+  // Compliance's inner panel ref — so this needs a bit more room than they
+  // do to clear the same RING_COMPACT_MIN_* thresholds.
   const widgetRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState(100);
   const [innerRadius, setInnerRadius] = useState(30);
@@ -59,7 +58,7 @@ export default function CloudConnectedWidget({
         const containerHeight = entry.contentRect.height;
 
         setIsCompact(
-          containerHeight < MIN_CHART_HEIGHT || containerWidth < MIN_CHART_WIDTH,
+          containerHeight < RING_COMPACT_MIN_HEIGHT || containerWidth < RING_COMPACT_MIN_WIDTH,
         );
 
         // Calculate chart size based on container dimensions

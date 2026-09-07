@@ -33,13 +33,10 @@ import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
+import { GRID_COLS, GRID_ROW_HEIGHT, GRID_MARGIN } from "../lib/widgetSizing";
 
 const ReactGridLayout = WidthProvider(RGL);
 
-// Grid configuration constants
-const GRID_COLS = 20; // Increased from 6 for finer horizontal positioning
-const GRID_ROW_HEIGHT = 20; // Halved from 40px for tighter widget grid sizing
-const GRID_MARGIN: [number, number] = [8, 8];
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
 const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
 const LAYOUT_VERSION = "v3";

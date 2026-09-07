@@ -5,6 +5,7 @@ import "./WidgetBase.css";
 import "./EnergyUsageWidget.css";
 import scheduleIcon from "../../assets/ScheduleEnergyIcon.svg";
 import { seededInt } from "../../lib/seededRandom";
+import { RING_COMPACT_MIN_WIDTH, RING_COMPACT_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 type EnergyUsageWidgetProps = {
   storeIds?: string[];
@@ -18,11 +19,6 @@ const buildComplianceRate = (storeIds: string[]) =>
     storeIds.reduce((sum, id) => sum + seededInt(`${id}:compliance-rate`, 55, 96), 0) /
       storeIds.length,
   );
-
-// Below this, the ring plus its legend can't render without clipping —
-// fall back to just the headline number instead.
-const MIN_RING_HEIGHT = 120;
-const MIN_RING_WIDTH = 110;
 
 export default function EnergyUsageWidget({
   storeIds = ["root"],
@@ -47,7 +43,7 @@ export default function EnergyUsageWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < MIN_RING_HEIGHT || width < MIN_RING_WIDTH);
+        setIsCompact(height < RING_COMPACT_MIN_HEIGHT || width < RING_COMPACT_MIN_WIDTH);
         const available = Math.min(width, height - 32);
         setRingSize(Math.max(72, Math.min(available, 176)));
       }

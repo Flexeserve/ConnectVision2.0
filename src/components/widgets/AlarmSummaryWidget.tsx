@@ -3,6 +3,7 @@ import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./AlarmSummaryWidget.css";
 import { createSeededRandom, seededPick } from "../../lib/seededRandom";
+import { DETAIL_VIEW_MIN_WIDTH, DETAIL_VIEW_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 type AlarmRow = {
   id: string;
@@ -46,14 +47,6 @@ const buildRows = (seed: string, locations: string[]): AlarmRow[] => {
 
 const PAGE_SIZE = 5;
 
-// Below this, the table's columns and pagination controls can't fit
-// legibly — fall back to just an active-alarm count instead. Width is set
-// well above the shared default (state 1) so the table only appears once
-// resized wider (state 2), rather than always squeezing in at half-row
-// width.
-const MIN_TABLE_HEIGHT = 160;
-const MIN_TABLE_WIDTH = 500;
-
 type AlarmSummaryWidgetProps = {
   seed?: string;
   locations?: string[];
@@ -86,7 +79,7 @@ export default function AlarmSummaryWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < MIN_TABLE_HEIGHT || width < MIN_TABLE_WIDTH);
+        setIsCompact(height < DETAIL_VIEW_MIN_HEIGHT || width < DETAIL_VIEW_MIN_WIDTH);
       }
     });
     observer.observe(widgetRef.current);

@@ -4,6 +4,7 @@ import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./EnergyCostWidget.css";
 import { seededInt } from "../../lib/seededRandom";
+import { DETAIL_VIEW_MIN_WIDTH, DETAIL_VIEW_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -33,14 +34,6 @@ type EnergyCostWidgetProps = {
   storeIds?: string[];
 };
 
-// Below this, the line chart can't render legibly alongside the value
-// column — fall back to just the headline cost instead. Width is set well
-// above the shared default (state 1) so the chart only appears once
-// resized wider (state 2), rather than always squeezing in at half-row
-// width.
-const MIN_CHART_HEIGHT = 165;
-const MIN_CHART_WIDTH = 500;
-
 export default function EnergyCostWidget({
   storeIds = ["root"],
 }: EnergyCostWidgetProps) {
@@ -55,7 +48,7 @@ export default function EnergyCostWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < MIN_CHART_HEIGHT || width < MIN_CHART_WIDTH);
+        setIsCompact(height < DETAIL_VIEW_MIN_HEIGHT || width < DETAIL_VIEW_MIN_WIDTH);
         const nextWidth = Math.max(240, width * 0.55);
         // Extra buffer beyond title/padding accounts for the custom dot
         // legend rendered below the plot, which isn't part of `height`.

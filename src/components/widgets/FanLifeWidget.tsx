@@ -4,6 +4,7 @@ import AirIcon from "@mui/icons-material/Air";
 import "./WidgetBase.css";
 import "./FanLifeWidget.css";
 import { createSeededRandom, seededInt, seededPick } from "../../lib/seededRandom";
+import { DETAIL_VIEW_MIN_WIDTH } from "../../lib/widgetSizing";
 
 type FanLifeWidgetProps = {
   storeIds?: string[];
@@ -40,13 +41,15 @@ const NEAR_END_OF_LIFE_THRESHOLD = 80;
 const CRITICAL_THRESHOLD = 95;
 
 // Past this width, there's room to list every nearing-end-of-life fan with
-// its own progress bar instead of just the headline count. Matches the
-// other widgets' MIN_CHART_WIDTH/MIN_TABLE_WIDTH (500) — the list itself is
-// a single stacked column (percent/bar/name) that doesn't need much more
-// room than that, and a higher value risked never being reachable at all
-// on narrower browser windows, since it's well above what doubling the
-// shared default width (state 1) actually produces there.
-const EXPAND_WIDTH = 500;
+// its own progress bar instead of just the headline count. Shares the same
+// DETAIL_VIEW_MIN_WIDTH as the other widgets' compact <-> detail-view
+// threshold — the list itself is a single stacked column (percent/bar/name)
+// that doesn't need much more room than that, and a higher value risked
+// never being reachable at all on narrower browser windows, since it's well
+// above what doubling the shared default width (state 1) actually produces
+// there. Width-only (no height gate) since this is meant to expand
+// horizontally, unlike the other DETAIL_VIEW_MIN_WIDTH widgets.
+const EXPAND_WIDTH = DETAIL_VIEW_MIN_WIDTH;
 
 export default function FanLifeWidget({
   storeIds = ["root"],
