@@ -148,10 +148,10 @@ type ZoneFlowLayout = {
 };
 
 const zoneFlowLayout: ZoneFlowLayout[] = [
-  { lightKey: "light1", zoneIndex: 0 },
-  { lightKey: "light2", zoneIndex: 1 },
-  { lightKey: "light3", zoneIndex: 2, planarOffset: [0, 0, -0.4] },
-  { lightKey: "light4", zoneIndex: 3, planarOffset: [0, 0, -0.4] },
+  { lightKey: "light1", zoneIndex: 0, planarOffset: [0, 0.8, -0.9] },
+  { lightKey: "light2", zoneIndex: 1, planarOffset: [0, 0.8, -0.9] },
+  { lightKey: "light3", zoneIndex: 2, planarOffset: [0, 0.8, -0.9] },
+  { lightKey: "light4", zoneIndex: 3, planarOffset: [0, 0.8, -0.9] },
 ];
 
 // const getOperatorEnvironment = (() => {
@@ -741,9 +741,15 @@ const FanFlowField = memo(function FanFlowField({
         // displaces Y (freed up by the rotation), and the flow axis itself
         // (Z) gets the small jitter. Planar: no rotation happened, so Y
         // stays the flow axis (as in an un-rotated PlaneGeometry) and Z is
-        // the free ripple axis instead — the same roles, mirrored.
+        // the free ripple axis instead — the same roles, mirrored. Both
+        // axes get the same -height*0.42 translate above, so both progress
+        // formulas need the same leading minus sign to land in the same
+        // [~0.42, ~1.42] range the gap animation (spotProgress) expects —
+        // using +baseY here previously shifted planar's range to roughly
+        // [-0.42, 0.58], almost entirely missing the gap's cycle, which is
+        // why it read as strips flickering on/off instead of a smooth gap.
         const progress = planar
-          ? (baseY + height / 2) / height
+          ? (-baseY + height / 2) / height
           : (-baseZ + height / 2) / height;
         const wave =
           Math.sin(progress * Math.PI * 3 + time * 2.1 + config.waveSeed) *
