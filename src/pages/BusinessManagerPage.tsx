@@ -14,18 +14,6 @@ import Header from "../components/Header";
 import "./BusinessManagerPage.css";
 import "../styles/tour.css";
 import SearchIcon from "@mui/icons-material/Search";
-import FanLifeWidget from "../components/widgets/FanLifeWidget";
-import EnergyUsageWidget from "../components/widgets/EnergyUsageWidget";
-import EnergyCostWidget from "../components/widgets/EnergyCostWidget";
-import ElementLifeWidget from "../components/widgets/ElementLifeWidget";
-import AlarmsWidget from "../components/widgets/AlarmsWidget";
-import OfflineDevicesWidget from "../components/widgets/OfflineDevicesWidget";
-import CloudConnectedWidget from "../components/widgets/CloudConnectedWidget";
-import StoresOnlineWidget from "../components/widgets/StoresOnlineWidget";
-import TemperatureAlarmsWidget from "../components/widgets/TemperatureAlarmsWidget";
-import AlarmSummaryWidget from "../components/widgets/AlarmSummaryWidget";
-import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget";
-import EnergyWidget from "../components/widgets/EnergyWidget";
 import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
 import TypewriterText from "../components/TypewriterText";
@@ -178,73 +166,16 @@ export default function BusinessManagerPage({
     () => buRows.reduce((sum, row) => sum + (row.notices ?? 0), 0),
     [buRows],
   );
-  const widgetComponents = React.useMemo(
-    () => [
-      {
-        id: "fan-life",
-        label: "Fan Life",
-        element: <FanLifeWidget storeIds={scopeStoreIds} locations={scopeLocations} />,
-      },
-      {
-        id: "energy",
-        label: "Schedule Compliance",
-        element: <EnergyUsageWidget storeIds={scopeStoreIds} />,
-      },
-      {
-        id: "energy-cost",
-        label: "Energy Consumption / Cost",
-        element: <EnergyCostWidget storeIds={scopeStoreIds} />,
-      },
-      {
-        id: "element",
-        label: "Element Life",
-        element: <ElementLifeWidget storeIds={scopeStoreIds} />,
-      },
-      {
-        id: "alarms",
-        label: "Active Alarms",
-        element: <AlarmsWidget value={totalActiveAlarms} />,
-      },
-      {
-        id: "offline-devices",
-        label: "Offline Devices",
-        element: (
-          <OfflineDevicesWidget storeIds={scopeStoreIds} commanderOffline={totalOfflineDevices} />
-        ),
-      },
-      {
-        id: "cloud",
-        label: "Cloud Connected",
-        element: <CloudConnectedWidget storeIds={scopeStoreIds} />,
-      },
-      {
-        id: "stores-online",
-        label: "Stores Online",
-        element: <StoresOnlineWidget storeIds={scopeStoreIds} />,
-      },
-      {
-        id: "temp-alarms",
-        label: "Temperature Alarms",
-        element: <TemperatureAlarmsWidget storeIds={scopeStoreIds} />,
-      },
-      {
-        id: "alarm-summary",
-        label: "Alarm Summary",
-        element: (
-          <AlarmSummaryWidget key={scopeSeed} seed={scopeSeed} locations={scopeLocations} />
-        ),
-      },
-      {
-        id: "door-opened",
-        label: "Temperature",
-        element: <DoorOpenedAlarmsWidget storeIds={scopeStoreIds} />,
-      },
-      {
-        id: "energy-widget",
-        label: "Energy Widget",
-        element: <EnergyWidget storeIds={scopeStoreIds} />,
-      },
-    ],
+  // Widgets removed for a from-scratch rebuild — grid/layout system, sidebar,
+  // search, and page chrome are kept intact. Each entry needs { id, label,
+  // element }; id must match a DEFAULT_LAYOUT entry's `i` below. The scope
+  // values above (scopeStoreIds, scopeLocations, scopeSeed,
+  // totalActiveAlarms, totalOfflineDevices) are ready to hand to new widgets
+  // the same way the old ones consumed them.
+  const widgetComponents = React.useMemo<
+    { id: string; label: string; element: React.ReactElement }[]
+  >(
+    () => [],
     [totalActiveAlarms, totalOfflineDevices, scopeSeed, scopeStoreIds, scopeLocations],
   );
 
