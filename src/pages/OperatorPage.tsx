@@ -620,6 +620,11 @@ const FanFlowField = memo(function FanFlowField({
     } else {
       groupRef.current.rotation.set(0, 0, 0);
     }
+    // The lines' long axis (local Y, where basePositions' `height` extent
+    // lives) reads as horizontal once oriented by the emitter above — swap
+    // it to vertical, streaming down from the top, by rotating the whole
+    // group 90 degrees around its local Z axis on top of that orientation.
+    groupRef.current.rotateZ(Math.PI / 2);
     position.add(forwardOffset).add(zoneOffset);
     groupRef.current.position.copy(position);
   }, [emitter, offset]);
