@@ -694,7 +694,7 @@ const FanFlowField = memo(function FanFlowField({
         const progress = (-baseZ + height / 2) / height;
         const wave =
           Math.sin(progress * Math.PI * 3 + time * 2.1 + config.waveSeed) *
-          0.04;
+          0.018;
         const verticalNoise =
           Math.sin(progress * Math.PI * 5 + time * 1.05 + config.verticalSeed) *
           0.008;
