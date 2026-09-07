@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Card, Typography } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
+import BoltIcon from "@mui/icons-material/Bolt";
 import "./WidgetBase.css";
 import "./EnergyWidget.css";
 import { createSeededRandom, seededFloat } from "../../lib/seededRandom";
@@ -54,6 +55,7 @@ export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps)
     <Card ref={widgetRef} className="widget-card widget-energy-widget">
       <div className="widget-title">
         <span>Energy widget</span>
+        <BoltIcon className="widget-title-icon" fontSize="small" />
       </div>
 
       <Box className={`trend-layout ${isCompact ? "trend-layout--compact" : ""}`}>

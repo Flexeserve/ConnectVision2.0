@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "@mui/material/Card";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 import "./WidgetBase.css";
 import "./AlarmSummaryWidget.css";
 import { createSeededRandom, seededPick } from "../../lib/seededRandom";
@@ -90,6 +91,7 @@ export default function AlarmSummaryWidget({
     <Card ref={widgetRef} className="widget-card widget-alarm-summary">
       <div className="widget-title">
         <span>Alarm Summary</span>
+        <ListAltIcon className="widget-title-icon" fontSize="small" />
       </div>
 
       {isCompact ? (

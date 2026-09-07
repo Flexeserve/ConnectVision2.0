@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import Card from "@mui/material/Card";
+import ThermostatIcon from "@mui/icons-material/Thermostat";
 import "./WidgetBase.css";
 import "./TemperatureAlarmsWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -184,7 +185,10 @@ export default function TemperatureAlarmsWidget({
 
   return (
     <Card className="widget-card widget-temp-alarms">
-      <div className="widget-title">Temperature Alarms</div>
+      <div className="widget-title">
+        <span>Temperature Alarms</span>
+        <ThermostatIcon className="widget-title-icon" fontSize="small" />
+      </div>
       <div className="temp-alarms-body">
         <div className="temp-alarms-panel" ref={panelRef}>
           {isCompact ? (

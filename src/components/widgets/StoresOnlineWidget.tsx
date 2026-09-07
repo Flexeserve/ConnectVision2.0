@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import Card from "@mui/material/Card";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 import "./WidgetBase.css";
 import "./StoresOnlineWidget.css";
 import { seededInt } from "../../lib/seededRandom";
@@ -56,7 +57,10 @@ export default function StoresOnlineWidget({
 
   return (
     <Card className="widget-card widget-stores-online">
-      <div className="widget-title">Stores Online</div>
+      <div className="widget-title">
+        <span>Stores Online</span>
+        <StorefrontIcon className="widget-title-icon" fontSize="small" />
+      </div>
       <div className="stores-online-body">
         <div className="stores-online-panel" ref={panelRef}>
           {isCompact ? (
