@@ -533,7 +533,14 @@ const FanFlowField = memo(function FanFlowField({
   color,
   width = 1.8,
   height = 1.7,
-  offset = [0, -2, -0.1],
+  // The old [0, -2, -0.1] default assumed local Y was vertical (true for
+  // the old fan-emitter anchor) — for the light plane anchor, Y runs
+  // horizontal instead (confirmed via a temporary axesHelper), so that -2
+  // shifted the whole flow group sideways, off the visible shelf. The
+  // light anchor already sits at the right depth/height, and the ribbon
+  // geometry's own translate (see lineConfigs below) handles pushing the
+  // flow down along the normal, so no corrective offset is needed here.
+  offset = [0, 0, 0],
 }: FanFlowFieldProps) {
   const groupRef = useRef<Group | null>(null);
   const lineCount = 10;
@@ -578,7 +585,19 @@ const FanFlowField = memo(function FanFlowField({
     for (let i = 0; i < lineCount; i += 1) {
       const offsetAmount = (i - (lineCount - 1) / 2) * (lineWidth + spacing);
       const geometry = new PlaneGeometry(lineWidth, height, 8, 60);
-      geometry.translate(offsetAmount, height * 0.42, 0.12);
+      // PlaneGeometry lies flat in XY (Z=0) by default, "height" along Y.
+      // Confirmed via a temporary axesHelper that this group's local -Z is
+      // the RectAreaLight's own shine/forward direction (true "down" once
+      // oriented by the light anchor) — stand the plane up so its extent
+      // runs along Z instead, making the ribbon's flow axis the plane's
+      // actual normal rather than an axis that just looks similar to it.
+      geometry.rotateX(-Math.PI / 2);
+      // -0.42*height (not +) mirrors the old Y-axis placement under this
+      // rotation: ~92% of the ribbon extends in -Z (outward along the
+      // normal, away from the plane) with a small sliver left at +Z
+      // (behind it, hidden), so the flow visibly emerges from the plane's
+      // surface rather than floating entirely in front of it.
+      geometry.translate(offsetAmount, 0.12, -height * 0.42);
       configs.push({
         geometry,
         basePositions: Float32Array.from(
@@ -670,7 +689,9 @@ const FanFlowField = memo(function FanFlowField({
         const baseX = config.basePositions[idx];
         const baseY = config.basePositions[idx + 1];
         const baseZ = config.basePositions[idx + 2];
-        const progress = (baseY + height / 2) / height;
+        // Z is now the flow axis (see the geometry construction above) and
+        // flow runs toward -Z, so progress is read from -baseZ.
+        const progress = (-baseZ + height / 2) / height;
         const wave =
           Math.sin(progress * Math.PI * 3 + time * 2.1 + config.waveSeed) *
           0.04;
@@ -681,8 +702,11 @@ const FanFlowField = memo(function FanFlowField({
           Math.sin(progress * Math.PI * 5 + time * 1.05 + config.verticalSeed) *
           0.008;
         positions.setX(i, baseX + zigzag * (1 + index * 0.15));
-        positions.setY(i, baseY + verticalNoise);
-        positions.setZ(i, baseZ + wave);
+        // The main ripple (wave) now displaces Y, the axis freed up by the
+        // rotation; the flow axis (Z) gets the small jitter Y used to,
+        // mirroring the original's roles 1:1 under the new mapping.
+        positions.setY(i, baseY + wave);
+        positions.setZ(i, baseZ + verticalNoise);
       }
       positions.needsUpdate = true;
     });
@@ -702,6 +726,7 @@ const FanFlowField = memo(function FanFlowField({
             opacity={0}
             color={color}
             depthWrite={false}
+            side={DoubleSide}
             blending={AdditiveBlending}
             map={gradientTexture ?? undefined}
           />
