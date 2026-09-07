@@ -183,7 +183,11 @@ export default function BusinessManagerPage({
   );
   const widgetComponents = React.useMemo(
     () => [
-      { id: "fan-life", label: "Fan Life", element: <FanLifeWidget storeIds={scopeStoreIds} /> },
+      {
+        id: "fan-life",
+        label: "Fan Life",
+        element: <FanLifeWidget storeIds={scopeStoreIds} locations={scopeLocations} />,
+      },
       {
         id: "energy",
         label: "Schedule Compliance",
@@ -397,7 +401,10 @@ export default function BusinessManagerPage({
       // x/w/minW/maxW below are scaled for GRID_COLS=20 (factor 5/3 from the
       // 12-col values these were originally tuned at) — h/minH/maxH are row
       // units, unrelated to column count, so those are untouched.
-      { i: "fan-life", x: 0, y: 0, w: 10, h: 3, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      // Default size matches Stores Online (state 1); maxW is raised well
+      // past the others so it can actually reach ~2x its default width,
+      // which is what triggers its state-2 progress-bar list.
+      { i: "fan-life", x: 0, y: 0, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
       { i: "offline-devices", x: 10, y: 0, w: 10, h: 6, minW: 7, minH: 6, maxW: 12, maxH: 8 },
       { i: "door-opened", x: 0, y: 6, w: 20, h: 8, minW: 15, minH: 4, maxW: 20, maxH: 10 },
       { i: "element", x: 0, y: 14, w: 10, h: 3, minW: 7, minH: 3, maxW: 12, maxH: 6 },

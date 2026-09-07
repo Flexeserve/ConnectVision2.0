@@ -6,21 +6,99 @@
   text-align: left;
 }
 
-.widget-fan .widget-title {
-  color: var(--widget-text);
-  width: 100%;
-  justify-content: flex-start;
-}
-
 .widget-fan .widget-value {
   width: 100%;
   justify-content: center;
   font-size: min(26cqi, 40cqb);
   line-height: 0.95;
   align-self: stretch;
+  flex: 1 1 auto;
 }
 
-.widget-fan .widget-value span {
-  font-size: min(12cqi, 18cqb);
-  margin-left: 0.35rem;
+.fan-life-sub {
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: clamp(9px, 2.6cqw, 12px);
+  color: var(--widget-text-secondary);
+}
+
+/* State 2: a scrollable progress-bar list, one row per fan nearing end of
+   life, with the store name underneath — replaces the headline count once
+   the widget is wide enough (roughly double its default width). */
+.fan-life-eol-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 6px 4px;
+}
+
+.fan-life-eol-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fan-life-eol-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fan-life-eol-percent {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--widget-text-primary);
+}
+
+.fan-life-eol-bar-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.25);
+  overflow: hidden;
+}
+
+.fan-life-eol-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 400ms ease;
+}
+
+.fan-life-eol-bar-fill.is-warning {
+  background: #f0c419;
+}
+
+.fan-life-eol-bar-fill.is-critical {
+  background: #f14734;
+}
+
+.fan-life-eol-name {
+  font-size: 0.78rem;
+  color: var(--widget-text-secondary);
+}
+
+.fan-life-empty {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.fan-life-empty-value {
+  font-size: clamp(28px, min(20cqi, 34cqb), 56px);
+  font-weight: 800;
+  color: #1fb05c;
+  line-height: 1;
+}
+
+.fan-life-empty-label {
+  font-size: clamp(10px, 2.6cqw, 13px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--widget-text-secondary);
 }
