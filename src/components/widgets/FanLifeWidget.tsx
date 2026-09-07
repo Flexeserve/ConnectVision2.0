@@ -110,7 +110,11 @@ export default function FanLifeWidget({
         setIsCompact(height < RING_COMPACT_MIN_HEIGHT || width < RING_COMPACT_MIN_WIDTH);
         setIsExpanded(width >= EXPAND_WIDTH);
         const available = Math.min(width, height - 32);
-        setRingSize(Math.max(72, Math.min(available, 176)));
+        // Capped higher than Stores Online's 176 — Fan Life's maxH (12 rows)
+        // gives it more headroom to grow into, and the old cap left a
+        // visible band of empty space below the ring once the card grew
+        // past it.
+        setRingSize(Math.max(72, Math.min(available, 260)));
       }
     });
     observer.observe(panelRef.current);
