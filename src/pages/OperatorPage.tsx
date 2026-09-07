@@ -543,7 +543,7 @@ const FanFlowField = memo(function FanFlowField({
   offset = [0, 0, 0],
 }: FanFlowFieldProps) {
   const groupRef = useRef<Group | null>(null);
-  const lineCount = 10;
+  const lineCount = 16;
   const rotationQuaternion = useMemo(() => {
     const [rx, ry, rz] = defaultLightRotation;
     return new Quaternion().setFromEuler(new Euler(rx, ry, rz));
@@ -580,7 +580,7 @@ const FanFlowField = memo(function FanFlowField({
 
   const lineConfigs = useMemo<LineConfig[]>(() => {
     const configs: LineConfig[] = [];
-    const lineWidth = width / (lineCount * 0.8);
+    const lineWidth = width / (lineCount * 1.4);
     const spacing = lineWidth * 0.25;
     for (let i = 0; i < lineCount; i += 1) {
       const offsetAmount = (i - (lineCount - 1) / 2) * (lineWidth + spacing);
