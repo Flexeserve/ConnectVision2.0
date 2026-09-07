@@ -540,7 +540,9 @@ const FanFlowField = memo(function FanFlowField({
   // light anchor already sits at the right depth/height, and the ribbon
   // geometry's own translate (see lineConfigs below) handles pushing the
   // flow down along the normal, so no corrective offset is needed here.
-  offset = [0, 0, 0],
+  // Negative Y nudges the flow toward the front glass (confirmed
+  // empirically — positive Y moves it toward the back wall, out of view).
+  offset = [0, -0.18, 0],
 }: FanFlowFieldProps) {
   const groupRef = useRef<Group | null>(null);
   const lineCount = 16;
