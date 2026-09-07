@@ -703,7 +703,7 @@ const FanFlowField = memo(function FanFlowField({
     const spotSpeed = 0.3; // progress units/sec
     const spotLoop = 1.8; // > the ~1.0 visible progress span, so there's a
     // gap between one pulse vanishing past the tip and the next emerging
-    const spotWidth = 0.22; // half-width of the transparent band
+    const spotWidth = 0.45; // half-width of the transparent band
     lineConfigs.forEach((config) => {
       const positions = config.geometry.getAttribute(
         "position",
@@ -736,7 +736,7 @@ const FanFlowField = memo(function FanFlowField({
           0,
           1 - Math.abs(progress - spotProgress) / spotWidth,
         );
-        const brightness = 1 - spotProximity * 0.55;
+        const brightness = 1 - spotProximity * 0.92;
         colors.setXYZ(i, brightness, brightness, brightness);
       }
       positions.needsUpdate = true;
