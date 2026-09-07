@@ -531,7 +531,7 @@ const FanFlowField = memo(function FanFlowField({
   anchor,
   active,
   color,
-  width = 1.8,
+  width = 3.2,
   height = 1.7,
   // The old [0, -2, -0.1] default assumed local Y was vertical (true for
   // the old fan-emitter anchor) — for the light plane anchor, Y runs
@@ -542,7 +542,7 @@ const FanFlowField = memo(function FanFlowField({
   // flow down along the normal, so no corrective offset is needed here.
   // Negative Y nudges the flow toward the front glass (confirmed
   // empirically — positive Y moves it toward the back wall, out of view).
-  offset = [0, -0.18, 0],
+  offset = [0, -0.35, 0],
 }: FanFlowFieldProps) {
   const groupRef = useRef<Group | null>(null);
   const lineCount = 16;
@@ -553,7 +553,7 @@ const FanFlowField = memo(function FanFlowField({
 
   const gradientTexture = useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 16;
+    canvas.width = 12;
     canvas.height = 128;
     const ctx = canvas.getContext("2d");
     if (ctx) {
@@ -578,6 +578,7 @@ const FanFlowField = memo(function FanFlowField({
     waveSeed: number;
     lateralSeed: number;
     verticalSeed: number;
+    spotSeed: number;
   };
 
   const lineConfigs = useMemo<LineConfig[]>(() => {
@@ -600,6 +601,18 @@ const FanFlowField = memo(function FanFlowField({
       // (behind it, hidden), so the flow visibly emerges from the plane's
       // surface rather than floating entirely in front of it.
       geometry.translate(offsetAmount, 0.12, -height * 0.42);
+      // Per-vertex color, multiplied into the material's color (vertexColors
+      // below). Starts fully white/opaque; the "transparent spot" is
+      // painted in each frame by darkening a traveling band toward black —
+      // with AdditiveBlending, black contributes nothing to the framebuffer,
+      // so that band reads as a see-through gap propagating down the strip,
+      // with no shader/real-alpha work needed.
+      const vertexCount = (geometry.getAttribute("position") as BufferAttribute)
+        .count;
+      geometry.setAttribute(
+        "color",
+        new BufferAttribute(new Float32Array(vertexCount * 3).fill(1), 3),
+      );
       configs.push({
         geometry,
         basePositions: Float32Array.from(
@@ -609,6 +622,7 @@ const FanFlowField = memo(function FanFlowField({
         waveSeed: deterministicSeed(i, 1),
         lateralSeed: deterministicSeed(i, 2),
         verticalSeed: deterministicSeed(i, 3),
+        spotSeed: deterministicSeed(i, 4),
       });
     }
     return configs;
@@ -682,10 +696,21 @@ const FanFlowField = memo(function FanFlowField({
     });
 
     const time = clock.getElapsedTime();
+    // A transparent "spot" that travels down each strip, from the plane
+    // toward the far tip and beyond, then loops. spotProgress increases
+    // with time (unlike the wave/zigzag phases above, which travel toward
+    // the plane) so the spot itself reads as propagating downward.
+    const spotSpeed = 0.4; // progress units/sec
+    const spotLoop = 1.7; // > the ~1.0 visible progress span, so there's a
+    // gap between one spot vanishing past the tip and the next emerging
+    const spotWidth = 0.16; // half-width of the transparent band
     lineConfigs.forEach((config, index) => {
       const positions = config.geometry.getAttribute(
         "position",
       ) as BufferAttribute;
+      const colors = config.geometry.getAttribute("color") as BufferAttribute;
+      const spotProgress =
+        0.15 + ((time * spotSpeed + config.spotSeed) % spotLoop);
       for (let i = 0; i < positions.count; i += 1) {
         const idx = i * 3;
         const baseX = config.basePositions[idx];
@@ -709,8 +734,16 @@ const FanFlowField = memo(function FanFlowField({
         // mirroring the original's roles 1:1 under the new mapping.
         positions.setY(i, baseY + wave);
         positions.setZ(i, baseZ + verticalNoise);
+
+        const spotProximity = Math.max(
+          0,
+          1 - Math.abs(progress - spotProgress) / spotWidth,
+        );
+        const brightness = 1 - spotProximity * 0.95;
+        colors.setXYZ(i, brightness, brightness, brightness);
       }
       positions.needsUpdate = true;
+      colors.needsUpdate = true;
     });
   });
 
@@ -727,6 +760,7 @@ const FanFlowField = memo(function FanFlowField({
             transparent
             opacity={0}
             color={color}
+            vertexColors
             depthWrite={false}
             side={DoubleSide}
             blending={AdditiveBlending}
