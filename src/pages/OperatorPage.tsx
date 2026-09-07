@@ -4,6 +4,7 @@ import connectLogo from "../assets/connect_flexeserve.svg";
 import connectLogoInversed from "../assets/connect_flexeserve_inversed.svg";
 import "./OperatorPage.css";
 import {
+  Fragment,
   Suspense,
   memo,
   useEffect,
@@ -129,12 +130,21 @@ type FanFlowFieldProps = {
   width?: number;
   height?: number;
   offset?: [number, number, number];
+  // false (default): strips stand up off the plane, flowing along its
+  // normal (local Z) — the "hanging curtain" look. true: strips stay flat,
+  // coplanar with the light plane itself (local Y, no rotateX), flowing
+  // sideways across its surface instead of down away from it.
+  planar?: boolean;
 };
 
 type ZoneFlowLayout = {
   zoneIndex: number;
   lightKey: keyof LightAnchors;
   offset?: [number, number, number];
+  // Offset for the second, planar (coplanar-with-the-light) flow instance
+  // rendered alongside the normal one — tune independently since it's
+  // positioned along a different local axis (see FanFlowField's `planar`).
+  planarOffset?: [number, number, number];
 };
 
 const zoneFlowLayout: ZoneFlowLayout[] = [
@@ -543,6 +553,7 @@ const FanFlowField = memo(function FanFlowField({
   // Negative Y nudges the flow toward the front glass (confirmed
   // empirically — positive Y moves it toward the back wall, out of view).
   offset = [0, -0.6, 0],
+  planar = false,
 }: FanFlowFieldProps) {
   const groupRef = useRef<Group | null>(null);
   const lineCount = 16;
@@ -590,16 +601,24 @@ const FanFlowField = memo(function FanFlowField({
       // PlaneGeometry lies flat in XY (Z=0) by default, "height" along Y.
       // Confirmed via a temporary axesHelper that this group's local -Z is
       // the RectAreaLight's own shine/forward direction (true "down" once
-      // oriented by the light anchor) — stand the plane up so its extent
-      // runs along Z instead, making the ribbon's flow axis the plane's
-      // actual normal rather than an axis that just looks similar to it.
-      geometry.rotateX(-Math.PI / 2);
-      // -0.42*height (not +) mirrors the old Y-axis placement under this
-      // rotation: ~92% of the ribbon extends in -Z (outward along the
-      // normal, away from the plane) with a small sliver left at +Z
-      // (behind it, hidden), so the flow visibly emerges from the plane's
-      // surface rather than floating entirely in front of it.
-      geometry.translate(offsetAmount, 0.12, -height * 0.42);
+      // oriented by the light anchor). Non-planar: stand the plane up so
+      // its extent runs along Z instead, making the ribbon's flow axis the
+      // plane's actual normal (a "hanging curtain" off the light). Planar:
+      // skip the rotate entirely, so the strip stays coplanar with the
+      // light plane itself and flows along its own surface (Y) instead.
+      if (!planar) {
+        geometry.rotateX(-Math.PI / 2);
+      }
+      // -0.42*height (not +) keeps ~92% of the ribbon on one side of the
+      // plane/origin with a small sliver on the other (hidden), so the flow
+      // visibly emerges from the plane's surface rather than floating
+      // entirely to one side of it. Non-planar pushes that along Z (the
+      // normal); planar keeps it along Y (in-plane).
+      if (planar) {
+        geometry.translate(offsetAmount, -height * 0.42, 0.12);
+      } else {
+        geometry.translate(offsetAmount, 0.12, -height * 0.42);
+      }
       // Per-vertex color, multiplied into the material's color (vertexColors
       // below). Starts fully white/opaque; a "transparent gap" is painted
       // in each frame by softly darkening a traveling band toward black —
@@ -624,7 +643,7 @@ const FanFlowField = memo(function FanFlowField({
       });
     }
     return configs;
-  }, [height, width, lineCount]);
+  }, [height, width, lineCount, planar]);
 
   const materialsRef = useRef<MeshBasicMaterial[]>([]);
   const intensityRef = useRef(0);
@@ -717,9 +736,15 @@ const FanFlowField = memo(function FanFlowField({
         const baseX = config.basePositions[idx];
         const baseY = config.basePositions[idx + 1];
         const baseZ = config.basePositions[idx + 2];
-        // Z is now the flow axis (see the geometry construction above) and
-        // flow runs toward -Z, so progress is read from -baseZ.
-        const progress = (-baseZ + height / 2) / height;
+        // Non-planar: Z is the flow axis (see the geometry construction
+        // above), flowing toward -Z, so progress reads -baseZ, the ripple
+        // displaces Y (freed up by the rotation), and the flow axis itself
+        // (Z) gets the small jitter. Planar: no rotation happened, so Y
+        // stays the flow axis (as in an un-rotated PlaneGeometry) and Z is
+        // the free ripple axis instead — the same roles, mirrored.
+        const progress = planar
+          ? (baseY + height / 2) / height
+          : (-baseZ + height / 2) / height;
         const wave =
           Math.sin(progress * Math.PI * 3 + time * 2.1 + config.waveSeed) *
           0.018;
@@ -727,11 +752,13 @@ const FanFlowField = memo(function FanFlowField({
           Math.sin(progress * Math.PI * 5 + time * 1.05 + config.verticalSeed) *
           0.008;
         positions.setX(i, baseX);
-        // The main ripple (wave) now displaces Y, the axis freed up by the
-        // rotation; the flow axis (Z) gets the small jitter Y used to,
-        // mirroring the original's roles 1:1 under the new mapping.
-        positions.setY(i, baseY + wave);
-        positions.setZ(i, baseZ + verticalNoise);
+        if (planar) {
+          positions.setY(i, baseY + verticalNoise);
+          positions.setZ(i, baseZ + wave);
+        } else {
+          positions.setY(i, baseY + wave);
+          positions.setZ(i, baseZ + verticalNoise);
+        }
 
         const spotProximity = Math.max(
           0,
@@ -1293,16 +1320,24 @@ export default function OperatorPage({
                     rotationOffset={defaultLightRotation}
                   />
                   {zoneFlowLayout.map(
-                    ({ lightKey, zoneIndex, offset }) => {
+                    ({ lightKey, zoneIndex, offset, planarOffset }) => {
                       const resolvedAnchor = lightAnchors[lightKey];
                       return (
-                        <FanFlowField
-                          key={`fan-flow-${lightKey}-${zoneIndex}`}
-                          anchor={resolvedAnchor}
-                          active={zoneStates[zoneIndex]?.fanActive ?? false}
-                          color={zoneStates[zoneIndex]?.color ?? "#8d8d8d"}
-                          offset={offset}
-                        />
+                        <Fragment key={`fan-flow-group-${lightKey}-${zoneIndex}`}>
+                          <FanFlowField
+                            anchor={resolvedAnchor}
+                            active={zoneStates[zoneIndex]?.fanActive ?? false}
+                            color={zoneStates[zoneIndex]?.color ?? "#8d8d8d"}
+                            offset={offset}
+                          />
+                          <FanFlowField
+                            anchor={resolvedAnchor}
+                            active={zoneStates[zoneIndex]?.fanActive ?? false}
+                            color={zoneStates[zoneIndex]?.color ?? "#8d8d8d"}
+                            offset={planarOffset}
+                            planar
+                          />
+                        </Fragment>
                       );
                     },
                   )}
