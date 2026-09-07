@@ -150,8 +150,8 @@ type ZoneFlowLayout = {
 const zoneFlowLayout: ZoneFlowLayout[] = [
   { lightKey: "light1", zoneIndex: 0 },
   { lightKey: "light2", zoneIndex: 1 },
-  { lightKey: "light3", zoneIndex: 2 },
-  { lightKey: "light4", zoneIndex: 3 },
+  { lightKey: "light3", zoneIndex: 2, planarOffset: [0, 0, -0.4] },
+  { lightKey: "light4", zoneIndex: 3, planarOffset: [0, 0, -0.4] },
 ];
 
 // const getOperatorEnvironment = (() => {
