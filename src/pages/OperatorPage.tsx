@@ -576,7 +576,6 @@ const FanFlowField = memo(function FanFlowField({
     geometry: PlaneGeometry;
     basePositions: Float32Array;
     waveSeed: number;
-    lateralSeed: number;
     verticalSeed: number;
   };
 
@@ -607,7 +606,6 @@ const FanFlowField = memo(function FanFlowField({
             .array as ArrayLike<number>,
         ),
         waveSeed: deterministicSeed(i, 1),
-        lateralSeed: deterministicSeed(i, 2),
         verticalSeed: deterministicSeed(i, 3),
       });
     }
@@ -682,7 +680,7 @@ const FanFlowField = memo(function FanFlowField({
     });
 
     const time = clock.getElapsedTime();
-    lineConfigs.forEach((config, index) => {
+    lineConfigs.forEach((config) => {
       const positions = config.geometry.getAttribute(
         "position",
       ) as BufferAttribute;
@@ -697,13 +695,10 @@ const FanFlowField = memo(function FanFlowField({
         const wave =
           Math.sin(progress * Math.PI * 3 + time * 2.1 + config.waveSeed) *
           0.04;
-        const zigzag =
-          Math.cos(progress * Math.PI * 4 + time * 1.2 + config.lateralSeed) *
-          0.02;
         const verticalNoise =
           Math.sin(progress * Math.PI * 5 + time * 1.05 + config.verticalSeed) *
           0.008;
-        positions.setX(i, baseX + zigzag * (1 + index * 0.15));
+        positions.setX(i, baseX);
         // The main ripple (wave) now displaces Y, the axis freed up by the
         // rotation; the flow axis (Z) gets the small jitter Y used to,
         // mirroring the original's roles 1:1 under the new mapping.
