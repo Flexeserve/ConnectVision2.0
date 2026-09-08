@@ -398,18 +398,23 @@ export default function BusinessManagerPage({
       // bar-chart alternation needs a couple more rows), get maxW/maxH
       // raised past the shared 12/10 ceiling so their own state-2 trigger
       // is actually reachable.
-      { i: "fan-life", x: 0, y: 0, w: 10, h: 10, minW: 7, minH: 7, maxW: 20, maxH: 12 },
-      { i: "offline-devices", x: 10, y: 0, w: 10, h: 8, minW: 7, minH: 6, maxW: 12, maxH: 10 },
-      { i: "door-opened", x: 0, y: 10, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
-      { i: "element", x: 0, y: 18, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
-      { i: "alarms", x: 10, y: 18, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
-      { i: "energy", x: 0, y: 26, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
-      { i: "cloud", x: 10, y: 26, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
-      { i: "alarm-summary", x: 0, y: 34, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
-      { i: "energy-cost", x: 0, y: 42, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
-      { i: "energy-widget", x: 0, y: 50, w: 10, h: 8, minW: 7, minH: 4, maxW: 20, maxH: 10 },
-      { i: "stores-online", x: 0, y: 58, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 10 },
-      { i: "temp-alarms", x: 10, y: 58, w: 10, h: 8, minW: 7, minH: 4, maxW: 12, maxH: 11 },
+      // Row-based values (h/minH/maxH/y) below are rescaled for
+      // GRID_ROW_HEIGHT going 20 -> 36 (see widgetSizing.ts) — roughly
+      // *7/11, the ratio that keeps a widget's pixel height close to what
+      // it was before, since each row is now taller. Column-based values
+      // (w/minW/maxW/x) are untouched; column width didn't change.
+      { i: "fan-life", x: 0, y: 0, w: 10, h: 9, minW: 7, minH: 7, maxW: 20, maxH: 12 },
+      { i: "offline-devices", x: 10, y: 0, w: 10, h: 5, minW: 7, minH: 4, maxW: 12, maxH: 6 },
+      { i: "door-opened", x: 0, y: 9, w: 10, h: 5, minW: 7, minH: 3, maxW: 20, maxH: 6 },
+      { i: "element", x: 0, y: 14, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      { i: "alarms", x: 10, y: 14, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      { i: "energy", x: 0, y: 19, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      { i: "cloud", x: 10, y: 19, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      { i: "alarm-summary", x: 0, y: 24, w: 10, h: 5, minW: 7, minH: 3, maxW: 20, maxH: 6 },
+      { i: "energy-cost", x: 0, y: 29, w: 10, h: 5, minW: 7, minH: 3, maxW: 20, maxH: 6 },
+      { i: "energy-widget", x: 0, y: 34, w: 10, h: 5, minW: 7, minH: 3, maxW: 20, maxH: 6 },
+      { i: "stores-online", x: 0, y: 39, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
+      { i: "temp-alarms", x: 10, y: 39, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 7 },
     ],
     [],
   );

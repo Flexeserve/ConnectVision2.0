@@ -11,7 +11,12 @@
 
 // --- Grid geometry (BusinessManagerPage's react-grid-layout) ---------------
 export const GRID_COLS = 20;
-export const GRID_ROW_HEIGHT = 20;
+// Column width is fluid (container width / GRID_COLS), measured at ~36px at
+// common desktop widths — GRID_ROW_HEIGHT was previously a fixed 20px, well
+// under that, so equal row/column *counts* (e.g. a 7x7 minimum) rendered a
+// visibly non-square box (7 cols x 7 rows measured 297x188px). Raised to
+// match, so equal counts now produce an actually-square box.
+export const GRID_ROW_HEIGHT = 36;
 export const GRID_MARGIN: [number, number] = [8, 8];
 
 // --- Ring/gauge widgets: compact number <-> ring+legend ---------------------
