@@ -48,16 +48,17 @@ const NONE_COLOR = "#adadad";
 const WARNING_COLOR = "#e28e04";
 const CRITICAL_COLOR = "#a4130e";
 
-// Past this width, there's room to list every nearing-end-of-life fan with
-// its own progress bar instead of the ring. Shares the same
-// DETAIL_VIEW_MIN_WIDTH as the other widgets' compact <-> detail-view
-// threshold — the list itself is a single stacked column (percent/bar/name)
-// that doesn't need much more room than that, and a higher value risked
-// never being reachable at all on narrower browser windows, since it's well
-// above what doubling the shared default width (state 1) actually produces
-// there. Width-only (no height gate) since this is meant to expand
-// horizontally, unlike the ring tier below (which gates on both, same as
-// Stores Online/Schedule Compliance).
+// The grid default (w:10) sits at exactly half of this widget's max grid
+// width (maxW:20), so "half of max width shows the ring, more than half
+// shows the bar list" is the same rule as "past the default size, show the
+// list" — this threshold just needs to sit reliably between the two rather
+// than at an exact pixel midpoint (the grid is fluid, so there's no single
+// pixel value that's precisely 50% of max at every viewport). Shares the
+// same DETAIL_VIEW_MIN_WIDTH as the other widgets' compact <-> detail-view
+// threshold, which was already tuned to land in that gap. Width-only (no
+// height gate) since this is meant to expand horizontally, unlike the ring
+// tier below (which gates on both, same as Stores Online/Schedule
+// Compliance).
 const EXPAND_WIDTH = DETAIL_VIEW_MIN_WIDTH;
 
 export default function FanLifeWidget({

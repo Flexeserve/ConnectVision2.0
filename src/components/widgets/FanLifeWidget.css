@@ -6,6 +6,13 @@
   text-align: left;
 }
 
+/* Same Inter Bold treatment as the other widget titles (Stores Online,
+   Temperature Alarms, Offline Devices, Active Alarms). */
+.widget-fan .widget-title {
+  font-size: clamp(10px, 4cqw, 15px);
+  font-weight: 800;
+}
+
 .widget-fan .fan-life-body {
   display: flex;
   align-items: stretch;
@@ -89,6 +96,11 @@
    life, with the store name underneath — replaces the ring once the widget
    is wide enough (roughly double its default width). */
 .fan-life-eol-list {
+  /* .fan-life-panel centers its children (for the ring/compact-count
+     views), which was also shrinking this list to its own content width
+     instead of letting it fill the panel — leaving empty space on both
+     sides of every progress bar instead of them stretching edge to edge. */
+  align-self: stretch;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
