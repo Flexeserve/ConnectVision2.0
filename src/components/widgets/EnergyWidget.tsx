@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Box, Card, Typography } from "@mui/material";
+import { Card } from "@heroui/react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import BoltIcon from "@mui/icons-material/Bolt";
 import "./WidgetBase.css";
@@ -52,21 +52,26 @@ export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps)
   }, []);
 
   return (
-    <Card ref={widgetRef} className="widget-card widget-energy-widget">
+    <Card
+      ref={widgetRef}
+      shadow="none"
+      radius="none"
+      className="widget-card widget-energy-widget"
+    >
       <div className="widget-title">
         <span>Energy widget</span>
         <BoltIcon className="widget-title-icon" fontSize="small" />
       </div>
 
-      <Box className={`trend-layout ${isCompact ? "trend-layout--compact" : ""}`}>
-        <Box className="trend-left">
-          <Typography className="trend-kpi-value">{avgTempMean}C</Typography>
-          <Typography className="trend-kpi-label">Avg cabinet temp</Typography>
-          <Typography className="trend-kpi-sub">Last 24 hours</Typography>
-        </Box>
+      <div className={`trend-layout ${isCompact ? "trend-layout--compact" : ""}`}>
+        <div className="trend-left">
+          <p className="trend-kpi-value">{avgTempMean}C</p>
+          <p className="trend-kpi-label">Avg cabinet temp</p>
+          <p className="trend-kpi-sub">Last 24 hours</p>
+        </div>
 
         {!isCompact && (
-          <Box className="trend-right">
+          <div className="trend-right">
             <LineChart
               xAxis={[
                 {
@@ -106,9 +111,9 @@ export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps)
                 },
               }}
             />
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
     </Card>
   );
 }
