@@ -398,23 +398,27 @@ export default function BusinessManagerPage({
       // bar-chart alternation needs a couple more rows), get maxW/maxH
       // raised past the shared 12/10 ceiling so their own state-2 trigger
       // is actually reachable.
-      // Row-based values (h/minH/maxH/y) below are rescaled for
-      // GRID_ROW_HEIGHT going 20 -> 36 (see widgetSizing.ts) — roughly
-      // *7/11, the ratio that keeps a widget's pixel height close to what
-      // it was before, since each row is now taller. Column-based values
-      // (w/minW/maxW/x) are untouched; column width didn't change.
-      { i: "fan-life", x: 0, y: 0, w: 10, h: 9, minW: 7, minH: 7, maxW: 20, maxH: 12 },
-      { i: "offline-devices", x: 10, y: 0, w: 10, h: 5, minW: 7, minH: 4, maxW: 12, maxH: 6 },
-      { i: "door-opened", x: 0, y: 9, w: 10, h: 5, minW: 7, minH: 3, maxW: 20, maxH: 6 },
-      { i: "element", x: 0, y: 14, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
-      { i: "alarms", x: 10, y: 14, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
-      { i: "energy", x: 0, y: 19, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
-      { i: "cloud", x: 10, y: 19, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
-      { i: "alarm-summary", x: 0, y: 24, w: 10, h: 5, minW: 7, minH: 3, maxW: 20, maxH: 6 },
-      { i: "energy-cost", x: 0, y: 29, w: 10, h: 5, minW: 7, minH: 3, maxW: 20, maxH: 6 },
-      { i: "energy-widget", x: 0, y: 34, w: 10, h: 5, minW: 7, minH: 3, maxW: 20, maxH: 6 },
-      { i: "stores-online", x: 0, y: 39, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 6 },
-      { i: "temp-alarms", x: 10, y: 39, w: 10, h: 5, minW: 7, minH: 3, maxW: 12, maxH: 7 },
+      // Every widget's minH now matches its minW (7, except Fan Life's 14) so
+      // the minimum size is square — GRID_ROW_HEIGHT (36) was raised earlier
+      // to match column width (~36px) specifically so equal counts render
+      // square. Default h and maxH raised enough to stay valid (default/max
+      // can't be below min) and to give each widget real shrink/grow room
+      // around its new floor; y positions recomputed so nothing overlaps.
+      { i: "fan-life", x: 0, y: 0, w: 16, h: 16, minW: 14, minH: 14, maxW: 20, maxH: 20 },
+      // fan-life's default width (16 of 20 cols) leaves only 4 columns
+      // beside it — not enough for offline-devices (minW:7) to sit next to
+      // it anymore, so it moved down to pair with door-opened's row instead.
+      { i: "door-opened", x: 0, y: 16, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 9 },
+      { i: "offline-devices", x: 10, y: 16, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
+      { i: "element", x: 0, y: 24, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
+      { i: "alarms", x: 10, y: 24, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
+      { i: "energy", x: 0, y: 32, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
+      { i: "cloud", x: 10, y: 32, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
+      { i: "alarm-summary", x: 0, y: 40, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 9 },
+      { i: "energy-cost", x: 0, y: 48, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 9 },
+      { i: "energy-widget", x: 0, y: 56, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 9 },
+      { i: "stores-online", x: 0, y: 64, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
+      { i: "temp-alarms", x: 10, y: 64, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 10 },
     ],
     [],
   );

@@ -5,11 +5,7 @@ import AirIcon from "@mui/icons-material/Air";
 import "./WidgetBase.css";
 import "./FanLifeWidget.css";
 import { createSeededRandom, seededInt, seededPick } from "../../lib/seededRandom";
-import {
-  DETAIL_VIEW_MIN_WIDTH,
-  RING_COMPACT_MIN_WIDTH,
-  RING_COMPACT_MIN_HEIGHT,
-} from "../../lib/widgetSizing";
+import { RING_COMPACT_MIN_WIDTH, RING_COMPACT_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 type FanLifeWidgetProps = {
   storeIds?: string[];
@@ -48,18 +44,16 @@ const NONE_COLOR = "#adadad";
 const WARNING_COLOR = "#e28e04";
 const CRITICAL_COLOR = "#a4130e";
 
-// The grid default (w:10) sits at exactly half of this widget's max grid
-// width (maxW:20), so "half of max width shows the ring, more than half
-// shows the bar list" is the same rule as "past the default size, show the
-// list" — this threshold just needs to sit reliably between the two rather
-// than at an exact pixel midpoint (the grid is fluid, so there's no single
-// pixel value that's precisely 50% of max at every viewport). Shares the
-// same DETAIL_VIEW_MIN_WIDTH as the other widgets' compact <-> detail-view
-// threshold, which was already tuned to land in that gap. Width-only (no
-// height gate) since this is meant to expand horizontally, unlike the ring
-// tier below (which gates on both, same as Stores Online/Schedule
-// Compliance).
-const EXPAND_WIDTH = DETAIL_VIEW_MIN_WIDTH;
+// Fan Life's own grid range (minW:14, default w:16, maxW:20) sits well above
+// the other widgets' (default w:10, maxW:20) — sharing DETAIL_VIEW_MIN_WIDTH
+// (500px) would put even the *minimum* size past the threshold, since
+// minW:14 alone already measures ~600px+, making the ring unreachable at
+// any size. Uses its own value instead, picked to sit between the default
+// (~700px) and max (~870px) so the ring still shows at rest and bars only
+// take over once resized further toward max. Width-only (no height gate)
+// since this is meant to expand horizontally, unlike the ring tier below
+// (which gates on both, same as Stores Online/Schedule Compliance).
+const EXPAND_WIDTH = 780;
 
 export default function FanLifeWidget({
   storeIds = ["root"],
