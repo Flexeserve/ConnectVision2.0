@@ -69,6 +69,24 @@ export default function EnergyCostWidget({
     () => totalKwh * currency.rate,
     [totalKwh, currency],
   );
+  // "This week" vs "last week" — same data the chart already plots, just
+  // summed instead of charted, to fill the blank space left below the cost
+  // once the card grew taller than its own label/value/sub content needs.
+  const totalLastKwh = useMemo(
+    () => DATASET.reduce((sum, v) => sum + v.last, 0),
+    [DATASET],
+  );
+  const totalLastCost = useMemo(
+    () => totalLastKwh * currency.rate,
+    [totalLastKwh, currency],
+  );
+  const costDeltaPercent = useMemo(() => {
+    if (totalLastCost === 0) return 0;
+    return ((totalCost - totalLastCost) / totalLastCost) * 100;
+  }, [totalCost, totalLastCost]);
+  // Cost down from last week reads as a saving (green, pointing down);
+  // cost up reads as a loss (red, pointing up).
+  const isSaving = costDeltaPercent <= 0;
 
   const xAxis = useMemo(
     () => [
@@ -142,6 +160,17 @@ export default function EnergyCostWidget({
               ))}
             </select>
           )}
+          <div
+            className={`energy-cost-delta ${
+              isSaving ? "energy-cost-delta--saving" : "energy-cost-delta--loss"
+            }`}
+          >
+            <span className="energy-cost-delta-arrow" aria-hidden="true">
+              {isSaving ? "▼" : "▲"}
+            </span>
+            {Math.abs(costDeltaPercent).toFixed(1)}%{" "}
+            {isSaving ? "saved" : "more"} vs last week
+          </div>
         </div>
 
         {!isCompact && (
