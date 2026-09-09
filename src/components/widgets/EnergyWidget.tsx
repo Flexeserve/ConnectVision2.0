@@ -5,7 +5,7 @@ import BoltIcon from "@mui/icons-material/Bolt";
 import "./WidgetBase.css";
 import "./EnergyWidget.css";
 import { createSeededRandom, seededFloat } from "../../lib/seededRandom";
-import { DETAIL_VIEW_MIN_WIDTH, DETAIL_VIEW_MIN_HEIGHT } from "../../lib/widgetSizing";
+import { useWidgetSize } from "./WidgetSizeContext";
 
 const hours = ["00", "04", "08", "12", "16", "20", "24"];
 
@@ -34,22 +34,22 @@ export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps)
   const avgTemp = useMemo(() => buildAvgTemp(storeIds), [storeIds]);
   const avgTempMean =
     Math.round((avgTemp.reduce((sum, v) => sum + v, 0) / avgTemp.length) * 10) / 10;
+  const size = useWidgetSize();
+  const isLarge = size === "large";
   const widgetRef = useRef<HTMLDivElement>(null);
   const [chartHeight, setChartHeight] = useState(180);
-  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
-    if (!widgetRef.current) return;
+    if (!widgetRef.current || !isLarge) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setIsCompact(height < DETAIL_VIEW_MIN_HEIGHT || width < DETAIL_VIEW_MIN_WIDTH);
-        setChartHeight(Math.max(100, height - 8));
+        const { height } = entry.contentRect;
+        setChartHeight(Math.max(100, height - 132));
       }
     });
     observer.observe(widgetRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [isLarge]);
 
   return (
     <Card
@@ -63,14 +63,14 @@ export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps)
         <BoltIcon className="widget-title-icon" fontSize="small" />
       </div>
 
-      <div className={`trend-layout ${isCompact ? "trend-layout--compact" : ""}`}>
+      <div className={`trend-layout ${isLarge ? "trend-layout--large" : "trend-layout--compact"}`}>
         <div className="trend-left">
           <p className="trend-kpi-value">{avgTempMean}C</p>
           <p className="trend-kpi-label">Avg cabinet temp</p>
           <p className="trend-kpi-sub">Last 24 hours</p>
         </div>
 
-        {!isCompact && (
+        {isLarge && (
           <div className="trend-right">
             <LineChart
               xAxis={[

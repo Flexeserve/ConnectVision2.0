@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import "./WidgetBase.css";
 import "./DoorOpenedAlarmsWidget.css";
 import { createSeededRandom } from "../../lib/seededRandom";
-import { DETAIL_VIEW_MIN_WIDTH, DETAIL_VIEW_MIN_HEIGHT } from "../../lib/widgetSizing";
+import { useWidgetSize } from "./WidgetSizeContext";
 
 const TIME_SLOTS = ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "00:00", "03:00"];
 
@@ -64,10 +64,11 @@ type DoorOpenedAlarmsWidgetProps = {
 export default function DoorOpenedAlarmsWidget({
   storeIds = ["root"],
 }: DoorOpenedAlarmsWidgetProps) {
+  const size = useWidgetSize();
+  const isLarge = size === "large";
   const widgetRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState({ width: 320, height: 160 });
   const [range, setRange] = useState("last-week");
-  const [isCompact, setIsCompact] = useState(false);
   const seriesData = useMemo(() => {
     if (range === "last-3-days") return generateAggregateSeries(3, storeIds);
     return generateAggregateSeries(7, storeIds);
@@ -88,11 +89,10 @@ export default function DoorOpenedAlarmsWidget({
   };
 
   useEffect(() => {
-    if (!widgetRef.current) return;
+    if (!widgetRef.current || !isLarge) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < DETAIL_VIEW_MIN_HEIGHT || width < DETAIL_VIEW_MIN_WIDTH);
         const nextWidth = Math.max(220, width - 12);
         const nextHeight = Math.max(140, height - 90);
         setChartSize({ width: nextWidth, height: nextHeight });
@@ -100,14 +100,13 @@ export default function DoorOpenedAlarmsWidget({
     });
     observer.observe(widgetRef.current);
     return () => observer.disconnect();
-  }, []);
-
+  }, [isLarge]);
 
   return (
     <Card ref={widgetRef} className="widget-card widget-door-opened">
       <div className="widget-title widget-title-row">
         <span>Temperature</span>
-        {!isCompact && (
+        {isLarge && (
           <select
             className="alarm-range-select"
             value={range}
@@ -120,7 +119,7 @@ export default function DoorOpenedAlarmsWidget({
         )}
       </div>
 
-      {isCompact ? (
+      {!isLarge ? (
         <div className="door-opened-compact">
           <span className="door-opened-compact-value">{latestReading}°C</span>
           <span className="door-opened-compact-label">Latest reading</span>

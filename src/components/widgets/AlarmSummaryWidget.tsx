@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import Card from "@mui/material/Card";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import "./WidgetBase.css";
 import "./AlarmSummaryWidget.css";
 import { createSeededRandom, seededPick } from "../../lib/seededRandom";
-import { DETAIL_VIEW_MIN_WIDTH, DETAIL_VIEW_MIN_HEIGHT } from "../../lib/widgetSizing";
+import { useWidgetSize } from "./WidgetSizeContext";
 
 type AlarmRow = {
   id: string;
@@ -59,8 +59,8 @@ export default function AlarmSummaryWidget({
 }: AlarmSummaryWidgetProps) {
   const rows = useMemo(() => buildRows(seed, locations), [seed, locations]);
   const [page, setPage] = useState(0);
-  const [isCompact, setIsCompact] = useState(false);
-  const widgetRef = useRef<HTMLDivElement>(null);
+  const size = useWidgetSize();
+  const isLarge = size === "large";
   const totalPages = Math.max(Math.ceil(rows.length / PAGE_SIZE), 1);
   const activeCount = useMemo(
     () => rows.filter((row) => row.status === "Active").length,
@@ -75,26 +75,14 @@ export default function AlarmSummaryWidget({
   const goPrev = () => setPage((prev) => Math.max(prev - 1, 0));
   const goNext = () => setPage((prev) => Math.min(prev + 1, totalPages - 1));
 
-  useEffect(() => {
-    if (!widgetRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setIsCompact(height < DETAIL_VIEW_MIN_HEIGHT || width < DETAIL_VIEW_MIN_WIDTH);
-      }
-    });
-    observer.observe(widgetRef.current);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <Card ref={widgetRef} className="widget-card widget-alarm-summary">
+    <Card className="widget-card widget-alarm-summary">
       <div className="widget-title">
         <span>Alarm Summary</span>
         <ListAltIcon className="widget-title-icon" fontSize="small" />
       </div>
 
-      {isCompact ? (
+      {!isLarge ? (
         <div className="alarm-summary-compact">
           <span className="alarm-summary-compact-value">{activeCount}</span>
           <span className="alarm-summary-compact-label">Active alarms</span>

@@ -33,7 +33,6 @@
 .widget-alarm-summary .alarm-summary-table-wrap {
   flex: 1 1 auto;
   min-height: 0;
-  max-height: 220px;
   overflow: auto;
   border-radius: var(--widget-border-radius);
   /* Override the generic widget-card padding (.widget-card > :not(.widget-title)):

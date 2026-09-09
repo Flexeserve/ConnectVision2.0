@@ -5,7 +5,6 @@ import "./WidgetBase.css";
 import "./CloudConnectedWidget.css";
 import cloudConnectLogo from "../../assets/CloudConnect.svg";
 import { seededInt } from "../../lib/seededRandom";
-import { RING_COMPACT_MIN_WIDTH, RING_COMPACT_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 type CloudConnectedWidgetProps = {
   storeIds?: string[];
@@ -41,13 +40,12 @@ export default function CloudConnectedWidget({
   const gaugeSlices = useMemo(() => buildGauge(storeIds), [storeIds]);
   const connectedCount = gaugeSlices[0]?.value ?? 0;
   // Measures the whole card (title included), unlike Stores Online/Schedule
-  // Compliance's inner panel ref — so this needs a bit more room than they
-  // do to clear the same RING_COMPACT_MIN_* thresholds.
+  // Compliance's inner panel ref — purely for sizing the ring's own pixels
+  // now, since both fixed widget sizes are always big enough to show it.
   const widgetRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState(100);
   const [innerRadius, setInnerRadius] = useState(30);
   const [outerRadius, setOuterRadius] = useState(50);
-  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
     if (!widgetRef.current) return;
@@ -56,10 +54,6 @@ export default function CloudConnectedWidget({
       for (const entry of entries) {
         const containerWidth = entry.contentRect.width;
         const containerHeight = entry.contentRect.height;
-
-        setIsCompact(
-          containerHeight < RING_COMPACT_MIN_HEIGHT || containerWidth < RING_COMPACT_MIN_WIDTH,
-        );
 
         // Calculate chart size based on container dimensions
         // Use smaller dimension and scale appropriately
@@ -83,35 +77,33 @@ export default function CloudConnectedWidget({
         <img src={cloudConnectLogo} alt="" className="widget-title-icon-img" />
       </div>
       <div className="cloud-body">
-        <div className={`cloud-gauge ${isCompact ? "cloud-gauge--compact" : ""}`}>
+        <div className="cloud-gauge">
           <div className="cloud-gauge-value">
             <span className="cloud-gauge-number">{connectedCount}</span>
             <span className="cloud-gauge-label">Connected</span>
           </div>
 
-          {!isCompact && (
-            <div className="cloud-pie-wrapper">
-              <PieChart
-                series={[
-                  {
-                    data: gaugeSlices,
-                    innerRadius: innerRadius,
-                    outerRadius: outerRadius,
-                    cornerRadius: 3,
+          <div className="cloud-pie-wrapper">
+            <PieChart
+              series={[
+                {
+                  data: gaugeSlices,
+                  innerRadius: innerRadius,
+                  outerRadius: outerRadius,
+                  cornerRadius: 3,
+                },
+              ]}
+              slotProps={{
+                legend: {
+                  sx: {
+                    color: "var(--text-primary)",
                   },
-                ]}
-                slotProps={{
-                  legend: {
-                    sx: {
-                      color: "var(--text-primary)",
-                    },
-                  },
-                }}
-                width={chartSize}
-                height={chartSize}
-              />
-            </div>
-          )}
+                },
+              }}
+              width={chartSize}
+              height={chartSize}
+            />
+          </div>
         </div>
       </div>
     </Card>

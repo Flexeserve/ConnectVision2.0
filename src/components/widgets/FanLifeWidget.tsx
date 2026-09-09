@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import Card from "@mui/material/Card";
 import AirIcon from "@mui/icons-material/Air";
 import "./WidgetBase.css";
 import "./FanLifeWidget.css";
 import { createSeededRandom, seededInt, seededPick } from "../../lib/seededRandom";
-import { RING_COMPACT_MIN_WIDTH, RING_COMPACT_MIN_HEIGHT } from "../../lib/widgetSizing";
+import { useWidgetSize } from "./WidgetSizeContext";
 
 type FanLifeWidgetProps = {
   storeIds?: string[];
@@ -44,17 +44,6 @@ const NONE_COLOR = "#adadad";
 const WARNING_COLOR = "#e28e04";
 const CRITICAL_COLOR = "#a4130e";
 
-// Fan Life's own grid range (minW:14, default w:16, maxW:20) sits well above
-// the other widgets' (default w:10, maxW:20) — sharing DETAIL_VIEW_MIN_WIDTH
-// (500px) would put even the *minimum* size past the threshold, since
-// minW:14 alone already measures ~600px+, making the ring unreachable at
-// any size. Uses its own value instead, picked to sit between the default
-// (~700px) and max (~870px) so the ring still shows at rest and bars only
-// take over once resized further toward max. Width-only (no height gate)
-// since this is meant to expand horizontally, unlike the ring tier below
-// (which gates on both, same as Stores Online/Schedule Compliance).
-const EXPAND_WIDTH = 780;
-
 export default function FanLifeWidget({
   storeIds = ["root"],
   locations = [],
@@ -92,20 +81,21 @@ export default function FanLifeWidget({
     [count, criticalCount, warningCount],
   );
 
+  const size = useWidgetSize();
+  const isExpanded = size === "large";
   const panelRef = useRef<HTMLDivElement>(null);
   const [ringSize, setRingSize] = useState(120);
-  const [isCompact, setIsCompact] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
+  // Ring pixel size still needs measuring (rather than a fixed constant per
+  // size) since the grid's column width is fluid with viewport width, not
+  // just with which of the two widget sizes is picked.
   useEffect(() => {
-    if (!panelRef.current) return;
+    if (!panelRef.current || isExpanded) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < RING_COMPACT_MIN_HEIGHT || width < RING_COMPACT_MIN_WIDTH);
-        setIsExpanded(width >= EXPAND_WIDTH);
         const available = Math.min(width, height - 32);
-        // Capped higher than Stores Online's 176 — Fan Life's maxH (12 rows)
+        // Capped higher than Stores Online's 176 — Fan Life's LARGE size
         // gives it more headroom to grow into, and the old cap left a
         // visible band of empty space below the ring once the card grew
         // past it.
@@ -114,7 +104,7 @@ export default function FanLifeWidget({
     });
     observer.observe(panelRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [isExpanded]);
 
   return (
     <Card className="widget-card widget-fan">
@@ -151,8 +141,6 @@ export default function FanLifeWidget({
                 ))}
               </div>
             )
-          ) : isCompact ? (
-            <div className="fan-life-value fan-life-value--compact">{count}</div>
           ) : (
             <>
               <div

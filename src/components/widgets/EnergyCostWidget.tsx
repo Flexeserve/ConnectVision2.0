@@ -5,7 +5,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import "./WidgetBase.css";
 import "./EnergyCostWidget.css";
 import { seededInt } from "../../lib/seededRandom";
-import { DETAIL_VIEW_MIN_WIDTH, DETAIL_VIEW_MIN_HEIGHT } from "../../lib/widgetSizing";
+import { useWidgetSize } from "./WidgetSizeContext";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -39,27 +39,29 @@ export default function EnergyCostWidget({
   storeIds = ["root"],
 }: EnergyCostWidgetProps) {
   const DATASET = useMemo(() => buildDataset(storeIds), [storeIds]);
+  const size = useWidgetSize();
+  const isLarge = size === "large";
   const widgetRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState({ width: 320, height: 160 });
   const [currency, setCurrency] = useState(CURRENCY_OPTIONS[0]);
-  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
-    if (!widgetRef.current) return;
+    if (!widgetRef.current || !isLarge) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < DETAIL_VIEW_MIN_HEIGHT || width < DETAIL_VIEW_MIN_WIDTH);
-        const nextWidth = Math.max(240, width * 0.55);
-        // Extra buffer beyond title/padding accounts for the custom dot
-        // legend rendered below the plot, which isn't part of `height`.
-        const nextHeight = Math.max(110, height - 134);
+        // LARGE stacks the chart below the KPI (same width as SMALL, just
+        // taller), so the chart gets nearly the full width rather than a
+        // share of it. Extra buffer beyond title/KPI/padding accounts for
+        // the custom dot legend rendered below the plot.
+        const nextWidth = Math.max(240, width - 24);
+        const nextHeight = Math.max(110, height - 210);
         setChartSize({ width: nextWidth, height: nextHeight });
       }
     });
     observer.observe(widgetRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [isLarge]);
 
   const totalKwh = useMemo(
     () => DATASET.reduce((sum, v) => sum + v.current, 0),
@@ -133,7 +135,7 @@ export default function EnergyCostWidget({
         <AttachMoneyIcon className="widget-title-icon" fontSize="small" />
       </div>
 
-      <div className={`energy-cost-body ${isCompact ? "energy-cost-body--compact" : ""}`}>
+      <div className={`energy-cost-body ${isLarge ? "energy-cost-body--large" : "energy-cost-body--compact"}`}>
         <div className="energy-cost-left">
           <div className="energy-cost-label">Cost</div>
           <div className="energy-cost-value">
@@ -141,7 +143,7 @@ export default function EnergyCostWidget({
             {totalCost.toFixed(1)}
           </div>
           <div className="energy-cost-sub">{totalKwh} kWh</div>
-          {!isCompact && (
+          {isLarge && (
             <select
               className="energy-currency-select"
               value={currency.code}
@@ -173,7 +175,7 @@ export default function EnergyCostWidget({
           </div>
         </div>
 
-        {!isCompact && (
+        {isLarge && (
         <div className="energy-cost-chart">
           <LineChart
             dataset={DATASET}

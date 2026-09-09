@@ -32,25 +32,35 @@ import TypewriterText from "../components/TypewriterText";
 import { GridStack, type GridStackOptions, type GridStackWidget } from "gridstack/dist/react";
 import "gridstack/dist/gridstack.css";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
-import { GRID_COLS, GRID_ROW_HEIGHT, GRID_MARGIN } from "../lib/widgetSizing";
+import {
+  GRID_COLS,
+  GRID_ROW_HEIGHT,
+  GRID_MARGIN,
+  WIDGET_SIZE_SMALL,
+  WIDGET_SIZE_LARGE,
+} from "../lib/widgetSizing";
+import { WidgetSizeContext, type WidgetSize } from "../components/widgets/WidgetSizeContext";
 
 // Own layout-item shape (react-grid-layout's `Layout` type is gone) — kept
 // deliberately small and grid-library-agnostic, with `i` as the item key
 // (matching the persisted cookie/localStorage format from before, so
 // existing saved layouts keep working). Mapped to/from GridStack's own
 // `id`-keyed shape only at the two boundary points (building `children` for
-// <GridStack>, and reading nodes back from its onChange).
+// <GridStack>, and reading nodes back from its onChange). No min/max/free
+// resize fields any more — every widget's w/h is always exactly
+// WIDGET_SIZE_SMALL or WIDGET_SIZE_LARGE, switched via a toggle button
+// rather than a drag handle (see WidgetSlot below), so there's no range to
+// express.
 type LayoutItem = {
   i: string;
   x: number;
   y: number;
   w: number;
   h: number;
-  minW?: number;
-  minH?: number;
-  maxW?: number;
-  maxH?: number;
 };
+
+const widgetSizeOf = (item: Pick<LayoutItem, "w" | "h">): WidgetSize =>
+  item.h > item.w ? "large" : "small";
 
 // One React Context supplies the current widget elements (which carry
 // scope-specific props like storeIds that change as the user drills in) to
@@ -62,19 +72,37 @@ const WidgetElementsContext = React.createContext<Map<string, React.ReactElement
   null,
 );
 
-// Typed as Record<string, unknown> (rather than the actual {widgetId,
-// isEditing} shape) because GridStack's ComponentMap requires every
-// registered component to accept arbitrary widget props.
+// Typed as Record<string, unknown> (rather than the actual props shape)
+// because GridStack's ComponentMap requires every registered component to
+// accept arbitrary widget props.
 function WidgetSlot(props: Record<string, unknown>) {
   const widgetId = typeof props.widgetId === "string" ? props.widgetId : undefined;
   const isEditing = props.isEditing === true;
+  const size: WidgetSize = props.size === "large" ? "large" : "small";
+  const onToggleSize =
+    typeof props.onToggleSize === "function"
+      ? (props.onToggleSize as (id: string) => void)
+      : undefined;
   const elements = React.useContext(WidgetElementsContext);
   const element = widgetId ? elements?.get(widgetId) : undefined;
-  if (!element) return null;
+  if (!element || !widgetId) return null;
   return (
     <div className={`widget-cell ${isEditing ? "widget-cell--editing" : ""}`}>
-      {isEditing && <span className="widget-drag-handle" />}
-      {element}
+      {isEditing && (
+        <>
+          <span className="widget-drag-handle" />
+          <button
+            type="button"
+            className="widget-size-toggle"
+            onClick={() => onToggleSize?.(widgetId)}
+            aria-label={size === "large" ? "Shrink widget" : "Expand widget"}
+            title={size === "large" ? "Shrink" : "Expand"}
+          >
+            {size === "large" ? "⤡" : "⤢"}
+          </button>
+        </>
+      )}
+      <WidgetSizeContext.Provider value={size}>{element}</WidgetSizeContext.Provider>
     </div>
   );
 }
@@ -83,7 +111,10 @@ const GRID_COMPONENTS = { WidgetSlot };
 
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
 const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
-const LAYOUT_VERSION = "v3";
+// v4: dropped free-resize (minW/minH/maxW/maxH) in favor of two fixed sizes
+// — bumped so pre-v4 saved layouts (which may have any w/h) reset to
+// DEFAULT_LAYOUT rather than trying to reinterpret arbitrary old dimensions.
+const LAYOUT_VERSION = "v4";
 const LAYOUT_VERSION_KEY = "cv_widget_layout_version";
 const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
 const LAYOUT_SYNC_EVENT = "cv_widget_layout_updated";
@@ -423,47 +454,27 @@ export default function BusinessManagerPage({
 
   const DEFAULT_LAYOUT: LayoutItem[] = React.useMemo(
     () => [
-      // Every widget now defaults to Stores Online's size/bounds — w:10 h:8,
-      // minW:7 minH:4, maxW:12 maxH:10 — as the shared "state 1". Widgets
-      // that used to be full-width with their own chart/table (Temperature,
-      // Alarm Summary, Energy Cost, Energy Widget) already have a compact
-      // single-number fallback from earlier work; that fallback is now what
-      // shows at this smaller default, and their existing full chart/table
-      // becomes "state 2" once resized past their own MIN_CHART_HEIGHT/WIDTH
-      // — those thresholds were raised alongside this (well above the w:10
-      // default) so state 2 only shows once actually resized wider, not
-      // squeezed in at half-row width. Those same 4, plus Fan Life (whose
-      // progress-bar list needs similar room) and Temperature Alarms (whose
-      // bar-chart alternation needs a couple more rows), get maxW/maxH
-      // raised past the shared 12/10 ceiling so their own state-2 trigger
-      // is actually reachable.
-      // Every widget's minH now matches its minW (7, except Fan Life's 14) so
-      // the minimum size is square — GRID_ROW_HEIGHT (36) was raised earlier
-      // to match column width (~36px) specifically so equal counts render
-      // square. Default h and maxH raised enough to stay valid (default/max
-      // can't be below min) and to give each widget real shrink/grow room
-      // around its new floor; y positions recomputed so nothing overlaps.
-      { i: "fan-life", x: 0, y: 0, w: 16, h: 16, minW: 14, minH: 14, maxW: 20, maxH: 20 },
-      // fan-life's default width (16 of 20 cols) leaves only 4 columns
-      // beside it — not enough for offline-devices (minW:7) to sit next to
-      // it anymore, so it moved down to pair with door-opened's row instead.
-      // These four (door-opened/alarm-summary/energy-cost/energy-widget)
-      // never show their chart/table/detail content unless also wide
-      // (DETAIL_VIEW_MIN_WIDTH gates on width alone) — their compact-mode
-      // content is short and doesn't grow to fill extra height, so any
-      // vertical-only resize beyond the default just leaves dead space.
-      // maxH capped to match default h; still free to grow via width.
-      { i: "door-opened", x: 0, y: 16, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 8 },
-      { i: "offline-devices", x: 10, y: 16, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
-      { i: "element", x: 0, y: 24, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
-      { i: "alarms", x: 10, y: 24, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
-      { i: "energy", x: 0, y: 32, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
-      { i: "cloud", x: 10, y: 32, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
-      { i: "alarm-summary", x: 0, y: 40, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 8 },
-      { i: "energy-cost", x: 0, y: 48, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 8 },
-      { i: "energy-widget", x: 0, y: 56, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 8 },
-      { i: "stores-online", x: 0, y: 64, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
-      { i: "temp-alarms", x: 10, y: 64, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 10 },
+      // Two fixed sizes only: SMALL (w:10 h:10, a square tile — half the
+      // 20-column grid wide) and LARGE (w:10 h:20, twice as tall as it is
+      // wide — same width as SMALL, so toggling a widget's size never
+      // reflows its neighbors horizontally). Packed two per row (x:0/x:10)
+      // like a masonry layout — each column's own running y position, not a
+      // fixed row grid, so a LARGE widget in one column doesn't force gaps
+      // in the other. Every widget defaults to SMALL except Fan Life, whose
+      // progress-bar list needs the extra room; everything else is one
+      // toggle-button click away from LARGE.
+      { i: "fan-life", x: 0, y: 0, ...WIDGET_SIZE_LARGE },
+      { i: "door-opened", x: 0, y: 20, ...WIDGET_SIZE_SMALL },
+      { i: "element", x: 0, y: 30, ...WIDGET_SIZE_SMALL },
+      { i: "alarm-summary", x: 0, y: 40, ...WIDGET_SIZE_SMALL },
+      { i: "energy-widget", x: 0, y: 50, ...WIDGET_SIZE_SMALL },
+      { i: "stores-online", x: 0, y: 60, ...WIDGET_SIZE_SMALL },
+      { i: "offline-devices", x: 10, y: 0, ...WIDGET_SIZE_SMALL },
+      { i: "alarms", x: 10, y: 10, ...WIDGET_SIZE_SMALL },
+      { i: "energy", x: 10, y: 20, ...WIDGET_SIZE_SMALL },
+      { i: "cloud", x: 10, y: 30, ...WIDGET_SIZE_SMALL },
+      { i: "energy-cost", x: 10, y: 40, ...WIDGET_SIZE_SMALL },
+      { i: "temp-alarms", x: 10, y: 50, ...WIDGET_SIZE_SMALL },
     ],
     [],
   );
@@ -483,11 +494,15 @@ export default function BusinessManagerPage({
         const incoming = persistedMap.get(base.i);
         if (!incoming) return base;
 
-        const width =
-          clampNumber(incoming.w, base.minW ?? 1, base.maxW ?? GRID_COLS) ?? base.w;
-        const height =
-          clampNumber(incoming.h, base.minH ?? 1, base.maxH ?? Number.MAX_SAFE_INTEGER) ??
-          base.h;
+        // Snap to whichever of the two valid sizes the persisted height is
+        // closer to — defensive against any stale/malformed saved value,
+        // since there's no longer a continuous range to clamp into.
+        const incomingHeight = typeof incoming.h === "number" ? incoming.h : base.h;
+        const { w: width, h: height } =
+          Math.abs(incomingHeight - WIDGET_SIZE_LARGE.h) <
+          Math.abs(incomingHeight - WIDGET_SIZE_SMALL.h)
+            ? WIDGET_SIZE_LARGE
+            : WIDGET_SIZE_SMALL;
         const maxX = Math.max(GRID_COLS - width, 0);
         const x = clampNumber(incoming.x, 0, maxX) ?? base.x;
         const y = clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;
@@ -547,6 +562,26 @@ export default function BusinessManagerPage({
     [],
   );
 
+  // Flips one widget between SMALL and LARGE. Doesn't call GridStack's own
+  // API directly — updating widgetLayout is enough, since the <GridStack>
+  // wrapper reactively diffs `options` each render and calls
+  // grid.updateOptions() itself (see gridStackOptions below), the same path
+  // hide/show and persistence already go through.
+  const handleToggleWidgetSize = React.useCallback((id: string) => {
+    setWidgetLayout((prev) => {
+      const merged = prev.map((item) => {
+        if (item.i !== id) return item;
+        const next = widgetSizeOf(item) === "large" ? WIDGET_SIZE_SMALL : WIDGET_SIZE_LARGE;
+        return { ...item, w: next.w, h: next.h };
+      });
+      saveLayoutCookie(merged);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent(LAYOUT_SYNC_EVENT, { detail: merged }));
+      }
+      return merged;
+    });
+  }, []);
+
   React.useEffect(() => {
     if (typeof window === "undefined") return undefined;
     let lastSerialized = JSON.stringify(widgetLayout);
@@ -605,16 +640,21 @@ export default function BusinessManagerPage({
           y: item.y,
           w: item.w,
           h: item.h,
-          minW: item.minW,
-          maxW: item.maxW,
-          minH: item.minH,
-          maxH: item.maxH,
+          // Size is fixed to one of two presets, switched only via the
+          // toggle button — not a drag handle — so GridStack's own resize
+          // interaction is disabled entirely.
+          noResize: true,
           component: "WidgetSlot",
-          props: { widgetId: item.i, isEditing },
+          props: {
+            widgetId: item.i,
+            isEditing,
+            size: widgetSizeOf(item),
+            onToggleSize: handleToggleWidgetSize,
+          },
         }),
       ),
     }),
-    [visibleWidgetLayout, isEditing],
+    [visibleWidgetLayout, isEditing, handleToggleWidgetSize],
   );
 
   const handleBeaconOffsetChange = React.useCallback(

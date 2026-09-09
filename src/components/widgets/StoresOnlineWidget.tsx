@@ -5,7 +5,6 @@ import StorefrontIcon from "@mui/icons-material/Storefront";
 import "./WidgetBase.css";
 import "./StoresOnlineWidget.css";
 import { seededInt } from "../../lib/seededRandom";
-import { RING_COMPACT_MIN_WIDTH, RING_COMPACT_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 type StoresOnlineWidgetProps = {
   storeIds?: string[];
@@ -37,7 +36,6 @@ export default function StoresOnlineWidget({
 
   const panelRef = useRef<HTMLDivElement>(null);
   const [ringSize, setRingSize] = useState(120);
-  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
     if (!panelRef.current) return;
@@ -45,7 +43,6 @@ export default function StoresOnlineWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < RING_COMPACT_MIN_HEIGHT || width < RING_COMPACT_MIN_WIDTH);
         const available = Math.min(width, height - 32);
         setRingSize(Math.max(72, Math.min(available, 176)));
       }
@@ -63,43 +60,35 @@ export default function StoresOnlineWidget({
       </div>
       <div className="stores-online-body">
         <div className="stores-online-panel" ref={panelRef}>
-          {isCompact ? (
-            <div className="stores-online-value stores-online-value--compact">
-              {online}
-            </div>
-          ) : (
-            <>
-              <div
-                className="stores-online-ring-wrap"
-                style={{ width: ringSize, height: ringSize }}
-              >
-                <PieChart
-                  series={[
-                    {
-                      data: slices,
-                      innerRadius: ringSize * 0.36,
-                      outerRadius: ringSize * 0.48,
-                      cornerRadius: 2,
-                    },
-                  ]}
-                  hideLegend
-                  width={ringSize}
-                  height={ringSize}
-                />
-                <div className="stores-online-value">{online}</div>
-              </div>
-              <div className="stores-online-legend">
-                <span className="stores-online-legend-item">
-                  <span className="stores-online-dot stores-online-dot--online" />
-                  Online
-                </span>
-                <span className="stores-online-legend-item">
-                  <span className="stores-online-dot stores-online-dot--offline" />
-                  Offline
-                </span>
-              </div>
-            </>
-          )}
+          <div
+            className="stores-online-ring-wrap"
+            style={{ width: ringSize, height: ringSize }}
+          >
+            <PieChart
+              series={[
+                {
+                  data: slices,
+                  innerRadius: ringSize * 0.36,
+                  outerRadius: ringSize * 0.48,
+                  cornerRadius: 2,
+                },
+              ]}
+              hideLegend
+              width={ringSize}
+              height={ringSize}
+            />
+            <div className="stores-online-value">{online}</div>
+          </div>
+          <div className="stores-online-legend">
+            <span className="stores-online-legend-item">
+              <span className="stores-online-dot stores-online-dot--online" />
+              Online
+            </span>
+            <span className="stores-online-legend-item">
+              <span className="stores-online-dot stores-online-dot--offline" />
+              Offline
+            </span>
+          </div>
         </div>
       </div>
     </Card>

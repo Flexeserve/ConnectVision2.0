@@ -5,7 +5,6 @@ import "./WidgetBase.css";
 import "./EnergyUsageWidget.css";
 import scheduleIcon from "../../assets/ScheduleEnergyIcon.svg";
 import { seededInt } from "../../lib/seededRandom";
-import { RING_COMPACT_MIN_WIDTH, RING_COMPACT_MIN_HEIGHT } from "../../lib/widgetSizing";
 
 type EnergyUsageWidgetProps = {
   storeIds?: string[];
@@ -35,7 +34,6 @@ export default function EnergyUsageWidget({
 
   const panelRef = useRef<HTMLDivElement>(null);
   const [ringSize, setRingSize] = useState(120);
-  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
     if (!panelRef.current) return;
@@ -43,7 +41,6 @@ export default function EnergyUsageWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < RING_COMPACT_MIN_HEIGHT || width < RING_COMPACT_MIN_WIDTH);
         const available = Math.min(width, height - 32);
         setRingSize(Math.max(72, Math.min(available, 176)));
       }
@@ -61,43 +58,35 @@ export default function EnergyUsageWidget({
       </div>
       <div className="schedule-compliance-body">
         <div className="schedule-compliance-panel" ref={panelRef}>
-          {isCompact ? (
-            <div className="schedule-compliance-value schedule-compliance-value--compact">
-              {compliantRate}%
-            </div>
-          ) : (
-            <>
-              <div
-                className="schedule-compliance-ring-wrap"
-                style={{ width: ringSize, height: ringSize }}
-              >
-                <PieChart
-                  series={[
-                    {
-                      data: slices,
-                      innerRadius: ringSize * 0.36,
-                      outerRadius: ringSize * 0.48,
-                      cornerRadius: 2,
-                    },
-                  ]}
-                  hideLegend
-                  width={ringSize}
-                  height={ringSize}
-                />
-                <div className="schedule-compliance-value">{compliantRate}%</div>
-              </div>
-              <div className="schedule-compliance-legend">
-                <span className="schedule-compliance-legend-item">
-                  <span className="schedule-compliance-dot schedule-compliance-dot--compliant" />
-                  Compliant
-                </span>
-                <span className="schedule-compliance-legend-item">
-                  <span className="schedule-compliance-dot schedule-compliance-dot--not-compliant" />
-                  Not compliant
-                </span>
-              </div>
-            </>
-          )}
+          <div
+            className="schedule-compliance-ring-wrap"
+            style={{ width: ringSize, height: ringSize }}
+          >
+            <PieChart
+              series={[
+                {
+                  data: slices,
+                  innerRadius: ringSize * 0.36,
+                  outerRadius: ringSize * 0.48,
+                  cornerRadius: 2,
+                },
+              ]}
+              hideLegend
+              width={ringSize}
+              height={ringSize}
+            />
+            <div className="schedule-compliance-value">{compliantRate}%</div>
+          </div>
+          <div className="schedule-compliance-legend">
+            <span className="schedule-compliance-legend-item">
+              <span className="schedule-compliance-dot schedule-compliance-dot--compliant" />
+              Compliant
+            </span>
+            <span className="schedule-compliance-legend-item">
+              <span className="schedule-compliance-dot schedule-compliance-dot--not-compliant" />
+              Not compliant
+            </span>
+          </div>
         </div>
       </div>
     </Card>

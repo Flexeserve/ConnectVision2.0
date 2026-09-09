@@ -6,12 +6,7 @@ import ThermostatIcon from "@mui/icons-material/Thermostat";
 import "./WidgetBase.css";
 import "./TemperatureAlarmsWidget.css";
 import { seededInt } from "../../lib/seededRandom";
-import {
-  RING_COMPACT_MIN_WIDTH,
-  RING_COMPACT_MIN_HEIGHT,
-  ALTERNATE_VIEW_MIN_WIDTH,
-  ALTERNATE_VIEW_MIN_HEIGHT,
-} from "../../lib/widgetSizing";
+import { useWidgetSize } from "./WidgetSizeContext";
 
 type TemperatureAlarmsWidgetProps = {
   storeIds?: string[];
@@ -90,10 +85,10 @@ export default function TemperatureAlarmsWidget({
     [highCount, lowCount, totalCount],
   );
 
+  const size = useWidgetSize();
+  const isExpanded = size === "large";
   const panelRef = useRef<HTMLDivElement>(null);
   const [panelSize, setPanelSize] = useState({ width: 200, height: 200 });
-  const [isCompact, setIsCompact] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [showBarChart, setShowBarChart] = useState(false);
   const [lastIsExpanded, setLastIsExpanded] = useState(isExpanded);
   if (isExpanded !== lastIsExpanded) {
@@ -107,8 +102,6 @@ export default function TemperatureAlarmsWidget({
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        setIsCompact(height < RING_COMPACT_MIN_HEIGHT || width < RING_COMPACT_MIN_WIDTH);
-        setIsExpanded(width >= ALTERNATE_VIEW_MIN_WIDTH && height >= ALTERNATE_VIEW_MIN_HEIGHT);
         setPanelSize({ width, height });
       }
     });
@@ -191,14 +184,7 @@ export default function TemperatureAlarmsWidget({
       </div>
       <div className="temp-alarms-body">
         <div className="temp-alarms-panel" ref={panelRef}>
-          {isCompact ? (
-            <span
-              className="temp-alarms-value temp-alarms-value--compact"
-              style={{ color: totalCount === 0 ? "#1fb05c" : "var(--widget-text-primary)" }}
-            >
-              {totalCount}
-            </span>
-          ) : isExpanded ? (
+          {isExpanded ? (
             // Both views stay mounted and crossfade via opacity instead of
             // swapping — remounting the chart on every alternation would
             // restart its own enter animation and lose the smooth fade.
