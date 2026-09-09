@@ -408,15 +408,21 @@ export default function BusinessManagerPage({
       // fan-life's default width (16 of 20 cols) leaves only 4 columns
       // beside it — not enough for offline-devices (minW:7) to sit next to
       // it anymore, so it moved down to pair with door-opened's row instead.
-      { i: "door-opened", x: 0, y: 16, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 9 },
+      // These four (door-opened/alarm-summary/energy-cost/energy-widget)
+      // never show their chart/table/detail content unless also wide
+      // (DETAIL_VIEW_MIN_WIDTH gates on width alone) — their compact-mode
+      // content is short and doesn't grow to fill extra height, so any
+      // vertical-only resize beyond the default just leaves dead space.
+      // maxH capped to match default h; still free to grow via width.
+      { i: "door-opened", x: 0, y: 16, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 8 },
       { i: "offline-devices", x: 10, y: 16, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
       { i: "element", x: 0, y: 24, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
       { i: "alarms", x: 10, y: 24, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
       { i: "energy", x: 0, y: 32, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
       { i: "cloud", x: 10, y: 32, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
-      { i: "alarm-summary", x: 0, y: 40, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 9 },
-      { i: "energy-cost", x: 0, y: 48, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 9 },
-      { i: "energy-widget", x: 0, y: 56, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 9 },
+      { i: "alarm-summary", x: 0, y: 40, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 8 },
+      { i: "energy-cost", x: 0, y: 48, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 8 },
+      { i: "energy-widget", x: 0, y: 56, w: 10, h: 8, minW: 7, minH: 7, maxW: 20, maxH: 8 },
       { i: "stores-online", x: 0, y: 64, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 9 },
       { i: "temp-alarms", x: 10, y: 64, w: 10, h: 8, minW: 7, minH: 7, maxW: 12, maxH: 10 },
     ],
