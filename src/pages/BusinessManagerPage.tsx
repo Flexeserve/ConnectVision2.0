@@ -29,13 +29,57 @@ import EnergyWidget from "../components/widgets/EnergyWidget";
 import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
 import TypewriterText from "../components/TypewriterText";
-import RGL, { WidthProvider, type Layout } from "react-grid-layout";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
+import { GridStack, type GridStackOptions, type GridStackWidget } from "gridstack/dist/react";
+import "gridstack/dist/gridstack.css";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 import { GRID_COLS, GRID_ROW_HEIGHT, GRID_MARGIN } from "../lib/widgetSizing";
 
-const ReactGridLayout = WidthProvider(RGL);
+// Own layout-item shape (react-grid-layout's `Layout` type is gone) — kept
+// deliberately small and grid-library-agnostic, with `i` as the item key
+// (matching the persisted cookie/localStorage format from before, so
+// existing saved layouts keep working). Mapped to/from GridStack's own
+// `id`-keyed shape only at the two boundary points (building `children` for
+// <GridStack>, and reading nodes back from its onChange).
+type LayoutItem = {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  minW?: number;
+  minH?: number;
+  maxW?: number;
+  maxH?: number;
+};
+
+// One React Context supplies the current widget elements (which carry
+// scope-specific props like storeIds that change as the user drills in) to
+// a single stable WidgetSlot component, which is what GridStack's
+// "component mode" actually instantiates per grid item. This indirection
+// exists because GridStack's `components` map needs a fixed component type
+// per widget kind, not a pre-built element with its own already-bound props.
+const WidgetElementsContext = React.createContext<Map<string, React.ReactElement> | null>(
+  null,
+);
+
+// Typed as Record<string, unknown> (rather than the actual {widgetId,
+// isEditing} shape) because GridStack's ComponentMap requires every
+// registered component to accept arbitrary widget props.
+function WidgetSlot(props: Record<string, unknown>) {
+  const widgetId = typeof props.widgetId === "string" ? props.widgetId : undefined;
+  const isEditing = props.isEditing === true;
+  const elements = React.useContext(WidgetElementsContext);
+  const element = widgetId ? elements?.get(widgetId) : undefined;
+  if (!element) return null;
+  return (
+    <div className={`widget-cell ${isEditing ? "widget-cell--editing" : ""}`}>
+      {isEditing && <span className="widget-drag-handle" />}
+      {element}
+    </div>
+  );
+}
+
+const GRID_COMPONENTS = { WidgetSlot };
 
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
 const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
@@ -56,7 +100,7 @@ const clampNumber = (value: number | undefined, min: number, max: number) => {
   return Math.min(Math.max(value, min), max);
 };
 
-const loadLayoutCookie = (): Layout[] | null => {
+const loadLayoutCookie = (): LayoutItem[] | null => {
   if (typeof document === "undefined") return null;
   if (typeof window !== "undefined") {
     const storedVersion = window.localStorage.getItem(LAYOUT_VERSION_KEY);
@@ -65,7 +109,7 @@ const loadLayoutCookie = (): Layout[] | null => {
       if (storedLayout) {
         try {
           const parsed = JSON.parse(storedLayout);
-          if (Array.isArray(parsed)) return parsed as Layout[];
+          if (Array.isArray(parsed)) return parsed as LayoutItem[];
         } catch {
           // Ignore malformed localStorage
         }
@@ -81,7 +125,7 @@ const loadLayoutCookie = (): Layout[] | null => {
     const value = target.substring(LAYOUT_COOKIE_NAME.length + 1);
     const parsed = JSON.parse(decodeURIComponent(value));
     if (Array.isArray(parsed)) {
-      return parsed as Layout[];
+      return parsed as LayoutItem[];
     }
   } catch {
     // Ignore malformed cookies
@@ -89,7 +133,7 @@ const loadLayoutCookie = (): Layout[] | null => {
   return null;
 };
 
-const saveLayoutCookie = (layout: Layout[]) => {
+const saveLayoutCookie = (layout: LayoutItem[]) => {
   if (typeof document === "undefined") return;
   try {
     const encoded = encodeURIComponent(JSON.stringify(layout));
@@ -349,11 +393,6 @@ export default function BusinessManagerPage({
     );
   }, []);
 
-  const visibleWidgetComponents = React.useMemo(
-    () => widgetComponents.filter((widget) => !hiddenWidgetIds.includes(widget.id)),
-    [widgetComponents, hiddenWidgetIds],
-  );
-
   React.useEffect(() => {
     if (typeof document === "undefined") return;
     document.body.classList.toggle("beacons-hidden", isBeaconsHidden);
@@ -382,7 +421,7 @@ export default function BusinessManagerPage({
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
-  const DEFAULT_LAYOUT: Layout[] = React.useMemo(
+  const DEFAULT_LAYOUT: LayoutItem[] = React.useMemo(
     () => [
       // Every widget now defaults to Stores Online's size/bounds — w:10 h:8,
       // minW:7 minH:4, maxW:12 maxH:10 — as the shared "state 1". Widgets
@@ -431,9 +470,9 @@ export default function BusinessManagerPage({
 
 
   const mergeLayoutWithDefaults = React.useCallback(
-    (persisted?: Layout[] | null) => {
+    (persisted?: LayoutItem[] | null) => {
       if (!persisted?.length) return DEFAULT_LAYOUT;
-      const persistedMap = new Map<string, Layout>();
+      const persistedMap = new Map<string, LayoutItem>();
       persisted.forEach((item) => {
         if (item && typeof item.i === "string") {
           persistedMap.set(item.i, item);
@@ -466,7 +505,7 @@ export default function BusinessManagerPage({
     [DEFAULT_LAYOUT],
   );
 
-  const [widgetLayout, setWidgetLayout] = React.useState<Layout[]>(() =>
+  const [widgetLayout, setWidgetLayout] = React.useState<LayoutItem[]>(() =>
     mergeLayoutWithDefaults(loadLayoutCookie()),
   );
 
@@ -474,27 +513,46 @@ export default function BusinessManagerPage({
     setWidgetLayout((prev) => mergeLayoutWithDefaults(prev));
   }, [mergeLayoutWithDefaults]);
 
-  const handleLayoutChange = React.useCallback((next: Layout[]) => {
-    // `next` only covers currently-visible widgets (RGL only knows about the
-    // children it's given), so merge into the full layout rather than
-    // replacing it, or hidden widgets would lose their saved position/size.
-    setWidgetLayout((prev) => {
-      const nextById = new Map(next.map((item) => [item.i, item]));
-      const merged = prev.map((item) => nextById.get(item.i) ?? item);
-      saveLayoutCookie(merged);
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent(LAYOUT_SYNC_EVENT, { detail: merged }));
-      }
-      return merged;
-    });
-  }, []);
+  // GridStack's onChange fires with the *changed* nodes only (its own
+  // id/x/y/w/h shape), not the full layout — merge by id into the full
+  // widgetLayout rather than replacing it, or hidden widgets would lose
+  // their saved position/size.
+  const handleGridChange = React.useCallback(
+    (_event: Event, nodes: { id?: string; x?: number; y?: number; w?: number; h?: number }[]) => {
+      if (!nodes?.length) return;
+      setWidgetLayout((prev) => {
+        const changedById = new Map(
+          nodes
+            .filter((node): node is typeof node & { id: string } => typeof node.id === "string")
+            .map((node) => [node.id, node]),
+        );
+        const merged = prev.map((item) => {
+          const changed = changedById.get(item.i);
+          if (!changed) return item;
+          return {
+            ...item,
+            x: changed.x ?? item.x,
+            y: changed.y ?? item.y,
+            w: changed.w ?? item.w,
+            h: changed.h ?? item.h,
+          };
+        });
+        saveLayoutCookie(merged);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent(LAYOUT_SYNC_EVENT, { detail: merged }));
+        }
+        return merged;
+      });
+    },
+    [],
+  );
 
   React.useEffect(() => {
     if (typeof window === "undefined") return undefined;
     let lastSerialized = JSON.stringify(widgetLayout);
 
     const handleSync = (event: Event) => {
-      const customEvent = event as CustomEvent<Layout[]>;
+      const customEvent = event as CustomEvent<LayoutItem[]>;
       const next = customEvent.detail;
       if (!Array.isArray(next)) return;
       const nextSerialized = JSON.stringify(next);
@@ -523,6 +581,41 @@ export default function BusinessManagerPage({
     // editing — not a multiple of the whole grid's height.
     return Math.max(100, Math.ceil(gridHeight * 0.08) + 40);
   }, [visibleWidgetLayout]);
+
+  // Feeds WidgetSlot via WidgetElementsContext — see the comment on that
+  // context above for why GridStack's component-mode needs this indirection
+  // instead of just handing it pre-built elements directly.
+  const widgetElementsMap = React.useMemo(
+    () => new Map(widgetComponents.map((widget) => [widget.id, widget.element])),
+    [widgetComponents],
+  );
+
+  const gridStackOptions: GridStackOptions = React.useMemo(
+    () => ({
+      column: GRID_COLS,
+      cellHeight: GRID_ROW_HEIGHT,
+      margin: GRID_MARGIN[0],
+      float: false,
+      staticGrid: !isEditing,
+      handle: ".widget-drag-handle",
+      children: visibleWidgetLayout.map(
+        (item): GridStackWidget => ({
+          id: item.i,
+          x: item.x,
+          y: item.y,
+          w: item.w,
+          h: item.h,
+          minW: item.minW,
+          maxW: item.maxW,
+          minH: item.minH,
+          maxH: item.maxH,
+          component: "WidgetSlot",
+          props: { widgetId: item.i, isEditing },
+        }),
+      ),
+    }),
+    [visibleWidgetLayout, isEditing],
+  );
 
   const handleBeaconOffsetChange = React.useCallback(
     (beaconId: string, next: BeaconOffset) => {
@@ -840,32 +933,14 @@ export default function BusinessManagerPage({
                 padding: "8px 12px 48px 0",
               }}
             >
-              <ReactGridLayout
-                className={`widgets-grid ${isEditing ? "widgets-grid--editing" : ""}`}
-                layout={visibleWidgetLayout}
-                cols={GRID_COLS}
-                rowHeight={GRID_ROW_HEIGHT}
-                margin={GRID_MARGIN}
-                onLayoutChange={handleLayoutChange}
-                onDragStop={handleLayoutChange}
-                onResizeStop={handleLayoutChange}
-                isDraggable={isEditing}
-                isResizable={isEditing}
-                draggableHandle=".widget-drag-handle"
-                compactType="vertical"
-                measureBeforeMount={false}
-                autoSize
-              >
-                {visibleWidgetComponents.map((widget) => (
-                  <div
-                    key={widget.id}
-                    className={`widget-cell ${isEditing ? "widget-cell--editing" : ""}`}
-                  >
-                    {isEditing && <span className="widget-drag-handle" />}
-                    {widget.element}
-                  </div>
-                ))}
-              </ReactGridLayout>
+              <WidgetElementsContext.Provider value={widgetElementsMap}>
+                <GridStack
+                  options={gridStackOptions}
+                  components={GRID_COMPONENTS}
+                  className={`widgets-grid ${isEditing ? "widgets-grid--editing" : ""}`}
+                  onChange={handleGridChange}
+                />
+              </WidgetElementsContext.Provider>
             </Box>
           </Box>
         </div>
