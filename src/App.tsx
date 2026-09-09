@@ -1,6 +1,7 @@
 // src/App.tsx
 import React from "react";
 import { ThemeProvider } from "@mui/material/styles";
+import { HeroUIProvider } from "@heroui/react";
 import { getAppTheme } from "./theme";
 import "./App.css";
 import HeroSlide from "./components/HeroSlide";
@@ -634,6 +635,7 @@ export default function App() {
 
   return (
     <ThemeProvider theme={muiTheme}>
+    <HeroUIProvider>
     <div className="app-root">
       <HeroSlide visible={heroVisible} onClose={handleGetStarted} />
       <DevShortcutsHelp />
@@ -759,6 +761,7 @@ export default function App() {
         </>
       )}
     </div>
+    </HeroUIProvider>
     </ThemeProvider>
   );
 }
