@@ -34,7 +34,11 @@ export const RING_COMPACT_MIN_HEIGHT = 120;
 // widget that grows a third tier has a consistent starting point rather than
 // picking its own arbitrary number.
 export const ALTERNATE_VIEW_MIN_WIDTH = 360;
-export const ALTERNATE_VIEW_MIN_HEIGHT = 200;
+// 200 was tuned against the old default panel height (~172px, under the old
+// 20px GRID_ROW_HEIGHT); the new default panel measures ~288px, already
+// past that, so the alternator was kicking in unresized. Recalibrated to
+// sit between the new default (~288px) and max (~376px) panel heights.
+export const ALTERNATE_VIEW_MIN_HEIGHT = 330;
 
 // --- Chart/table/list widgets: compact number <-> full detail view ---------
 // Below this, a widget's full chart/table/list can't render legibly next to
