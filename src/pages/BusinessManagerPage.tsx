@@ -705,7 +705,7 @@ export default function BusinessManagerPage({
               onScroll={(event) =>
                 setIsWidgetsScrolled(event.currentTarget.scrollTop > 8)
               }
-              style={{ maxHeight: "calc(100vh - 120px)" }}
+              style={{ maxHeight: "calc(100dvh - 200px)" }}
             >
               <Beacon
                 label="Widgets panel tour"
@@ -777,7 +777,8 @@ export default function BusinessManagerPage({
                   })}
                 </div>
               )}
-              <div className="flex-1 pb-12 pr-3 pt-2">
+              {/* extra bottom padding so the last row clears the fixed footer */}
+              <div className="flex-1 pb-28 pr-3 pt-2">
                 <DndContext
                   sensors={dndSensors}
                   collisionDetection={closestCenter}
