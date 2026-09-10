@@ -103,20 +103,6 @@
   margin-top: -40px;
 }
 
-/* Same TypewriterText component, position, and font size as Business
-   Manager's .greetings — top-left of the page, above the two-column
-   layout below it, rather than tucked into one side of it. */
-.operator-greeting {
-  font-size: 45px;
-  font-weight: 800;
-  font-family: "Inter", "Inter var", sans-serif;
-  color: #d94d14;
-  text-align: left;
-  padding: 0 clamp(1.5rem, 4vw, 3rem);
-  margin: clamp(1rem, 3vw, 2rem) 0 0 0;
-  box-sizing: border-box;
-}
-
 .operator-right {
   flex: 1;
   display: flex;

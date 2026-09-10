@@ -19,10 +19,9 @@ import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget
 import EnergyWidget from "../components/widgets/EnergyWidget";
 import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
-import TypewriterText from "../components/TypewriterText";
+import Greeting from "../components/Greeting";
 import { WidgetGrid } from "../components/widgets/Widget";
 import { WidgetSpanContext, type WidgetSpan } from "../components/widgets/widgetSpan";
-import { useCityName } from "../hooks/useCityName";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 import { GripVertical } from "lucide-react";
 import {
@@ -257,7 +256,6 @@ export default function BusinessManagerPage({
 }) {
   const buRows = rows ?? DEFAULT_BU_ROWS;
   const scopeSeed = levelKey ?? heading ?? "root";
-  const city = useCityName("London");
   // The stores that make up the current scope. Metrics below are computed
   // per-store and summed/averaged upward, so a region shows the cumulative
   // of its stores while a single-store scope shows that store's own reading.
@@ -611,9 +609,7 @@ export default function BusinessManagerPage({
           className="flex flex-1 flex-wrap bg-canvas px-4 text-ink sm:px-8 lg:px-12 max-lg:flex-col"
           style={{ minHeight: "calc(100vh - 64px)" }}
         >
-          <div className="flex min-h-[150px] w-full basis-full items-center justify-left px-6 text-center text-5xl font-extrabold text-accent sm:px-12 sm:text-6xl">
-            <TypewriterText text={`Good Morning, ${city}`} />
-          </div>
+          <Greeting className="min-h-[150px] basis-full" />
 
           <div className="flex min-w-0 basis-[30%] flex-col items-center max-lg:basis-auto lg:animate-shrink-left-panel">
             <div className="my-4 flex w-full items-center justify-center px-6 sm:px-12">

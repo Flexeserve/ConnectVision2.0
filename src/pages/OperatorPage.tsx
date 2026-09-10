@@ -15,7 +15,7 @@ import {
   type RefObject,
 } from "react";
 import AnimatedContent from "../components/AnimatedContent";
-import TypewriterText from "../components/TypewriterText";
+import Greeting from "../components/Greeting";
 import operatorScene from "../assets/operator_scene.glb?url";
 //import hdrTextureUrl from "../assets/wooden_studio_07_1k.hdr?url";
 //import { HDRLoader } from "../lib/HDRLoader";
@@ -1038,9 +1038,7 @@ export default function OperatorPage({
         <Header onBack={onBack} title={title ?? "Operator View"} />
       </div>
 
-      <div className="operator-greeting">
-        <TypewriterText text="Good Morning, London" />
-      </div>
+      <Greeting className="mt-[clamp(1rem,3vw,2rem)]" />
 
       <div className="operator-content">
         <div className="operator-left">
