@@ -51,21 +51,30 @@ function buildSnapshot(scope: string | undefined) {
 
   // cabinet temperature — pointwise average across in-scope stores' histories
   const histLen = Math.max(0, ...stores.map((s) => s.tempHistory.length));
-  const series: { t: number; c: number }[] = [];
+  const series: { t: number; c: number; state: string }[] = [];
   for (let i = 0; i < histLen; i += 1) {
     const points = stores
       .map((s) => s.tempHistory[s.tempHistory.length - histLen + i])
-      .filter((p): p is { t: number; c: number } => !!p);
+      .filter((p): p is NonNullable<typeof p> => !!p);
     if (points.length) {
       series.push({
         t: points[0]!.t,
         c: Math.round((points.reduce((a, p) => a + p.c, 0) / points.length) * 10) / 10,
+        state: points[0]!.state,
       });
     }
   }
   const latestC = series.length ? series[series.length - 1]!.c : null;
-  const avgC = series.length
-    ? Math.round((series.reduce((a, p) => a + p.c, 0) / series.length) * 10) / 10
+  const holdingPoints = series.filter((p) => p.state === "holding");
+  const avgHoldingC = holdingPoints.length
+    ? Math.round(
+        (holdingPoints.reduce((a, p) => a + p.c, 0) / holdingPoints.length) * 10,
+      ) / 10
+    : null;
+  const avgTargetC = onlineUnits.length
+    ? Math.round(
+        (onlineUnits.reduce((a, u) => a + u.targetC, 0) / onlineUnits.length) * 10,
+      ) / 10
     : null;
 
   // temperature alarms by day (7)
@@ -85,11 +94,30 @@ function buildSnapshot(scope: string | undefined) {
 
   const compliantUnits = onlineUnits.filter((u) => u.scheduleCompliant).length;
 
+  const minOfDay = world.simMinutes % (24 * 60);
+  const openMin = CONFIG.openMin;
+  const closeMin = CONFIG.closeMin;
+
   return {
     scope: scope ?? "all",
     tick: world.tick,
     simMinutes: world.simMinutes,
+    simTimeOfDay: `${String(Math.floor(minOfDay / 60)).padStart(2, "0")}:${String(
+      Math.floor(minOfDay % 60),
+    ).padStart(2, "0")}`,
     generatedAt: new Date().toISOString(),
+
+    operating: {
+      openMin,
+      closeMin,
+      open: `${String(Math.floor(openMin / 60)).padStart(2, "0")}:00`,
+      close: `${String(Math.floor(closeMin / 60)).padStart(2, "0")}:00`,
+      // majority state right now across in-scope units
+      phase:
+        series.length && series[series.length - 1]
+          ? series[series.length - 1]!.state
+          : "holding",
+    },
 
     fanLife: {
       count: nearing.length,
@@ -100,7 +128,7 @@ function buildSnapshot(scope: string | undefined) {
     elementLife: {
       totalHours: onlineUnits.reduce((a, u) => a + u.elementHours, 0),
     },
-    cabinetTemp: { latestC, avgC, series },
+    cabinetTemp: { latestC, avgHoldingC, targetC: avgTargetC, series },
     temperatureAlarms: {
       today: { high: byDay[6]!.high, low: byDay[6]!.low },
       byDay,
