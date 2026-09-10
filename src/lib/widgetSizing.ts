@@ -8,13 +8,9 @@
 
 // --- Grid geometry (BusinessManagerPage's gridstack grid) -------------------
 export const GRID_COLS = 20;
-// The grid runs with `cellHeight: "auto"`, which makes gridstack size each
-// row to the live column width — square cells — so a widget's ratio in grid
-// units (e.g. LARGE's 10x20 = 1:2) is also its ratio on screen. This
-// constant is only a fallback estimate for the page's bottom-padding math
-// (which just needs a rough total grid height); it is NOT the actual row
-// height any more.
-export const GRID_ROW_HEIGHT_ESTIMATE = 42;
+// Cells are square: BusinessManagerPage measures the live column width and
+// feeds it back as `cellHeight`, so a widget's ratio in grid units (e.g.
+// LARGE's 10x20 = 1:2) is also its ratio on screen.
 export const GRID_MARGIN: [number, number] = [8, 8];
 
 // --- Widget sizes ---------------------------------------------------------

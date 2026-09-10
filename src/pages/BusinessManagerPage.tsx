@@ -26,7 +26,6 @@ import "gridstack/dist/gridstack.css";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 import {
   GRID_COLS,
-  GRID_ROW_HEIGHT_ESTIMATE,
   GRID_MARGIN,
   WIDGET_SIZE_SMALL,
   WIDGET_SIZE_LARGE,
@@ -348,6 +347,25 @@ export default function BusinessManagerPage({
   }, [buRows, searchQuery]);
 
   const [isEditing, setIsEditing] = React.useState(false);
+  // Square cells: row height tracks the live column width. Measured here as a
+  // stable pixel number (updated only when the container itself resizes)
+  // rather than gridstack's own `cellHeight: "auto"`, whose throttled
+  // self-recompute fires mid-drag and makes resizing feel jumpy.
+  const gridWrapRef = React.useRef<HTMLDivElement | null>(null);
+  const [cellPx, setCellPx] = React.useState(40);
+  React.useEffect(() => {
+    const el = gridWrapRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const measure = () => {
+      // el has `pr-3` (12px) — the .grid-stack inside is that much narrower.
+      const gridWidth = el.clientWidth - 12;
+      if (gridWidth > 0) setCellPx(Math.round(gridWidth / GRID_COLS));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const [hiddenWidgetIds, setHiddenWidgetIds] = React.useState<string[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -616,12 +634,11 @@ export default function BusinessManagerPage({
       return Math.max(max, bottom);
     }, 0);
     const gridHeight =
-      maxRow * GRID_ROW_HEIGHT_ESTIMATE +
-      Math.max(0, maxRow - 1) * GRID_MARGIN[1];
+      maxRow * cellPx + Math.max(0, maxRow - 1) * GRID_MARGIN[1];
     // Small headroom so a widget can be dragged past the last row while
     // editing — not a multiple of the whole grid's height.
     return Math.max(100, Math.ceil(gridHeight * 0.08) + 40);
-  }, [visibleWidgetLayout]);
+  }, [visibleWidgetLayout, cellPx]);
 
   // Feeds WidgetSlot via WidgetElementsContext — see the comment on that
   // context above for why GridStack's component-mode needs this indirection
@@ -634,9 +651,9 @@ export default function BusinessManagerPage({
   const gridStackOptions: GridStackOptions = React.useMemo(
     () => ({
       column: GRID_COLS,
-      // "auto" = gridstack sizes each row to the live column width, so cells
-      // are square and grid-unit ratios (LARGE = 10x20 = 1:2) render true.
-      cellHeight: "auto",
+      // Square cells — cellPx is the measured column width, so grid-unit
+      // ratios (LARGE = 10x20 = 1:2) render true on screen.
+      cellHeight: cellPx,
       margin: GRID_MARGIN[0],
       float: false,
       staticGrid: !isEditing,
@@ -667,7 +684,7 @@ export default function BusinessManagerPage({
         }),
       ),
     }),
-    [visibleWidgetLayout, isEditing, handleToggleWidgetSize],
+    [visibleWidgetLayout, isEditing, handleToggleWidgetSize, cellPx],
   );
 
   const handleBeaconOffsetChange = React.useCallback(
@@ -884,7 +901,7 @@ export default function BusinessManagerPage({
                   })}
                 </div>
               )}
-              <div className="flex-1 pb-12 pr-3 pt-2">
+              <div ref={gridWrapRef} className="flex-1 pb-12 pr-3 pt-2">
                 <WidgetElementsContext.Provider value={widgetElementsMap}>
                   <GridStack
                     options={gridStackOptions}
