@@ -12,8 +12,8 @@ const CURRENCY_OPTIONS = [
   { code: "USD", symbol: "$", rate: 0.23 },
 ];
 
-const TREND_DOWN = "#a4130e";
-const TREND_UP = "#1e7d3f";
+const COST_UP = "#a4130e"; // cost rising vs last week — bad
+const COST_DOWN = "#1e7d3f"; // cost falling — a saving
 
 const buildDataset = (storeIds: string[]) =>
   DAYS.map((day) => ({
@@ -87,7 +87,7 @@ export default function EnergyCostWidget({
   const lastCost = totalLastKwh * currency.rate;
   const deltaPct = lastCost === 0 ? 0 : ((totalCost - lastCost) / lastCost) * 100;
   const goingDown = deltaPct < 0;
-  const trendColor = goingDown ? TREND_DOWN : TREND_UP;
+  const trendColor = goingDown ? COST_DOWN : COST_UP;
 
   return (
     <Widget title="Energy Consumption / Cost" icon={<PoundSterling />}>
