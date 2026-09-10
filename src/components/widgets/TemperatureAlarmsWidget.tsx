@@ -1,67 +1,47 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { PieChart } from "@mui/x-charts/PieChart";
-import { BarChart } from "@mui/x-charts/BarChart";
-import Card from "@mui/material/Card";
-import ThermostatIcon from "@mui/icons-material/Thermostat";
-import "./WidgetBase.css";
-import "./TemperatureAlarmsWidget.css";
-import { seededInt } from "../../lib/seededRandom";
+import { useEffect, useMemo, useState } from "react";
+import { ThermometerSnowflake } from "lucide-react";
+import { BarChart, DonutChart } from "@tremor/react";
+import { WidgetShell } from "./WidgetShell";
 import { useWidgetSize } from "./WidgetSizeContext";
-
-type TemperatureAlarmsWidgetProps = {
-  storeIds?: string[];
-};
-
-const HIGH_COLOR = "#f14734";
-const LOW_COLOR = "#205ffd";
-const NONE_COLOR = "#adadad";
+import { seededInt } from "../../lib/seededRandom";
 
 const DAYS = 7;
-const WEEKDAY_NAMES = [
-  "Sun",
-  "Mon",
-  "Tue",
-  "Wed",
-  "Thu",
-  "Fri",
-  "Sat",
-];
+const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// The last label is always "Today"; the rest are the actual weekday names
-// for the preceding days (not just "D1, D2, ..."), based on today's real
-// date rather than a fixed Monday-Sunday sequence.
 const buildDayLabels = (): string[] => {
   const today = new Date();
   return Array.from({ length: DAYS }, (_, i) => {
     const offset = DAYS - 1 - i;
     if (offset === 0) return "Today";
-    const date = new Date(today);
-    date.setDate(date.getDate() - offset);
-    return WEEKDAY_NAMES[date.getDay()];
+    const d = new Date(today);
+    d.setDate(d.getDate() - offset);
+    return WEEKDAY_NAMES[d.getDay()];
   });
 };
 const DAY_LABELS = buildDayLabels();
 
 // Most days a store raises no temperature alarms; each store independently
-// has a small seeded chance of raising 1-3 on a given day, so a region/root
-// scope's daily count is the sum across however many stores it covers.
+// has a small seeded chance of raising 1-3 on a given day.
 const buildDailyCounts = (storeIds: string[], seedKey: string) =>
-  Array.from({ length: DAYS }, (_, dayIndex) =>
+  Array.from({ length: DAYS }, (_, day) =>
     storeIds.reduce((sum, id) => {
-      const raised = seededInt(`${id}:${seedKey}:day${dayIndex}:roll`, 0, 99) < 12;
-      return (
-        sum + (raised ? seededInt(`${id}:${seedKey}:day${dayIndex}:count`, 1, 3) : 0)
-      );
+      const raised = seededInt(`${id}:${seedKey}:day${day}:roll`, 0, 99) < 12;
+      return sum + (raised ? seededInt(`${id}:${seedKey}:day${day}:count`, 1, 3) : 0);
     }, 0),
   );
 
-// How long each view (ring, then bar chart) stays up before crossfading
-// to the other.
 const ALTERNATE_INTERVAL_MS = 6000;
+
+type TemperatureAlarmsWidgetProps = {
+  storeIds?: string[];
+};
 
 export default function TemperatureAlarmsWidget({
   storeIds = ["root"],
 }: TemperatureAlarmsWidgetProps) {
+  const size = useWidgetSize();
+  const isLarge = size === "large";
+
   const highDaily = useMemo(
     () => buildDailyCounts(storeIds, "temp-alarm-high"),
     [storeIds],
@@ -74,137 +54,99 @@ export default function TemperatureAlarmsWidget({
   const lowCount = lowDaily[lowDaily.length - 1] ?? 0;
   const totalCount = highCount + lowCount;
 
-  const slices = useMemo(
+  const barData = useMemo(
     () =>
-      totalCount === 0
-        ? [{ id: 0, value: 1, color: NONE_COLOR, label: "No alarms" }]
-        : [
-            { id: 0, value: highCount, color: HIGH_COLOR, label: "High" },
-            { id: 1, value: lowCount, color: LOW_COLOR, label: "Low" },
-          ],
-    [highCount, lowCount, totalCount],
+      DAY_LABELS.map((day, i) => ({
+        day,
+        High: highDaily[i],
+        Low: lowDaily[i],
+      })),
+    [highDaily, lowDaily],
   );
 
-  const size = useWidgetSize();
-  const isExpanded = size === "large";
-  const panelRef = useRef<HTMLDivElement>(null);
-  const [panelSize, setPanelSize] = useState({ width: 200, height: 200 });
-  const [showBarChart, setShowBarChart] = useState(false);
-  const [lastIsExpanded, setLastIsExpanded] = useState(isExpanded);
-  if (isExpanded !== lastIsExpanded) {
-    setLastIsExpanded(isExpanded);
-    if (!isExpanded) setShowBarChart(false);
-  }
-
+  const [showBars, setShowBars] = useState(false);
   useEffect(() => {
-    if (!panelRef.current) return;
+    if (!isLarge) return;
+    const id = setInterval(() => setShowBars((p) => !p), ALTERNATE_INTERVAL_MS);
+    return () => {
+      clearInterval(id);
+      setShowBars(false); // back to the ring when leaving LARGE
+    };
+  }, [isLarge]);
 
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setPanelSize({ width, height });
-      }
-    });
-
-    observer.observe(panelRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  // Only alternate once there's room for both views — below that, the ring
-  // is the only one that fits, so it just stays put.
-  useEffect(() => {
-    if (!isExpanded) return;
-    const interval = setInterval(() => {
-      setShowBarChart((prev) => !prev);
-    }, ALTERNATE_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [isExpanded]);
-
-  const ringSize = Math.max(72, Math.min(panelSize.width, panelSize.height - 40, 176));
-
-  const ringView = (
-    <>
-      <div className="temp-alarms-ring-wrap" style={{ width: ringSize, height: ringSize }}>
-        <PieChart
-          series={[
-            {
-              data: slices,
-              innerRadius: ringSize * 0.36,
-              outerRadius: ringSize * 0.48,
-              cornerRadius: 2,
-            },
-          ]}
-          hideLegend
-          width={ringSize}
-          height={ringSize}
+  const ring = (
+    <div className="flex flex-1 flex-col items-center justify-center gap-3">
+      <div className="relative">
+        <DonutChart
+          data={
+            totalCount === 0
+              ? [{ name: "None", value: 1 }]
+              : [
+                  { name: "High", value: highCount },
+                  { name: "Low", value: lowCount },
+                ]
+          }
+          category="value"
+          index="name"
+          colors={totalCount === 0 ? ["gray"] : ["red", "blue"]}
+          showLabel={false}
+          showTooltip={false}
+          className={isLarge ? "h-40 w-40" : "h-28 w-28"}
         />
-        <div className="temp-alarms-value">{totalCount}</div>
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <span
+            className={`text-3xl font-bold tabular-nums ${
+              totalCount === 0 ? "text-success" : "text-ink"
+            }`}
+          >
+            {totalCount}
+          </span>
+        </div>
       </div>
-      <div className="temp-alarms-legend">
-        <span className="temp-alarms-legend-item">
-          <span className="temp-alarms-dot temp-alarms-dot--high" />
+      <div className="flex gap-4">
+        <span className="flex items-center gap-1.5 text-xs text-ink-muted">
+          <span className="size-2 rounded-full bg-red-500" />
           High
         </span>
-        <span className="temp-alarms-legend-item">
-          <span className="temp-alarms-dot temp-alarms-dot--low" />
+        <span className="flex items-center gap-1.5 text-xs text-ink-muted">
+          <span className="size-2 rounded-full bg-blue-500" />
           Low
         </span>
       </div>
-    </>
-  );
-
-  const barView = (
-    <BarChart
-      series={[
-        { data: highDaily, color: HIGH_COLOR, label: "High" },
-        { data: lowDaily, color: LOW_COLOR, label: "Low" },
-      ]}
-      xAxis={[{ scaleType: "band", data: DAY_LABELS }]}
-      width={panelSize.width}
-      height={panelSize.height}
-      slotProps={{ legend: { sx: { color: "var(--text-primary)" } } }}
-      sx={{
-        "& .MuiChartsAxis-tickLabel": { fill: "var(--widget-text-primary)" },
-        "& .MuiChartsAxis-label": { fill: "var(--widget-text-primary)" },
-        "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
-          stroke: "var(--widget-text-primary)",
-        },
-        "& .MuiChartsGrid-line": { stroke: "rgba(0, 0, 0, 0.08)" },
-        ".dark & .MuiChartsGrid-line": { stroke: "rgba(255, 255, 255, 0.12)" },
-      }}
-      grid={{ horizontal: true }}
-    />
+    </div>
   );
 
   return (
-    <Card className="widget-card widget-temp-alarms">
-      <div className="widget-title">
-        <span>Temperature Alarms</span>
-        <ThermostatIcon className="widget-title-icon" fontSize="small" />
-      </div>
-      <div className="temp-alarms-body">
-        <div className="temp-alarms-panel" ref={panelRef}>
-          {isExpanded ? (
-            // Both views stay mounted and crossfade via opacity instead of
-            // swapping — remounting the chart on every alternation would
-            // restart its own enter animation and lose the smooth fade.
-            <div className="temp-alarms-alternator">
-              <div
-                className={`temp-alarms-alternator-pane ${!showBarChart ? "is-visible" : ""}`}
-              >
-                {ringView}
-              </div>
-              <div
-                className={`temp-alarms-alternator-pane ${showBarChart ? "is-visible" : ""}`}
-              >
-                {barView}
-              </div>
-            </div>
-          ) : (
-            ringView
-          )}
+    <WidgetShell title="Temperature Alarms" icon={<ThermometerSnowflake />}>
+      {!isLarge ? (
+        ring
+      ) : (
+        <div className="relative min-h-0 flex-1">
+          <div
+            className={`absolute inset-0 flex transition-opacity duration-500 ${
+              showBars ? "opacity-0" : "opacity-100"
+            }`}
+          >
+            {ring}
+          </div>
+          <div
+            className={`absolute inset-0 transition-opacity duration-500 ${
+              showBars ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <BarChart
+              className="h-full"
+              data={barData}
+              index="day"
+              categories={["High", "Low"]}
+              colors={["red", "blue"]}
+              stack
+              showLegend
+              yAxisWidth={28}
+            />
+          </div>
         </div>
-      </div>
-    </Card>
+      )}
+    </WidgetShell>
   );
 }

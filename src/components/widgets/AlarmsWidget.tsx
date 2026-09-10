@@ -1,7 +1,5 @@
-import Card from "@mui/material/Card";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import "./WidgetBase.css";
-import "./AlarmsWidget.css";
+import { TriangleAlert } from "lucide-react";
+import { WidgetShell, WidgetMetric } from "./WidgetShell";
 
 type AlarmsWidgetProps = {
   value?: number;
@@ -9,12 +7,8 @@ type AlarmsWidgetProps = {
 
 export default function AlarmsWidget({ value = 12 }: AlarmsWidgetProps) {
   return (
-    <Card className="widget-card widget-alarms">
-      <div className="widget-title">
-        <span>Active Alarms</span>
-        <WarningAmberIcon className="widget-title-icon" fontSize="small" />
-      </div>
-      <div className="widget-value">{value}</div>
-    </Card>
+    <WidgetShell title="Active Alarms" icon={<TriangleAlert />}>
+      <WidgetMetric value={value} tone={value > 0 ? "danger" : "success"} />
+    </WidgetShell>
   );
 }

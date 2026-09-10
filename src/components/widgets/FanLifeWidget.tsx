@@ -1,31 +1,20 @@
-import { useEffect, useRef, useState, useMemo } from "react";
-import { PieChart } from "@mui/x-charts/PieChart";
-import Card from "@mui/material/Card";
-import AirIcon from "@mui/icons-material/Air";
-import "./WidgetBase.css";
-import "./FanLifeWidget.css";
-import { createSeededRandom, seededInt, seededPick } from "../../lib/seededRandom";
+import { useMemo } from "react";
+import { Fan } from "lucide-react";
+import { DonutChart, ProgressBar } from "@tremor/react";
+import { WidgetShell } from "./WidgetShell";
 import { useWidgetSize } from "./WidgetSizeContext";
+import { createSeededRandom, seededInt, seededPick } from "../../lib/seededRandom";
 
 type FanLifeWidgetProps = {
   storeIds?: string[];
   // Friendly names for the current scope (region/sub-region/store titles).
-  // Not guaranteed to line up 1:1 with storeIds — at region/root scope
-  // there are far fewer of these than individual stores — so each store
-  // just picks a stable (seeded) name from the pool, same approach the
-  // Alarm Summary table already uses for the same mismatch.
+  // Not guaranteed to line up 1:1 with storeIds — each store picks a stable
+  // (seeded) name from the pool, same approach Alarm Summary uses.
   locations?: string[];
 };
 
-type FanEntry = {
-  id: string;
-  name: string;
-  percentUsed: number;
-};
+type FanEntry = { id: string; name: string; percentUsed: number };
 
-// A fan's rated-life usage, as a percentage. Most sit comfortably below the
-// "nearing end of life" line; each store independently has a small chance
-// of running hot.
 const buildFanEntries = (storeIds: string[], locations: string[]): FanEntry[] => {
   const pool = locations.length ? locations : storeIds;
   return storeIds.map((id) => {
@@ -40,14 +29,12 @@ const buildFanEntries = (storeIds: string[], locations: string[]): FanEntry[] =>
 
 const NEAR_END_OF_LIFE_THRESHOLD = 80;
 const CRITICAL_THRESHOLD = 95;
-const NONE_COLOR = "#adadad";
-const WARNING_COLOR = "#e28e04";
-const CRITICAL_COLOR = "#a4130e";
 
 export default function FanLifeWidget({
   storeIds = ["root"],
   locations = [],
 }: FanLifeWidgetProps) {
+  const size = useWidgetSize();
   const entries = useMemo(
     () => buildFanEntries(storeIds, locations),
     [storeIds, locations],
@@ -55,127 +42,78 @@ export default function FanLifeWidget({
   const nearingEndOfLife = useMemo(
     () =>
       entries
-        .filter((entry) => entry.percentUsed >= NEAR_END_OF_LIFE_THRESHOLD)
+        .filter((e) => e.percentUsed >= NEAR_END_OF_LIFE_THRESHOLD)
         .sort((a, b) => b.percentUsed - a.percentUsed),
     [entries],
   );
   const count = nearingEndOfLife.length;
-  const criticalCount = useMemo(
-    () => nearingEndOfLife.filter((entry) => entry.percentUsed >= CRITICAL_THRESHOLD).length,
-    [nearingEndOfLife],
-  );
+  const criticalCount = nearingEndOfLife.filter(
+    (e) => e.percentUsed >= CRITICAL_THRESHOLD,
+  ).length;
   const warningCount = count - criticalCount;
 
-  // Same ring structure as Stores Online: a 2-slice PieChart with the
-  // headline count in the center. A single neutral slice stands in when
-  // nothing is nearing end of life, so the ring never has to render with
-  // zero total value.
-  const slices = useMemo(
-    () =>
-      count === 0
-        ? [{ id: 0, value: 1, color: NONE_COLOR, label: "None nearing end of life" }]
-        : [
-            { id: 0, value: criticalCount, color: CRITICAL_COLOR, label: "Critical" },
-            { id: 1, value: warningCount, color: WARNING_COLOR, label: "Warning" },
-          ],
-    [count, criticalCount, warningCount],
-  );
-
-  const size = useWidgetSize();
-  const isExpanded = size === "large";
-  const panelRef = useRef<HTMLDivElement>(null);
-  const [ringSize, setRingSize] = useState(120);
-
-  // Ring pixel size still needs measuring (rather than a fixed constant per
-  // size) since the grid's column width is fluid with viewport width, not
-  // just with which of the two widget sizes is picked.
-  useEffect(() => {
-    if (!panelRef.current || isExpanded) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        const available = Math.min(width, height - 32);
-        // Capped higher than Stores Online's 176 — Fan Life's LARGE size
-        // gives it more headroom to grow into, and the old cap left a
-        // visible band of empty space below the ring once the card grew
-        // past it.
-        setRingSize(Math.max(72, Math.min(available, 260)));
-      }
-    });
-    observer.observe(panelRef.current);
-    return () => observer.disconnect();
-  }, [isExpanded]);
-
   return (
-    <Card className="widget-card widget-fan">
-      <div className="widget-title">
-        <span>Fan Life</span>
-        <AirIcon className="widget-title-icon" fontSize="small" />
-      </div>
-
-      <div className="fan-life-body">
-        <div className="fan-life-panel" ref={panelRef}>
-          {isExpanded ? (
-            count === 0 ? (
-              <div className="fan-life-empty">
-                <span className="fan-life-empty-value">0</span>
-                <span className="fan-life-empty-label">Fans nearing end of life</span>
-              </div>
-            ) : (
-              <div className="fan-life-eol-list">
-                {nearingEndOfLife.map((entry) => (
-                  <div key={entry.id} className="fan-life-eol-item">
-                    <div className="fan-life-eol-header">
-                      <span className="fan-life-eol-percent">{entry.percentUsed}%</span>
-                    </div>
-                    <div className="fan-life-eol-bar-track">
-                      <div
-                        className={`fan-life-eol-bar-fill ${
-                          entry.percentUsed >= CRITICAL_THRESHOLD ? "is-critical" : "is-warning"
-                        }`}
-                        style={{ width: `${entry.percentUsed}%` }}
-                      />
-                    </div>
-                    <span className="fan-life-eol-name">{entry.name}</span>
-                  </div>
-                ))}
-              </div>
-            )
-          ) : (
-            <>
-              <div
-                className="fan-life-ring-wrap"
-                style={{ width: ringSize, height: ringSize }}
-              >
-                <PieChart
-                  series={[
-                    {
-                      data: slices,
-                      innerRadius: ringSize * 0.36,
-                      outerRadius: ringSize * 0.48,
-                      cornerRadius: 2,
-                    },
-                  ]}
-                  hideLegend
-                  width={ringSize}
-                  height={ringSize}
+    <WidgetShell title="Fan Life" icon={<Fan />}>
+      {size === "large" ? (
+        count === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-1 text-center">
+            <span className="text-5xl font-bold leading-none text-success">0</span>
+            <span className="text-xs text-ink-muted">Fans nearing end of life</span>
+          </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
+            {nearingEndOfLife.map((entry) => (
+              <div key={entry.id} className="flex flex-col gap-1">
+                <div className="flex items-baseline justify-between">
+                  <span className="truncate text-xs text-ink-muted">{entry.name}</span>
+                  <span className="text-sm font-semibold tabular-nums text-ink">
+                    {entry.percentUsed}%
+                  </span>
+                </div>
+                <ProgressBar
+                  value={entry.percentUsed}
+                  color={entry.percentUsed >= CRITICAL_THRESHOLD ? "red" : "amber"}
+                  className="[&>*]:!h-1.5"
                 />
-                <div className="fan-life-value">{count}</div>
               </div>
-              <div className="fan-life-legend">
-                <span className="fan-life-legend-item">
-                  <span className="fan-life-dot fan-life-dot--critical" />
-                  Critical
-                </span>
-                <span className="fan-life-legend-item">
-                  <span className="fan-life-dot fan-life-dot--warning" />
-                  Warning
-                </span>
-              </div>
-            </>
-          )}
+            ))}
+          </div>
+        )
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3">
+          <div className="relative">
+            <DonutChart
+              data={
+                count === 0
+                  ? [{ name: "None", value: 1 }]
+                  : [
+                      { name: "Critical", value: criticalCount },
+                      { name: "Warning", value: warningCount },
+                    ]
+              }
+              category="value"
+              index="name"
+              colors={count === 0 ? ["gray"] : ["red", "amber"]}
+              showLabel={false}
+              showTooltip={false}
+              className="h-28 w-28"
+            />
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <span className="text-2xl font-bold tabular-nums text-ink">{count}</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <span className="flex items-center gap-1.5 text-xs text-ink-muted">
+              <span className="size-2 rounded-full bg-red-500" />
+              Critical
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-ink-muted">
+              <span className="size-2 rounded-full bg-amber-500" />
+              Warning
+            </span>
+          </div>
         </div>
-      </div>
-    </Card>
+      )}
+    </WidgetShell>
   );
 }

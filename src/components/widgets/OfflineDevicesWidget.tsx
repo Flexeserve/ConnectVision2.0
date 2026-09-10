@@ -1,8 +1,6 @@
 import { useMemo } from "react";
-import Card from "@mui/material/Card";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import "./WidgetBase.css";
-import "./OfflineDevicesWidget.css";
+import { TriangleAlert } from "lucide-react";
+import { WidgetShell } from "./WidgetShell";
 import { seededInt } from "../../lib/seededRandom";
 
 type OfflineDevicesWidgetProps = {
@@ -24,27 +22,37 @@ export default function OfflineDevicesWidget({
   const total = gatewayErrors + commanderOffline;
 
   return (
-    <Card className="widget-card widget-offline-devices">
-      <div className="widget-title">
-        <span>Offline Devices</span>
-        <WarningAmberIcon className="widget-title-icon" fontSize="small" />
-      </div>
-      <div className="offline-devices-body">
-        <div className="offline-devices-total">
-          <span className="offline-devices-total-value">{total}</span>
-          <span className="offline-devices-total-label">Total offline</span>
-        </div>
-        <div className="offline-devices-breakdown">
-          <div className="offline-devices-stat">
-            <span className="offline-devices-stat-value">{gatewayErrors}</span>
-            <span className="offline-devices-stat-label">Gateway</span>
+    <WidgetShell title="Offline Devices" icon={<TriangleAlert />}>
+      <div className="flex flex-1 flex-col items-center justify-center gap-4">
+        <div className="text-center">
+          <div
+            className={`text-4xl font-bold leading-none tabular-nums ${
+              total > 0 ? "text-danger" : "text-ink"
+            }`}
+          >
+            {total}
           </div>
-          <div className="offline-devices-stat">
-            <span className="offline-devices-stat-value">{commanderOffline}</span>
-            <span className="offline-devices-stat-label">Commander</span>
+          <div className="mt-1 text-xs text-ink-muted">Total offline</div>
+        </div>
+        <div className="flex gap-6">
+          <div className="text-center">
+            <div className="text-lg font-semibold tabular-nums text-ink">
+              {gatewayErrors}
+            </div>
+            <div className="text-[11px] uppercase tracking-wide text-ink-subtle">
+              Gateway
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-semibold tabular-nums text-ink">
+              {commanderOffline}
+            </div>
+            <div className="text-[11px] uppercase tracking-wide text-ink-subtle">
+              Commander
+            </div>
           </div>
         </div>
       </div>
-    </Card>
+    </WidgetShell>
   );
 }

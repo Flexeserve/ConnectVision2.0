@@ -1,15 +1,9 @@
 import { useMemo, useState } from "react";
-import { Card, LineChart, BadgeDelta } from "@tremor/react";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import "./WidgetBase.css";
-import "./EnergyCostWidget.css";
-import { seededInt } from "../../lib/seededRandom";
+import { PoundSterling } from "lucide-react";
+import { LineChart, BadgeDelta } from "@tremor/react";
+import { WidgetShell } from "./WidgetShell";
 import { useWidgetSize } from "./WidgetSizeContext";
-
-// --- SPIKE: this widget is rebuilt on Tremor (@tremor/react) instead of MUI
-// x-charts, to evaluate Tremor as the widget chart/UI layer. Everything else
-// on the dashboard is still MUI/HeroUI. If we keep Tremor, the other chart
-// widgets follow this pattern; if not, this reverts.
+import { seededInt } from "../../lib/seededRandom";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -20,8 +14,7 @@ const CURRENCY_OPTIONS = [
 ];
 
 // Each store contributes its own daily kWh usage; the scope's dataset is the
-// sum across its stores, so a region/root shows cumulative energy cost while
-// a single-store scope shows just that store's own consumption.
+// sum across its stores.
 const buildDataset = (storeIds: string[]) =>
   DAYS.map((day) => ({
     day,
@@ -42,92 +35,81 @@ type EnergyCostWidgetProps = {
 export default function EnergyCostWidget({
   storeIds = ["root"],
 }: EnergyCostWidgetProps) {
-  const chartData = useMemo(() => buildDataset(storeIds), [storeIds]);
   const size = useWidgetSize();
   const isLarge = size === "large";
+  const chartData = useMemo(() => buildDataset(storeIds), [storeIds]);
   const [currency, setCurrency] = useState(CURRENCY_OPTIONS[0]);
 
-  const totalKwh = useMemo(
-    () => chartData.reduce((sum, v) => sum + v["This week"], 0),
-    [chartData],
-  );
-  const totalLastKwh = useMemo(
-    () => chartData.reduce((sum, v) => sum + v["Last week"], 0),
-    [chartData],
-  );
+  const totalKwh = chartData.reduce((s, v) => s + v["This week"], 0);
+  const totalLastKwh = chartData.reduce((s, v) => s + v["Last week"], 0);
   const totalCost = totalKwh * currency.rate;
-  const totalLastCost = totalLastKwh * currency.rate;
-  const costDeltaPercent =
-    totalLastCost === 0 ? 0 : ((totalCost - totalLastCost) / totalLastCost) * 100;
-  // Cost down from last week reads as a saving; cost up reads as a loss.
-  const isSaving = costDeltaPercent <= 0;
+  const lastCost = totalLastKwh * currency.rate;
+  const deltaPct = lastCost === 0 ? 0 : ((totalCost - lastCost) / lastCost) * 100;
+  const isSaving = deltaPct <= 0;
 
   return (
-    <Card className="widget-card widget-energy-cost !p-3 !rounded-none !ring-0 !shadow-none !bg-transparent h-full">
-      <div className="widget-title">
-        <span>Energy Consumption / Cost</span>
-        <AttachMoneyIcon className="widget-title-icon" fontSize="small" />
-      </div>
-
+    <WidgetShell title="Energy Consumption / Cost" icon={<PoundSterling />}>
       <div
-        className={`energy-cost-body ${
-          isLarge ? "energy-cost-body--large" : "energy-cost-body--compact"
+        className={`flex min-h-0 flex-1 ${
+          isLarge ? "flex-col gap-3" : "flex-col items-center justify-center gap-2"
         }`}
       >
-        <div className="energy-cost-left">
-          <div className="energy-cost-label">Cost</div>
-          <div className="energy-cost-value">
+        <div
+          className={`flex flex-col ${
+            isLarge ? "items-start" : "items-center"
+          } gap-1`}
+        >
+          <span className="text-[11px] uppercase tracking-wide text-ink-subtle">
+            Cost
+          </span>
+          <span className="text-4xl font-bold leading-none tabular-nums text-ink">
             {currency.symbol}
             {totalCost.toFixed(1)}
-          </div>
-          <div className="energy-cost-sub">{totalKwh} kWh</div>
+          </span>
+          <span className="text-xs text-ink-muted">{totalKwh} kWh</span>
           {isLarge && (
             <select
-              className="energy-currency-select"
               value={currency.code}
-              onChange={(event) => {
-                const next =
-                  CURRENCY_OPTIONS.find((opt) => opt.code === event.target.value) ??
-                  CURRENCY_OPTIONS[0];
-                setCurrency(next);
-              }}
-              aria-label="Select currency"
+              onChange={(e) =>
+                setCurrency(
+                  CURRENCY_OPTIONS.find((o) => o.code === e.target.value) ??
+                    CURRENCY_OPTIONS[0],
+                )
+              }
+              aria-label="Currency"
+              className="mt-1 rounded-md border border-line bg-surface px-2 py-1 text-xs font-medium text-ink"
             >
-              {CURRENCY_OPTIONS.map((opt) => (
-                <option key={opt.code} value={opt.code}>
-                  {opt.code}
+              {CURRENCY_OPTIONS.map((o) => (
+                <option key={o.code} value={o.code}>
+                  {o.code}
                 </option>
               ))}
             </select>
           )}
           <BadgeDelta
-            className="mt-1 self-center"
+            className="mt-1"
             size="xs"
             deltaType={isSaving ? "moderateDecrease" : "moderateIncrease"}
             isIncreasePositive={false}
           >
-            {Math.abs(costDeltaPercent).toFixed(1)}% {isSaving ? "saved" : "more"} vs
-            last week
+            {Math.abs(deltaPct).toFixed(1)}% {isSaving ? "saved" : "more"} vs last week
           </BadgeDelta>
         </div>
 
         {isLarge && (
-          <div className="energy-cost-chart">
-            <LineChart
-              className="h-full w-full"
-              data={chartData}
-              index="day"
-              categories={["This week", "Last week"]}
-              colors={["orange", "gray"]}
-              valueFormatter={(v) => `${v} kWh`}
-              showLegend
-              showAnimation
-              curveType="monotone"
-              yAxisWidth={40}
-            />
-          </div>
+          <LineChart
+            className="min-h-0 flex-1"
+            data={chartData}
+            index="day"
+            categories={["This week", "Last week"]}
+            colors={["orange", "gray"]}
+            valueFormatter={(v) => `${v} kWh`}
+            showLegend
+            curveType="monotone"
+            yAxisWidth={40}
+          />
         )}
       </div>
-    </Card>
+    </WidgetShell>
   );
 }

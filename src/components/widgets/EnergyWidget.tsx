@@ -1,29 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Card } from "@heroui/react";
-import { LineChart } from "@mui/x-charts/LineChart";
-import BoltIcon from "@mui/icons-material/Bolt";
-import "./WidgetBase.css";
-import "./EnergyWidget.css";
-import { createSeededRandom, seededFloat } from "../../lib/seededRandom";
+import { useMemo } from "react";
+import { Zap } from "lucide-react";
+import { LineChart } from "@tremor/react";
+import { WidgetShell, WidgetMetric } from "./WidgetShell";
 import { useWidgetSize } from "./WidgetSizeContext";
+import { createSeededRandom, seededFloat } from "../../lib/seededRandom";
 
-const hours = ["00", "04", "08", "12", "16", "20", "24"];
+const HOURS = ["00", "04", "08", "12", "16", "20", "24"];
 
 const buildStoreTemp = (storeId: string) => {
   const rand = createSeededRandom(`${storeId}:cabinet-temp`);
   const baseline = seededFloat(`${storeId}:cabinet-temp-base`, 2.9, 4.1, 1);
-  return hours.map(() => baseline + (rand() - 0.5) * 0.8);
+  return HOURS.map(() => baseline + (rand() - 0.5) * 0.8);
 };
 
 // Cabinet temperature is a sensor reading, not a countable quantity, so the
-// scope's trend is the pointwise average of its stores' own readings — a
-// single store shows its own native trend, a region/root the blended trend.
+// scope's trend is the pointwise average of its stores' own readings.
 const buildAvgTemp = (storeIds: string[]) => {
   const perStore = storeIds.map(buildStoreTemp);
-  return hours.map((_, i) =>
-    Math.round((perStore.reduce((sum, series) => sum + series[i], 0) / perStore.length) * 10) /
-    10,
-  );
+  return HOURS.map((hour, i) => ({
+    hour,
+    "Avg °C":
+      Math.round(
+        (perStore.reduce((sum, s) => sum + s[i], 0) / perStore.length) * 10,
+      ) / 10,
+  }));
 };
 
 type EnergyWidgetProps = {
@@ -31,89 +31,46 @@ type EnergyWidgetProps = {
 };
 
 export default function EnergyWidget({ storeIds = ["root"] }: EnergyWidgetProps) {
-  const avgTemp = useMemo(() => buildAvgTemp(storeIds), [storeIds]);
-  const avgTempMean =
-    Math.round((avgTemp.reduce((sum, v) => sum + v, 0) / avgTemp.length) * 10) / 10;
   const size = useWidgetSize();
-  const isLarge = size === "large";
-  const widgetRef = useRef<HTMLDivElement>(null);
-  const [chartHeight, setChartHeight] = useState(180);
-
-  useEffect(() => {
-    if (!widgetRef.current || !isLarge) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { height } = entry.contentRect;
-        setChartHeight(Math.max(100, height - 132));
-      }
-    });
-    observer.observe(widgetRef.current);
-    return () => observer.disconnect();
-  }, [isLarge]);
+  const data = useMemo(() => buildAvgTemp(storeIds), [storeIds]);
+  const mean =
+    Math.round(
+      (data.reduce((sum, d) => sum + d["Avg °C"], 0) / data.length) * 10,
+    ) / 10;
 
   return (
-    <Card
-      ref={widgetRef}
-      shadow="none"
-      radius="none"
-      className="widget-card widget-energy-widget"
-    >
-      <div className="widget-title">
-        <span>Energy widget</span>
-        <BoltIcon className="widget-title-icon" fontSize="small" />
-      </div>
-
-      <div className={`trend-layout ${isLarge ? "trend-layout--large" : "trend-layout--compact"}`}>
-        <div className="trend-left">
-          <p className="trend-kpi-value">{avgTempMean}C</p>
-          <p className="trend-kpi-label">Avg cabinet temp</p>
-          <p className="trend-kpi-sub">Last 24 hours</p>
-        </div>
-
-        {isLarge && (
-          <div className="trend-right">
-            <LineChart
-              xAxis={[
-                {
-                  scaleType: "point",
-                  data: hours,
-                  tickLabelStyle: { fill: "var(--text-muted)", fontSize: 11 },
-                },
-              ]}
-              yAxis={[
-                {
-                  min: 2.2,
-                  max: 4.8,
-                  tickLabelStyle: { fill: "var(--text-muted)", fontSize: 11 },
-                },
-              ]}
-              series={[
-                {
-                  id: "avg-temp",
-                  data: avgTemp,
-                  label: "Average",
-                  curve: "monotoneX",
-                  color: "#d94d14",
-                  showMark: false,
-                },
-              ]}
-              height={chartHeight}
-              margin={{ left: 36, right: 18, top: 16, bottom: 30 }}
-              grid={{ vertical: true, horizontal: true }}
-              hideLegend
-              sx={{
-                "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
-                  stroke: "var(--border-color)",
-                },
-                "& .MuiChartsGrid-line": {
-                  stroke: "var(--border-color)",
-                  strokeDasharray: "2 4",
-                },
-              }}
-            />
+    <WidgetShell title="Energy" icon={<Zap />}>
+      {size === "large" ? (
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <div className="text-center">
+            <div className="text-3xl font-bold leading-none tabular-nums text-ink">
+              {mean}
+              <span className="ml-1 text-base font-semibold text-ink-muted">°C</span>
+            </div>
+            <div className="mt-0.5 text-xs text-ink-muted">
+              Avg cabinet temp · last 24h
+            </div>
           </div>
-        )}
-      </div>
-    </Card>
+          <LineChart
+            className="min-h-0 flex-1"
+            data={data}
+            index="hour"
+            categories={["Avg °C"]}
+            colors={["orange"]}
+            valueFormatter={(v) => `${v}°C`}
+            showLegend={false}
+            minValue={2.2}
+            maxValue={4.8}
+            curveType="monotone"
+            yAxisWidth={36}
+          />
+        </div>
+      ) : (
+        <>
+          <WidgetMetric value={mean} unit="°C" />
+          <div className="text-center text-xs text-ink-muted">Avg cabinet temp</div>
+        </>
+      )}
+    </WidgetShell>
   );
 }

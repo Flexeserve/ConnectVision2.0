@@ -1,8 +1,6 @@
 import { useMemo } from "react";
-import Card from "@mui/material/Card";
-import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
-import "./WidgetBase.css";
-import "./ElementLifeWidget.css";
+import { Thermometer } from "lucide-react";
+import { WidgetShell, WidgetMetric } from "./WidgetShell";
 import { seededInt } from "../../lib/seededRandom";
 
 type ElementLifeWidgetProps = {
@@ -19,14 +17,8 @@ export default function ElementLifeWidget({ storeIds = ["root"] }: ElementLifeWi
   );
 
   return (
-    <Card className="widget-card widget-element">
-      <div className="widget-title">
-        <span>Element Life</span>
-        <DeviceThermostatIcon className="widget-title-icon" fontSize="small" />
-      </div>
-      <div className="widget-value">
-        {hours} <span>hrs</span>
-      </div>
-    </Card>
+    <WidgetShell title="Element Life" icon={<Thermometer />}>
+      <WidgetMetric value={hours} unit="hrs" />
+    </WidgetShell>
   );
 }

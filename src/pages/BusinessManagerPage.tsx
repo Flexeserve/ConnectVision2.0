@@ -87,16 +87,23 @@ function WidgetSlot(props: Record<string, unknown>) {
   const element = widgetId ? elements?.get(widgetId) : undefined;
   if (!element || !widgetId) return null;
   return (
-    <div className={`widget-cell ${isEditing ? "widget-cell--editing" : ""}`}>
+    <div
+      className={`relative flex h-full flex-col overflow-hidden rounded-widget border bg-surface shadow-widget dark:shadow-widget-dark ${
+        isEditing ? "cursor-move border-dashed border-accent" : "border-line"
+      }`}
+    >
       {isEditing && (
         <>
-          <span className="widget-drag-handle" />
+          {/* keep the class name — gridstack's `handle` selector targets it */}
+          <span className="widget-drag-handle absolute right-2 top-2 z-10 flex size-5 cursor-move items-center justify-center rounded bg-accent/90 text-xs font-bold text-white">
+            ≡
+          </span>
           <button
             type="button"
-            className="widget-size-toggle"
             onClick={() => onToggleSize?.(widgetId)}
             aria-label={size === "large" ? "Shrink widget" : "Expand widget"}
             title={size === "large" ? "Shrink" : "Expand"}
+            className="absolute left-2 top-2 z-10 flex size-5 items-center justify-center rounded bg-info/90 text-xs text-white hover:bg-info"
           >
             {size === "large" ? "⤡" : "⤢"}
           </button>

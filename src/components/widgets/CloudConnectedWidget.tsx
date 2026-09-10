@@ -1,9 +1,6 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import { PieChart } from "@mui/x-charts/PieChart";
-import Card from "@mui/material/Card";
-import "./WidgetBase.css";
-import "./CloudConnectedWidget.css";
-import cloudConnectLogo from "../../assets/CloudConnect.svg";
+import { useMemo } from "react";
+import { Cloud } from "lucide-react";
+import { DonutWidget } from "./WidgetShell";
 import { seededInt } from "../../lib/seededRandom";
 
 type CloudConnectedWidgetProps = {
@@ -22,90 +19,24 @@ const buildGauge = (storeIds: string[]) => {
     totalUnits += storeTotal;
     offlineCount += Math.round((storeTotal * offlineRate) / 100);
   });
-  const connectedCount = totalUnits - offlineCount;
-  return [
-    { id: 0, value: connectedCount, color: "#d94d14", label: "Connected" },
-    {
-      id: 1,
-      value: offlineCount,
-      color: "#adadadff",
-      label: "No connection",
-    },
-  ];
+  return { connected: totalUnits - offlineCount, offline: offlineCount };
 };
 
 export default function CloudConnectedWidget({
   storeIds = ["root"],
 }: CloudConnectedWidgetProps) {
-  const gaugeSlices = useMemo(() => buildGauge(storeIds), [storeIds]);
-  const connectedCount = gaugeSlices[0]?.value ?? 0;
-  // Measures the whole card (title included), unlike Stores Online/Schedule
-  // Compliance's inner panel ref — purely for sizing the ring's own pixels
-  // now, since both fixed widget sizes are always big enough to show it.
-  const widgetRef = useRef<HTMLDivElement>(null);
-  const [chartSize, setChartSize] = useState(100);
-  const [innerRadius, setInnerRadius] = useState(30);
-  const [outerRadius, setOuterRadius] = useState(50);
-
-  useEffect(() => {
-    if (!widgetRef.current) return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const containerWidth = entry.contentRect.width;
-        const containerHeight = entry.contentRect.height;
-
-        // Calculate chart size based on container dimensions
-        // Use smaller dimension and scale appropriately
-        const baseSize = Math.min(containerWidth * 0.35, containerHeight * 0.5);
-        const size = Math.max(60, Math.min(baseSize, 140));
-
-        setChartSize(size);
-        setInnerRadius(size * 0.3);
-        setOuterRadius(size * 0.5);
-      }
-    });
-
-    observer.observe(widgetRef.current);
-    return () => observer.disconnect();
-  }, []);
+  const { connected, offline } = useMemo(() => buildGauge(storeIds), [storeIds]);
 
   return (
-    <Card ref={widgetRef} className="widget-card widget-cloud">
-      <div className="widget-title">
-        <span>Cloud Connected</span>
-        <img src={cloudConnectLogo} alt="" className="widget-title-icon-img" />
-      </div>
-      <div className="cloud-body">
-        <div className="cloud-gauge">
-          <div className="cloud-gauge-value">
-            <span className="cloud-gauge-number">{connectedCount}</span>
-            <span className="cloud-gauge-label">Connected</span>
-          </div>
-
-          <div className="cloud-pie-wrapper">
-            <PieChart
-              series={[
-                {
-                  data: gaugeSlices,
-                  innerRadius: innerRadius,
-                  outerRadius: outerRadius,
-                  cornerRadius: 3,
-                },
-              ]}
-              slotProps={{
-                legend: {
-                  sx: {
-                    color: "var(--text-primary)",
-                  },
-                },
-              }}
-              width={chartSize}
-              height={chartSize}
-            />
-          </div>
-        </div>
-      </div>
-    </Card>
+    <DonutWidget
+      title="Cloud Connected"
+      icon={<Cloud />}
+      centerValue={connected}
+      centerLabel="Connected"
+      segments={[
+        { name: "Connected", value: connected, color: "orange" },
+        { name: "No connection", value: offline, color: "gray" },
+      ]}
+    />
   );
 }
