@@ -215,7 +215,9 @@ export default function BusinessManagerPage({
       {
         id: "stores-online",
         label: "Stores Online",
-        element: <StoresOnlineWidget storeIds={scopeStoreIds} />,
+        element: (
+          <StoresOnlineWidget storeIds={scopeStoreIds} locations={scopeLocations} />
+        ),
       },
       {
         id: "temp-alarms",

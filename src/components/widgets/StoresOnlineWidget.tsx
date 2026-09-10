@@ -1,44 +1,55 @@
 import { useMemo } from "react";
 import { Store } from "lucide-react";
-import { Widget, RingView } from "./Widget";
-import { seededInt } from "../../lib/seededRandom";
+import { Widget, RingView, StoreList } from "./Widget";
+import { seededInt, storeName } from "../../lib/seededRandom";
 
 type StoresOnlineWidgetProps = {
   storeIds?: string[];
+  locations?: string[];
 };
 
 // Almost every store reads online; each store independently has a small
 // seeded chance of reading offline.
-const buildStoresOnline = (storeIds: string[]) => {
-  const total = storeIds.length || 1;
-  const offline = storeIds.reduce(
-    (sum, id) => sum + (seededInt(`${id}:store-online-roll`, 0, 99) < 6 ? 1 : 0),
-    0,
-  );
-  return { total, online: total - offline, offline };
-};
+const isOnline = (id: string) => seededInt(`${id}:store-online-roll`, 0, 99) >= 6;
 
 export default function StoresOnlineWidget({
   storeIds = ["root"],
+  locations = [],
 }: StoresOnlineWidgetProps) {
-  const { online, offline } = useMemo(
-    () => buildStoresOnline(storeIds),
-    [storeIds],
+  const perStore = useMemo(
+    () =>
+      storeIds
+        .map((id) => ({ id, name: storeName(id, locations), online: isOnline(id) }))
+        // offline first so problems surface at the top
+        .sort((a, b) => Number(a.online) - Number(b.online)),
+    [storeIds, locations],
   );
+  const online = perStore.filter((s) => s.online).length;
+  const offline = perStore.length - online;
 
   return (
     <Widget title="Stores Online" icon={<Store />}>
-      {(expanded) => (
-        <RingView
-          expanded={expanded}
-          centerValue={online}
-          centerLabel="Online"
-          segments={[
-            { name: "Online", value: online, color: "emerald" },
-            { name: "Offline", value: offline, color: "gray" },
-          ]}
-        />
-      )}
+      {(expanded) =>
+        expanded ? (
+          <StoreList
+            rows={perStore.map((s) => ({
+              key: s.id,
+              name: s.name,
+              value: s.online ? "Online" : "Offline",
+              tone: s.online ? "success" : "danger",
+            }))}
+          />
+        ) : (
+          <RingView
+            centerValue={online}
+            centerLabel="Online"
+            segments={[
+              { name: "Online", value: online, color: "emerald" },
+              { name: "Offline", value: offline, color: "gray" },
+            ]}
+          />
+        )
+      }
     </Widget>
   );
 }
