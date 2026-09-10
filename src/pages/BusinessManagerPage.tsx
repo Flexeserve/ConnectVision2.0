@@ -30,6 +30,7 @@ import {
   GRID_MARGIN,
   WIDGET_SIZE_SMALL,
   WIDGET_SIZE_LARGE,
+  WIDGET_BOUNDS,
 } from "../lib/widgetSizing";
 import { WidgetSizeContext, type WidgetSize } from "../components/widgets/WidgetSizeContext";
 
@@ -38,19 +39,25 @@ import { WidgetSizeContext, type WidgetSize } from "../components/widgets/Widget
 // (matching the persisted cookie/localStorage format from before, so
 // existing saved layouts keep working). Mapped to/from GridStack's own
 // `id`-keyed shape only at the two boundary points (building `children` for
-// <GridStack>, and reading nodes back from its onChange). No min/max/free
-// resize fields any more — every widget's w/h is always exactly
-// WIDGET_SIZE_SMALL or WIDGET_SIZE_LARGE, switched via a toggle button
-// rather than a drag handle (see WidgetSlot below), so there's no range to
-// express.
+// <GridStack>, and reading nodes back from its onChange). Widgets free-resize
+// again between minW/minH and maxW/maxH; the toggle button (see WidgetSlot)
+// stays as a shortcut that snaps to the SMALL / LARGE presets.
 type LayoutItem = {
   i: string;
   x: number;
   y: number;
   w: number;
   h: number;
+  minW?: number;
+  minH?: number;
+  maxW?: number;
+  maxH?: number;
 };
 
+// A widget renders its compact view or its detail view based on aspect: a
+// square-ish tile reads as "small", a taller-than-wide one as "large". The
+// SMALL/LARGE presets sit at the two natural ends of that; free resizing in
+// between just moves along the same axis.
 const widgetSizeOf = (item: Pick<LayoutItem, "w" | "h">): WidgetSize =>
   item.h > item.w ? "large" : "small";
 
@@ -453,27 +460,25 @@ export default function BusinessManagerPage({
 
   const DEFAULT_LAYOUT: LayoutItem[] = React.useMemo(
     () => [
-      // Two fixed sizes only: SMALL (w:10 h:10, a square tile — half the
-      // 20-column grid wide) and LARGE (w:10 h:20, twice as tall as it is
-      // wide — same width as SMALL, so toggling a widget's size never
-      // reflows its neighbors horizontally). Packed two per row (x:0/x:10)
-      // like a masonry layout — each column's own running y position, not a
-      // fixed row grid, so a LARGE widget in one column doesn't force gaps
-      // in the other. Every widget defaults to SMALL except Fan Life, whose
-      // progress-bar list needs the extra room; everything else is one
-      // toggle-button click away from LARGE.
-      { i: "fan-life", x: 0, y: 0, ...WIDGET_SIZE_LARGE },
-      { i: "door-opened", x: 0, y: 20, ...WIDGET_SIZE_SMALL },
-      { i: "element", x: 0, y: 30, ...WIDGET_SIZE_SMALL },
-      { i: "alarm-summary", x: 0, y: 40, ...WIDGET_SIZE_SMALL },
-      { i: "energy-widget", x: 0, y: 50, ...WIDGET_SIZE_SMALL },
-      { i: "stores-online", x: 0, y: 60, ...WIDGET_SIZE_SMALL },
-      { i: "offline-devices", x: 10, y: 0, ...WIDGET_SIZE_SMALL },
-      { i: "alarms", x: 10, y: 10, ...WIDGET_SIZE_SMALL },
-      { i: "energy", x: 10, y: 20, ...WIDGET_SIZE_SMALL },
-      { i: "cloud", x: 10, y: 30, ...WIDGET_SIZE_SMALL },
-      { i: "energy-cost", x: 10, y: 40, ...WIDGET_SIZE_SMALL },
-      { i: "temp-alarms", x: 10, y: 50, ...WIDGET_SIZE_SMALL },
+      // Starting layout: SMALL (w:10 h:10, a square tile — half the
+      // 20-column grid wide) everywhere except Fan Life, which starts LARGE
+      // (w:10 h:20) for its progress-bar list. Packed two per column
+      // (x:0/x:10), each column with its own running y so a taller widget in
+      // one column doesn't force a gap in the other. Every widget then
+      // free-resizes between WIDGET_BOUNDS, or snaps to a preset via the
+      // toggle button.
+      { i: "fan-life", x: 0, y: 0, ...WIDGET_SIZE_LARGE, ...WIDGET_BOUNDS },
+      { i: "door-opened", x: 0, y: 20, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "element", x: 0, y: 30, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "alarm-summary", x: 0, y: 40, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "energy-widget", x: 0, y: 50, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "stores-online", x: 0, y: 60, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "offline-devices", x: 10, y: 0, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "alarms", x: 10, y: 10, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "energy", x: 10, y: 20, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "cloud", x: 10, y: 30, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "energy-cost", x: 10, y: 40, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      { i: "temp-alarms", x: 10, y: 50, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
     ],
     [],
   );
@@ -493,15 +498,16 @@ export default function BusinessManagerPage({
         const incoming = persistedMap.get(base.i);
         if (!incoming) return base;
 
-        // Snap to whichever of the two valid sizes the persisted height is
-        // closer to — defensive against any stale/malformed saved value,
-        // since there's no longer a continuous range to clamp into.
-        const incomingHeight = typeof incoming.h === "number" ? incoming.h : base.h;
-        const { w: width, h: height } =
-          Math.abs(incomingHeight - WIDGET_SIZE_LARGE.h) <
-          Math.abs(incomingHeight - WIDGET_SIZE_SMALL.h)
-            ? WIDGET_SIZE_LARGE
-            : WIDGET_SIZE_SMALL;
+        // Clamp the persisted size into this widget's bounds (defensive
+        // against stale/malformed saved values).
+        const width =
+          clampNumber(incoming.w, base.minW ?? 1, base.maxW ?? GRID_COLS) ?? base.w;
+        const height =
+          clampNumber(
+            incoming.h,
+            base.minH ?? 1,
+            base.maxH ?? Number.MAX_SAFE_INTEGER,
+          ) ?? base.h;
         const maxX = Math.max(GRID_COLS - width, 0);
         const x = clampNumber(incoming.x, 0, maxX) ?? base.x;
         const y = clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;
@@ -632,6 +638,11 @@ export default function BusinessManagerPage({
       float: false,
       staticGrid: !isEditing,
       handle: ".widget-drag-handle",
+      // Resize handles are always visible while editing (otherwise gridstack
+      // only reveals them on hover); the toggle button stays as a shortcut
+      // that snaps to the SMALL / LARGE presets.
+      alwaysShowResizeHandle: isEditing,
+      resizable: { handles: "se" },
       children: visibleWidgetLayout.map(
         (item): GridStackWidget => ({
           id: item.i,
@@ -639,10 +650,10 @@ export default function BusinessManagerPage({
           y: item.y,
           w: item.w,
           h: item.h,
-          // Size is fixed to one of two presets, switched only via the
-          // toggle button — not a drag handle — so GridStack's own resize
-          // interaction is disabled entirely.
-          noResize: true,
+          minW: item.minW,
+          maxW: item.maxW,
+          minH: item.minH,
+          maxH: item.maxH,
           component: "WidgetSlot",
           props: {
             widgetId: item.i,

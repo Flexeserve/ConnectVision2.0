@@ -22,10 +22,20 @@ export const GRID_COLS = 20;
 export const GRID_ROW_HEIGHT = 36;
 export const GRID_MARGIN: [number, number] = [8, 8];
 
-// --- Widget sizes (fixed, not free-resize) ----------------------------------
-// Every widget is either SMALL (a square tile) or LARGE (a rectangle twice
-// as tall as it is wide). Both share the same width (half the 20-column
-// grid) so toggling a widget's size never reflows its neighbors
-// horizontally, and two LARGE widgets still fit side by side.
+// --- Widget sizes ---------------------------------------------------------
+// Widgets free-resize between the bounds below. SMALL (a square tile) and
+// LARGE (twice as tall as wide) are the two presets the toggle button snaps
+// to — both half the 20-column grid wide, so two LARGE widgets fit side by
+// side.
 export const WIDGET_SIZE_SMALL = { w: 10, h: 10 } as const;
 export const WIDGET_SIZE_LARGE = { w: 10, h: 20 } as const;
+
+// Resize bounds applied to every widget (uniform — each widget already
+// adapts its own content responsively via the small/large aspect heuristic
+// and Tremor's responsive charts).
+export const WIDGET_BOUNDS = {
+  minW: 6,
+  minH: 6,
+  maxW: GRID_COLS,
+  maxH: 28,
+} as const;
