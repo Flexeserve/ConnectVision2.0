@@ -48,27 +48,27 @@ export function Widget({
       } ${className}`}
     >
       <div className="flex shrink-0 items-center justify-between gap-2 px-3.5 pb-2 pt-3">
-        <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
-          {title}
-        </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex min-w-0 items-center gap-1.5">
           {icon ? (
-            <span className="text-ink-subtle [&_svg]:size-4">{icon}</span>
+            <span className="shrink-0 text-ink-subtle [&_svg]:size-4">{icon}</span>
           ) : null}
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label={expanded ? "Collapse widget" : "Expand widget"}
-            aria-pressed={expanded}
-            className="-mr-1 rounded-md p-1 text-ink-subtle transition-colors hover:bg-surface-hover hover:text-ink"
-          >
-            {expanded ? (
-              <Minimize2 className="size-3.5" />
-            ) : (
-              <Maximize2 className="size-3.5" />
-            )}
-          </button>
+          <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
+            {title}
+          </span>
         </div>
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={expanded ? "Collapse widget" : "Expand widget"}
+          aria-pressed={expanded}
+          className="-mr-1 shrink-0 rounded-md p-1 text-ink-subtle transition-colors hover:bg-surface-hover hover:text-ink"
+        >
+          {expanded ? (
+            <Minimize2 className="size-3.5" />
+          ) : (
+            <Maximize2 className="size-3.5" />
+          )}
+        </button>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col px-3.5 pb-3.5">
@@ -191,6 +191,41 @@ export function RingView({
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+type ListTone = "default" | "success" | "danger" | "warning";
+const listToneClass: Record<ListTone, string> = {
+  default: "text-ink",
+  success: "text-success",
+  danger: "text-danger",
+  warning: "text-warning",
+};
+
+// A scrollable per-store breakdown for a widget's expanded view.
+export function StoreList({
+  rows,
+}: {
+  rows: { key: string; name: string; value: ReactNode; tone?: ListTone }[];
+}) {
+  return (
+    <div className="min-h-0 flex-1 divide-y divide-line overflow-y-auto pr-1">
+      {rows.map((r) => (
+        <div
+          key={r.key}
+          className="flex items-center justify-between gap-3 py-1.5 text-sm"
+        >
+          <span className="truncate text-ink-muted">{r.name}</span>
+          <span
+            className={`shrink-0 font-semibold tabular-nums ${
+              listToneClass[r.tone ?? "default"]
+            }`}
+          >
+            {r.value}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

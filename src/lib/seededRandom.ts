@@ -33,3 +33,10 @@ export const seededFloat = (
 
 export const seededPick = <T,>(rand: () => number, items: T[]): T =>
   items[Math.floor(rand() * items.length) % items.length];
+
+// Stable, seeded display name for a store id. Ids at region/root scope are
+// synthetic, so each one picks a name from the current scope's pool.
+export const storeName = (id: string, pool: string[]): string =>
+  pool.length
+    ? seededPick(createSeededRandom(`${id}:store-name`), pool)
+    : id;

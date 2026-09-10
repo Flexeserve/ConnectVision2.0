@@ -8,6 +8,17 @@
   background: rgb(var(--surface));
 }
 
+/* An expanded widget takes 2x2 in the grid. The <Widget> sets
+   data-expanded on its own root; the sortable wrapper is the actual grid
+   item, so mirror the span onto it here (>= sm, matching the Tailwind
+   breakpoint the widget itself uses). */
+@media (min-width: 640px) {
+  .sortable-widget:has(> [data-expanded="true"]) {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+  }
+}
+
 /* --- dev-only radial menu (rendered only when SHOW_DEV_MENU) --- */
 .dev-radial-menu {
   position: fixed;

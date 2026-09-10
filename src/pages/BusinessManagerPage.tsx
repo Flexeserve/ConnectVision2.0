@@ -22,15 +22,73 @@ import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
 import TypewriterText from "../components/TypewriterText";
 import { WidgetGrid } from "../components/widgets/Widget";
+import { useCityName } from "../hooks/useCityName";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
+import { GripVertical } from "lucide-react";
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const BEACON_OFFSETS_KEY = "cv_beacon_offsets";
+const WIDGET_ORDER_KEY = "cv_widget_order";
 const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
 const BEACONS_VISIBILITY_EVENT = "cv_beacons_visibility_updated";
 const HEADER_BRAND_KEY = "cv_header_brand";
 const HEADER_BRAND_EVENT = "cv_header_brand_updated";
 const HIDDEN_WIDGETS_KEY = "cv_hidden_widgets";
 const SHOW_DEV_MENU = false;
+
+// One grid cell — sortable (drag to reorder, only while editing). Mirrors
+// the inner <Widget>'s expanded 2x2 span onto the grid item via a :has()
+// rule in BusinessManagerPage.css.
+function SortableWidget({
+  id,
+  isEditing,
+  children,
+}: {
+  id: string;
+  isEditing: boolean;
+  children: React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id, disabled: !isEditing });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 20 : undefined,
+      }}
+      className={`sortable-widget relative ${isDragging ? "opacity-70" : ""}`}
+    >
+      {isEditing && (
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          aria-label="Drag to reorder"
+          className="absolute left-2 top-2 z-10 flex size-6 cursor-grab touch-none items-center justify-center rounded-md bg-ink/70 text-surface active:cursor-grabbing"
+        >
+          <GripVertical className="size-3.5" />
+        </button>
+      )}
+      {children}
+    </div>
+  );
+}
 
 export type BURow = {
   id: string;
@@ -88,6 +146,7 @@ export default function BusinessManagerPage({
 }) {
   const buRows = rows ?? DEFAULT_BU_ROWS;
   const scopeSeed = levelKey ?? heading ?? "root";
+  const city = useCityName("London");
   // The stores that make up the current scope. Metrics below are computed
   // per-store and summed/averaged upward, so a region shows the cumulative
   // of its stores while a single-store scope shows that store's own reading.
@@ -117,7 +176,9 @@ export default function BusinessManagerPage({
       {
         id: "energy",
         label: "Schedule Compliance",
-        element: <EnergyUsageWidget storeIds={scopeStoreIds} />,
+        element: (
+          <EnergyUsageWidget storeIds={scopeStoreIds} locations={scopeLocations} />
+        ),
       },
       {
         id: "energy-cost",
@@ -132,7 +193,13 @@ export default function BusinessManagerPage({
       {
         id: "alarms",
         label: "Active Alarms",
-        element: <AlarmsWidget value={totalActiveAlarms} />,
+        element: (
+          <AlarmsWidget
+            storeIds={scopeStoreIds}
+            locations={scopeLocations}
+            value={totalActiveAlarms}
+          />
+        ),
       },
       {
         id: "offline-devices",
@@ -154,7 +221,12 @@ export default function BusinessManagerPage({
       {
         id: "temp-alarms",
         label: "Temperature Alarms",
-        element: <TemperatureAlarmsWidget storeIds={scopeStoreIds} />,
+        element: (
+          <TemperatureAlarmsWidget
+            storeIds={scopeStoreIds}
+            locations={scopeLocations}
+          />
+        ),
       },
       {
         id: "alarm-summary",
@@ -307,12 +379,60 @@ export default function BusinessManagerPage({
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
-  // Widgets render in source order into a CSS grid; each <Widget> owns its
-  // own default/expanded state and, when expanded, takes 2x2 in the grid.
-  // The only layout state left is which widgets are hidden.
-  const visibleWidgets = React.useMemo(
-    () => widgetComponents.filter((w) => !hiddenWidgetIds.includes(w.id)),
-    [widgetComponents, hiddenWidgetIds],
+  // Widget order — persisted; drag-and-drop (edit mode) reorders it. New
+  // widgets added to the registry that aren't in the saved order just get
+  // appended in registry order.
+  const [widgetOrder, setWidgetOrder] = React.useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(WIDGET_ORDER_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  });
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(WIDGET_ORDER_KEY, JSON.stringify(widgetOrder));
+  }, [widgetOrder]);
+
+  const orderedWidgets = React.useMemo(() => {
+    const registryIds = widgetComponents.map((w) => w.id);
+    const rank = new Map(widgetOrder.map((id, i) => [id, i]));
+    return [...widgetComponents]
+      .sort(
+        (a, b) =>
+          (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity) ||
+          registryIds.indexOf(a.id) - registryIds.indexOf(b.id),
+      )
+      .filter((w) => !hiddenWidgetIds.includes(w.id));
+  }, [widgetComponents, widgetOrder, hiddenWidgetIds]);
+
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
+
+  const handleWidgetDragEnd = React.useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      setWidgetOrder((prev) => {
+        const base = prev.length
+          ? prev
+          : widgetComponents.map((w) => w.id);
+        const withMissing = [
+          ...base,
+          ...widgetComponents.map((w) => w.id).filter((id) => !base.includes(id)),
+        ];
+        const from = withMissing.indexOf(String(active.id));
+        const to = withMissing.indexOf(String(over.id));
+        if (from < 0 || to < 0) return prev;
+        return arrayMove(withMissing, from, to);
+      });
+    },
+    [widgetComponents],
   );
 
   const handleBeaconOffsetChange = React.useCallback(
@@ -334,12 +454,12 @@ export default function BusinessManagerPage({
           className="flex flex-1 flex-wrap bg-canvas px-4 text-ink sm:px-8 lg:px-12 max-lg:flex-col"
           style={{ minHeight: "calc(100vh - 64px)" }}
         >
-          <div className="w-full basis-full px-6 pt-4 text-left text-4xl font-extrabold text-accent sm:px-12 sm:text-[45px]">
-            <TypewriterText text="Good Morning, London" />
+          <div className="flex min-h-[150px] w-full basis-full items-center justify-left px-6 text-center text-5xl font-extrabold text-accent sm:px-12 sm:text-6xl">
+            <TypewriterText text={`Good Morning, ${city}`} />
           </div>
 
           <div className="flex min-w-0 basis-[30%] flex-col items-center max-lg:basis-auto lg:animate-shrink-left-panel">
-            <div className="my-4 flex w-full items-center px-6 sm:px-12">
+            <div className="my-4 flex w-full items-center justify-center px-6 sm:px-12">
               <div className="relative flex w-full max-w-[500px] sm:w-[460px]">
                 <Beacon
                   label="Search tour"
@@ -527,11 +647,24 @@ export default function BusinessManagerPage({
                 </div>
               )}
               <div className="flex-1 pb-12 pr-3 pt-2">
-                <WidgetGrid>
-                  {visibleWidgets.map((w) =>
-                    React.cloneElement(w.element, { key: w.id }),
-                  )}
-                </WidgetGrid>
+                <DndContext
+                  sensors={dndSensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleWidgetDragEnd}
+                >
+                  <SortableContext
+                    items={orderedWidgets.map((w) => w.id)}
+                    strategy={rectSortingStrategy}
+                  >
+                    <WidgetGrid>
+                      {orderedWidgets.map((w) => (
+                        <SortableWidget key={w.id} id={w.id} isEditing={isEditing}>
+                          {w.element}
+                        </SortableWidget>
+                      ))}
+                    </WidgetGrid>
+                  </SortableContext>
+                </DndContext>
               </div>
             </div>
           </div>
