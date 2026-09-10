@@ -58,7 +58,7 @@ export default function FanLifeWidget({
         count === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-1 text-center">
             <span className="text-5xl font-bold leading-none text-success">0</span>
-            <span className="text-xs text-ink-muted">Fans nearing end of life</span>
+            <span className="text-xs ">Fans nearing end of life</span>
           </div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">

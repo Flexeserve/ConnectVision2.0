@@ -26,7 +26,7 @@ import "gridstack/dist/gridstack.css";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 import {
   GRID_COLS,
-  GRID_ROW_HEIGHT,
+  GRID_ROW_HEIGHT_ESTIMATE,
   GRID_MARGIN,
   WIDGET_SIZE_SMALL,
   WIDGET_SIZE_LARGE,
@@ -616,7 +616,8 @@ export default function BusinessManagerPage({
       return Math.max(max, bottom);
     }, 0);
     const gridHeight =
-      maxRow * GRID_ROW_HEIGHT + Math.max(0, maxRow - 1) * GRID_MARGIN[1];
+      maxRow * GRID_ROW_HEIGHT_ESTIMATE +
+      Math.max(0, maxRow - 1) * GRID_MARGIN[1];
     // Small headroom so a widget can be dragged past the last row while
     // editing — not a multiple of the whole grid's height.
     return Math.max(100, Math.ceil(gridHeight * 0.08) + 40);
@@ -633,7 +634,9 @@ export default function BusinessManagerPage({
   const gridStackOptions: GridStackOptions = React.useMemo(
     () => ({
       column: GRID_COLS,
-      cellHeight: GRID_ROW_HEIGHT,
+      // "auto" = gridstack sizes each row to the live column width, so cells
+      // are square and grid-unit ratios (LARGE = 10x20 = 1:2) render true.
+      cellHeight: "auto",
       margin: GRID_MARGIN[0],
       float: false,
       staticGrid: !isEditing,
