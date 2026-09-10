@@ -8,8 +8,7 @@ import {
   TableHeaderCell,
   TableRow,
 } from "@tremor/react";
-import { WidgetShell, WidgetMetric } from "./WidgetShell";
-import { useWidgetSize } from "./WidgetSizeContext";
+import { Widget, Metric } from "./Widget";
 import { createSeededRandom, seededPick } from "../../lib/seededRandom";
 
 type AlarmRow = {
@@ -67,76 +66,89 @@ export default function AlarmSummaryWidget({
   seed = "root",
   locations = [],
 }: AlarmSummaryWidgetProps) {
-  const size = useWidgetSize();
   const rows = useMemo(() => buildRows(seed, locations), [seed, locations]);
   const [page, setPage] = useState(0);
   const totalPages = Math.max(Math.ceil(rows.length / PAGE_SIZE), 1);
   const activeCount = rows.filter((r) => r.status === "Active").length;
   const pageRows = rows.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
-  if (size !== "large") {
-    return (
-      <WidgetShell title="Alarm Summary" icon={<TableIcon />}>
-        <WidgetMetric
-          value={activeCount}
-          tone={activeCount > 0 ? "danger" : "success"}
-        />
-        <div className="text-center text-xs text-ink-muted">Active alarms</div>
-      </WidgetShell>
-    );
-  }
-
   return (
-    <WidgetShell title="Alarm Summary" icon={<TableIcon />}>
-      <div className="min-h-0 flex-1 overflow-auto">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell className="!py-1.5 !text-[11px]">Location</TableHeaderCell>
-              <TableHeaderCell className="!py-1.5 !text-[11px]">Alarm</TableHeaderCell>
-              <TableHeaderCell className="!py-1.5 !text-[11px]">Status</TableHeaderCell>
-              <TableHeaderCell className="!py-1.5 !text-[11px]">Time</TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {pageRows.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell className="!py-1.5 !text-xs">{row.location}</TableCell>
-                <TableCell className="!py-1.5 !text-xs">{row.alarm}</TableCell>
-                <TableCell className="!py-1.5">
-                  <span
-                    className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLES[row.status]}`}
-                  >
-                    {row.status}
-                  </span>
-                </TableCell>
-                <TableCell className="!py-1.5 !text-xs tabular-nums">{row.time}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex shrink-0 items-center justify-between pt-2 text-xs text-ink-muted">
-        <button
-          type="button"
-          onClick={() => setPage((p) => Math.max(p - 1, 0))}
-          disabled={page === 0}
-          className="rounded-md border border-line px-2.5 py-1 font-medium disabled:opacity-40"
-        >
-          Prev
-        </button>
-        <span className="font-medium">
-          Page {page + 1} of {totalPages}
-        </span>
-        <button
-          type="button"
-          onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
-          disabled={page >= totalPages - 1}
-          className="rounded-md border border-line px-2.5 py-1 font-medium disabled:opacity-40"
-        >
-          Next
-        </button>
-      </div>
-    </WidgetShell>
+    <Widget title="Alarm Summary" icon={<TableIcon />}>
+      {(expanded) =>
+        !expanded ? (
+          <Metric
+            value={activeCount}
+            tone={activeCount > 0 ? "danger" : "success"}
+            caption="Active alarms"
+          />
+        ) : (
+          <>
+            <div className="min-h-0 flex-1 overflow-auto">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell className="!py-1.5 !text-[11px]">
+                      Location
+                    </TableHeaderCell>
+                    <TableHeaderCell className="!py-1.5 !text-[11px]">
+                      Alarm
+                    </TableHeaderCell>
+                    <TableHeaderCell className="!py-1.5 !text-[11px]">
+                      Status
+                    </TableHeaderCell>
+                    <TableHeaderCell className="!py-1.5 !text-[11px]">
+                      Time
+                    </TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {pageRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="!py-1.5 !text-xs">
+                        {row.location}
+                      </TableCell>
+                      <TableCell className="!py-1.5 !text-xs">
+                        {row.alarm}
+                      </TableCell>
+                      <TableCell className="!py-1.5">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLES[row.status]}`}
+                        >
+                          {row.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="!py-1.5 !text-xs tabular-nums">
+                        {row.time}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex shrink-0 items-center justify-between pt-2 text-xs text-ink-muted">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(p - 1, 0))}
+                disabled={page === 0}
+                className="rounded-md border border-line px-2.5 py-1 font-medium disabled:opacity-40"
+              >
+                Prev
+              </button>
+              <span className="font-medium">
+                Page {page + 1} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
+                disabled={page >= totalPages - 1}
+                className="rounded-md border border-line px-2.5 py-1 font-medium disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )
+      }
+    </Widget>
   );
 }

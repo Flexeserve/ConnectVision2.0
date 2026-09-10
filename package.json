@@ -24,7 +24,6 @@
     "driver.js": "^1.4.0",
     "framer-motion": "^13.2.0",
     "gridlock": "^1.0.3",
-    "gridstack": "^13.2.0",
     "gsap": "^3.14.2",
     "lucide-react": "^0.562.0",
     "ogl": "^1.0.11",

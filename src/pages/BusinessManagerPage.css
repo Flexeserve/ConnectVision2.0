@@ -1,34 +1,7 @@
 /* BusinessManagerPage residual styles.
    The page shell is Tailwind utilities on the JSX now — what's left here is
-   what utilities can't express: the gridstack target class, a :has()
-   selector, and the dev-only radial menu (SHOW_DEV_MENU). */
-
-.widgets-grid {
-  width: 100%;
-  min-height: 240px;
-  padding-bottom: 40px;
-}
-
-/* Resize handle (gridstack adds .ui-resizable-se to each item while
-   editing). Give it a visible on-brand grip instead of the faint default. */
-.widgets-grid--editing .grid-stack-item > .ui-resizable-se {
-  right: 2px;
-  bottom: 2px;
-  width: 16px;
-  height: 16px;
-  z-index: 3;
-  background-image: none;
-  border-right: 3px solid rgb(var(--accent));
-  border-bottom: 3px solid rgb(var(--accent));
-  border-bottom-right-radius: 6px;
-  transform: none;
-  opacity: 0.9;
-  cursor: se-resize;
-}
-
-.widgets-grid--editing .grid-stack-item > .ui-resizable-se:hover {
-  opacity: 1;
-}
+   what utilities can't express: a :has() selector and the dev-only radial
+   menu (SHOW_DEV_MENU). */
 
 /* Don't trigger the row hover highlight when hovering a beacon control. */
 .bu-row-content:has(.beacon-button:hover) {

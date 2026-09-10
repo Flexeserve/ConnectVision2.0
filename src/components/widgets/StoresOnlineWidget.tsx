@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Store } from "lucide-react";
-import { DonutWidget } from "./WidgetShell";
+import { Widget, RingView } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
 
 type StoresOnlineWidgetProps = {
@@ -8,8 +8,7 @@ type StoresOnlineWidgetProps = {
 };
 
 // Almost every store reads online; each store independently has a small
-// seeded chance of reading offline, so a region/root scope's ratio reflects
-// how many stores it covers, while a single-store scope reads all-or-nothing.
+// seeded chance of reading offline.
 const buildStoresOnline = (storeIds: string[]) => {
   const total = storeIds.length || 1;
   const offline = storeIds.reduce(
@@ -28,15 +27,18 @@ export default function StoresOnlineWidget({
   );
 
   return (
-    <DonutWidget
-      title="Stores Online"
-      icon={<Store />}
-      centerValue={online}
-      centerLabel="Online"
-      segments={[
-        { name: "Online", value: online, color: "emerald" },
-        { name: "Offline", value: offline, color: "gray" },
-      ]}
-    />
+    <Widget title="Stores Online" icon={<Store />}>
+      {(expanded) => (
+        <RingView
+          expanded={expanded}
+          centerValue={online}
+          centerLabel="Online"
+          segments={[
+            { name: "Online", value: online, color: "emerald" },
+            { name: "Offline", value: offline, color: "gray" },
+          ]}
+        />
+      )}
+    </Widget>
   );
 }

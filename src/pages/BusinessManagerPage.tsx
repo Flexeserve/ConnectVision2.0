@@ -21,99 +21,9 @@ import EnergyWidget from "../components/widgets/EnergyWidget";
 import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
 import TypewriterText from "../components/TypewriterText";
-import { GridStack, type GridStackOptions, type GridStackWidget } from "gridstack/dist/react";
-import "gridstack/dist/gridstack.css";
+import { WidgetGrid } from "../components/widgets/Widget";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
-import {
-  GRID_COLS,
-  GRID_MARGIN,
-  WIDGET_SIZE_SMALL,
-  WIDGET_SIZE_LARGE,
-  WIDGET_BOUNDS,
-} from "../lib/widgetSizing";
-import { WidgetSizeContext, type WidgetSize } from "../components/widgets/WidgetSizeContext";
 
-// Own layout-item shape — just position + size per widget, keyed by `i`
-// (matching the persisted localStorage format). Resize bounds aren't stored
-// per item: they're the same WIDGET_BOUNDS for every widget, applied where
-// they're actually used (clamping on load, and the GridStack children).
-type LayoutItem = {
-  i: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-};
-
-// A widget renders its compact view or its detail view based on aspect: a
-// square-ish tile reads as "small", a taller-than-wide one as "large". The
-// SMALL/LARGE presets sit at the two natural ends of that; free resizing in
-// between just moves along the same axis.
-const widgetSizeOf = (item: Pick<LayoutItem, "w" | "h">): WidgetSize =>
-  item.h > item.w ? "large" : "small";
-
-// One React Context supplies the current widget elements (which carry
-// scope-specific props like storeIds that change as the user drills in) to
-// a single stable WidgetSlot component, which is what GridStack's
-// "component mode" actually instantiates per grid item. This indirection
-// exists because GridStack's `components` map needs a fixed component type
-// per widget kind, not a pre-built element with its own already-bound props.
-const WidgetElementsContext = React.createContext<Map<string, React.ReactElement> | null>(
-  null,
-);
-
-// Typed as Record<string, unknown> (rather than the actual props shape)
-// because GridStack's ComponentMap requires every registered component to
-// accept arbitrary widget props.
-function WidgetSlot(props: Record<string, unknown>) {
-  const widgetId = typeof props.widgetId === "string" ? props.widgetId : undefined;
-  const isEditing = props.isEditing === true;
-  const size: WidgetSize = props.size === "large" ? "large" : "small";
-  const onToggleSize =
-    typeof props.onToggleSize === "function"
-      ? (props.onToggleSize as (id: string) => void)
-      : undefined;
-  const elements = React.useContext(WidgetElementsContext);
-  const element = widgetId ? elements?.get(widgetId) : undefined;
-  if (!element || !widgetId) return null;
-  return (
-    <div
-      className={`relative flex h-full flex-col overflow-hidden rounded-widget border bg-surface shadow-widget dark:shadow-widget-dark ${
-        isEditing ? "cursor-move border-dashed border-accent" : "border-line"
-      }`}
-    >
-      {isEditing && (
-        <>
-          {/* keep the class name — gridstack's `handle` selector targets it */}
-          <span className="widget-drag-handle absolute right-2 top-2 z-10 flex size-5 cursor-move items-center justify-center rounded bg-accent/90 text-xs font-bold text-white">
-            ≡
-          </span>
-          <button
-            type="button"
-            onClick={() => onToggleSize?.(widgetId)}
-            aria-label={size === "large" ? "Shrink widget" : "Expand widget"}
-            title={size === "large" ? "Shrink" : "Expand"}
-            className="absolute left-2 top-2 z-10 flex size-5 items-center justify-center rounded bg-info/90 text-xs text-white hover:bg-info"
-          >
-            {size === "large" ? "⤡" : "⤢"}
-          </button>
-        </>
-      )}
-      <WidgetSizeContext.Provider value={size}>{element}</WidgetSizeContext.Provider>
-    </div>
-  );
-}
-
-const GRID_COMPONENTS = { WidgetSlot };
-
-const LAYOUT_COOKIE_NAME = "cv_widget_layout";
-const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
-// Bump this to force existing saved layouts to reset to DEFAULT_LAYOUT
-// (used when the default layout or size model changes meaningfully).
-const LAYOUT_VERSION = "v4";
-const LAYOUT_VERSION_KEY = "cv_widget_layout_version";
-const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
-const LAYOUT_SYNC_EVENT = "cv_widget_layout_updated";
 const BEACON_OFFSETS_KEY = "cv_beacon_offsets";
 const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
 const BEACONS_VISIBILITY_EVENT = "cv_beacons_visibility_updated";
@@ -121,58 +31,6 @@ const HEADER_BRAND_KEY = "cv_header_brand";
 const HEADER_BRAND_EVENT = "cv_header_brand_updated";
 const HIDDEN_WIDGETS_KEY = "cv_hidden_widgets";
 const SHOW_DEV_MENU = false;
-
-const clampNumber = (value: number | undefined, min: number, max: number) => {
-  if (typeof value !== "number" || Number.isNaN(value)) return undefined;
-  return Math.min(Math.max(value, min), max);
-};
-
-const loadLayoutCookie = (): LayoutItem[] | null => {
-  if (typeof document === "undefined") return null;
-  if (typeof window !== "undefined") {
-    const storedVersion = window.localStorage.getItem(LAYOUT_VERSION_KEY);
-    if (storedVersion === LAYOUT_VERSION) {
-      const storedLayout = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
-      if (storedLayout) {
-        try {
-          const parsed = JSON.parse(storedLayout);
-          if (Array.isArray(parsed)) return parsed as LayoutItem[];
-        } catch {
-          // Ignore malformed localStorage
-        }
-      }
-    } else {
-      window.localStorage.removeItem(LAYOUT_STORAGE_KEY);
-    }
-  }
-  const cookies = document.cookie?.split(";").map((c) => c.trim()) ?? [];
-  const target = cookies.find((c) => c.startsWith(`${LAYOUT_COOKIE_NAME}=`));
-  if (!target) return null;
-  try {
-    const value = target.substring(LAYOUT_COOKIE_NAME.length + 1);
-    const parsed = JSON.parse(decodeURIComponent(value));
-    if (Array.isArray(parsed)) {
-      return parsed as LayoutItem[];
-    }
-  } catch {
-    // Ignore malformed cookies
-  }
-  return null;
-};
-
-const saveLayoutCookie = (layout: LayoutItem[]) => {
-  if (typeof document === "undefined") return;
-  try {
-    const encoded = encodeURIComponent(JSON.stringify(layout));
-    document.cookie = `${LAYOUT_COOKIE_NAME}=${encoded}; max-age=${LAYOUT_COOKIE_MAX_AGE}; path=/; SameSite=Lax`;
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(LAYOUT_VERSION_KEY, LAYOUT_VERSION);
-      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout));
-    }
-  } catch {
-    // Ignore storage failures
-  }
-};
 
 export type BURow = {
   id: string;
@@ -337,26 +195,8 @@ export default function BusinessManagerPage({
     );
   }, [buRows, searchQuery]);
 
+  // "Edit mode" now just reveals the widget show/hide panel — no drag/resize.
   const [isEditing, setIsEditing] = React.useState(false);
-  // Square cells: row height tracks the live column width. Measured here as a
-  // stable pixel number (updated only when the container itself resizes)
-  // rather than gridstack's own `cellHeight: "auto"`, whose throttled
-  // self-recompute fires mid-drag and makes resizing feel jumpy.
-  const gridWrapRef = React.useRef<HTMLDivElement | null>(null);
-  const [cellPx, setCellPx] = React.useState(40);
-  React.useEffect(() => {
-    const el = gridWrapRef.current;
-    if (!el || typeof ResizeObserver === "undefined") return;
-    const measure = () => {
-      // el has `pr-3` (12px) — the .grid-stack inside is that much narrower.
-      const gridWidth = el.clientWidth - 12;
-      if (gridWidth > 0) setCellPx(Math.round(gridWidth / GRID_COLS));
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
   const [hiddenWidgetIds, setHiddenWidgetIds] = React.useState<string[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -467,205 +307,12 @@ export default function BusinessManagerPage({
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
-  const DEFAULT_LAYOUT: LayoutItem[] = React.useMemo(
-    () => [
-      // Starting layout, two widgets per column (x:0 / x:10), each column
-      // stacking on its own running y. Fan Life starts LARGE for its
-      // progress-bar list; everything else starts SMALL. Resize bounds come
-      // from WIDGET_BOUNDS later, not stored here.
-      { i: "fan-life", x: 0, y: 0, ...WIDGET_SIZE_LARGE },
-      { i: "door-opened", x: 0, y: 20, ...WIDGET_SIZE_SMALL },
-      { i: "element", x: 0, y: 30, ...WIDGET_SIZE_SMALL },
-      { i: "alarm-summary", x: 0, y: 40, ...WIDGET_SIZE_SMALL },
-      { i: "energy-widget", x: 0, y: 50, ...WIDGET_SIZE_SMALL },
-      { i: "stores-online", x: 0, y: 60, ...WIDGET_SIZE_SMALL },
-      { i: "offline-devices", x: 10, y: 0, ...WIDGET_SIZE_SMALL },
-      { i: "alarms", x: 10, y: 10, ...WIDGET_SIZE_SMALL },
-      { i: "energy", x: 10, y: 20, ...WIDGET_SIZE_SMALL },
-      { i: "cloud", x: 10, y: 30, ...WIDGET_SIZE_SMALL },
-      { i: "energy-cost", x: 10, y: 40, ...WIDGET_SIZE_SMALL },
-      { i: "temp-alarms", x: 10, y: 50, ...WIDGET_SIZE_SMALL },
-    ],
-    [],
-  );
-
-
-  const mergeLayoutWithDefaults = React.useCallback(
-    (persisted?: LayoutItem[] | null) => {
-      if (!persisted?.length) return DEFAULT_LAYOUT;
-      const persistedMap = new Map<string, LayoutItem>();
-      persisted.forEach((item) => {
-        if (item && typeof item.i === "string") {
-          persistedMap.set(item.i, item);
-        }
-      });
-
-      return DEFAULT_LAYOUT.map((base) => {
-        const incoming = persistedMap.get(base.i);
-        if (!incoming) return base;
-
-        // Clamp the persisted size into WIDGET_BOUNDS (defensive against
-        // stale/malformed saved values).
-        const width =
-          clampNumber(incoming.w, WIDGET_BOUNDS.minW, WIDGET_BOUNDS.maxW) ?? base.w;
-        const height =
-          clampNumber(incoming.h, WIDGET_BOUNDS.minH, WIDGET_BOUNDS.maxH) ?? base.h;
-        const maxX = Math.max(GRID_COLS - width, 0);
-        const x = clampNumber(incoming.x, 0, maxX) ?? base.x;
-        const y = clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;
-
-        return {
-          ...base,
-          ...incoming,
-          w: width,
-          h: height,
-          x,
-          y,
-        };
-      });
-    },
-    [DEFAULT_LAYOUT],
-  );
-
-  const [widgetLayout, setWidgetLayout] = React.useState<LayoutItem[]>(() =>
-    mergeLayoutWithDefaults(loadLayoutCookie()),
-  );
-
-  React.useEffect(() => {
-    setWidgetLayout((prev) => mergeLayoutWithDefaults(prev));
-  }, [mergeLayoutWithDefaults]);
-
-  // GridStack's onChange fires with the *changed* nodes only (its own
-  // id/x/y/w/h shape), not the full layout — merge by id into the full
-  // widgetLayout rather than replacing it, or hidden widgets would lose
-  // their saved position/size.
-  const handleGridChange = React.useCallback(
-    (_event: Event, nodes: { id?: string; x?: number; y?: number; w?: number; h?: number }[]) => {
-      if (!nodes?.length) return;
-      setWidgetLayout((prev) => {
-        const changedById = new Map(
-          nodes
-            .filter((node): node is typeof node & { id: string } => typeof node.id === "string")
-            .map((node) => [node.id, node]),
-        );
-        const merged = prev.map((item) => {
-          const changed = changedById.get(item.i);
-          if (!changed) return item;
-          return {
-            ...item,
-            x: changed.x ?? item.x,
-            y: changed.y ?? item.y,
-            w: changed.w ?? item.w,
-            h: changed.h ?? item.h,
-          };
-        });
-        saveLayoutCookie(merged);
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent(LAYOUT_SYNC_EVENT, { detail: merged }));
-        }
-        return merged;
-      });
-    },
-    [],
-  );
-
-  // Flips one widget between SMALL and LARGE. Doesn't call GridStack's own
-  // API directly — updating widgetLayout is enough, since the <GridStack>
-  // wrapper reactively diffs `options` each render and calls
-  // grid.updateOptions() itself (see gridStackOptions below), the same path
-  // hide/show and persistence already go through.
-  const handleToggleWidgetSize = React.useCallback((id: string) => {
-    setWidgetLayout((prev) => {
-      const merged = prev.map((item) => {
-        if (item.i !== id) return item;
-        const next = widgetSizeOf(item) === "large" ? WIDGET_SIZE_SMALL : WIDGET_SIZE_LARGE;
-        return { ...item, w: next.w, h: next.h };
-      });
-      saveLayoutCookie(merged);
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent(LAYOUT_SYNC_EVENT, { detail: merged }));
-      }
-      return merged;
-    });
-  }, []);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-    let lastSerialized = JSON.stringify(widgetLayout);
-
-    const handleSync = (event: Event) => {
-      const customEvent = event as CustomEvent<LayoutItem[]>;
-      const next = customEvent.detail;
-      if (!Array.isArray(next)) return;
-      const nextSerialized = JSON.stringify(next);
-      if (nextSerialized === lastSerialized) return;
-      lastSerialized = nextSerialized;
-      setWidgetLayout(next);
-    };
-
-    window.addEventListener(LAYOUT_SYNC_EVENT, handleSync);
-    return () => window.removeEventListener(LAYOUT_SYNC_EVENT, handleSync);
-  }, [widgetLayout]);
-
-  const visibleWidgetLayout = React.useMemo(
-    () => widgetLayout.filter((item) => !hiddenWidgetIds.includes(item.i)),
-    [widgetLayout, hiddenWidgetIds],
-  );
-
-  const dynamicBottomPadding = React.useMemo(() => {
-    const maxRow = visibleWidgetLayout.reduce((max, item) => {
-      const bottom = (item.y ?? 0) + (item.h ?? 0);
-      return Math.max(max, bottom);
-    }, 0);
-    const gridHeight =
-      maxRow * cellPx + Math.max(0, maxRow - 1) * GRID_MARGIN[1];
-    // Small headroom so a widget can be dragged past the last row while
-    // editing — not a multiple of the whole grid's height.
-    return Math.max(100, Math.ceil(gridHeight * 0.08) + 40);
-  }, [visibleWidgetLayout, cellPx]);
-
-  // Feeds WidgetSlot via WidgetElementsContext — see the comment on that
-  // context above for why GridStack's component-mode needs this indirection
-  // instead of just handing it pre-built elements directly.
-  const widgetElementsMap = React.useMemo(
-    () => new Map(widgetComponents.map((widget) => [widget.id, widget.element])),
-    [widgetComponents],
-  );
-
-  const gridStackOptions: GridStackOptions = React.useMemo(
-    () => ({
-      column: GRID_COLS,
-      // Square cells — cellPx is the measured column width, so grid-unit
-      // ratios (LARGE = 10x20 = 1:2) render true on screen.
-      cellHeight: cellPx,
-      margin: GRID_MARGIN[0],
-      float: false,
-      staticGrid: !isEditing,
-      handle: ".widget-drag-handle",
-      // Resize handles are always visible while editing (otherwise gridstack
-      // only reveals them on hover); the toggle button stays as a shortcut
-      // that snaps to the SMALL / LARGE presets.
-      alwaysShowResizeHandle: isEditing,
-      resizable: { handles: "se" },
-      children: visibleWidgetLayout.map(
-        (item): GridStackWidget => ({
-          id: item.i,
-          x: item.x,
-          y: item.y,
-          w: item.w,
-          h: item.h,
-          ...WIDGET_BOUNDS,
-          component: "WidgetSlot",
-          props: {
-            widgetId: item.i,
-            isEditing,
-            size: widgetSizeOf(item),
-            onToggleSize: handleToggleWidgetSize,
-          },
-        }),
-      ),
-    }),
-    [visibleWidgetLayout, isEditing, handleToggleWidgetSize, cellPx],
+  // Widgets render in source order into a CSS grid; each <Widget> owns its
+  // own default/expanded state and, when expanded, takes 2x2 in the grid.
+  // The only layout state left is which widgets are hidden.
+  const visibleWidgets = React.useMemo(
+    () => widgetComponents.filter((w) => !hiddenWidgetIds.includes(w.id)),
+    [widgetComponents, hiddenWidgetIds],
   );
 
   const handleBeaconOffsetChange = React.useCallback(
@@ -807,10 +454,7 @@ export default function BusinessManagerPage({
               onScroll={(event) =>
                 setIsWidgetsScrolled(event.currentTarget.scrollTop > 8)
               }
-              style={{
-                maxHeight: "calc(100vh - 120px)",
-                paddingBottom: `${dynamicBottomPadding}px`,
-              }}
+              style={{ maxHeight: "calc(100vh - 120px)" }}
             >
               <Beacon
                 label="Widgets panel tour"
@@ -882,15 +526,12 @@ export default function BusinessManagerPage({
                   })}
                 </div>
               )}
-              <div ref={gridWrapRef} className="flex-1 pb-12 pr-3 pt-2">
-                <WidgetElementsContext.Provider value={widgetElementsMap}>
-                  <GridStack
-                    options={gridStackOptions}
-                    components={GRID_COMPONENTS}
-                    className={`widgets-grid ${isEditing ? "widgets-grid--editing" : ""}`}
-                    onChange={handleGridChange}
-                  />
-                </WidgetElementsContext.Provider>
+              <div className="flex-1 pb-12 pr-3 pt-2">
+                <WidgetGrid>
+                  {visibleWidgets.map((w) =>
+                    React.cloneElement(w.element, { key: w.id }),
+                  )}
+                </WidgetGrid>
               </div>
             </div>
           </div>

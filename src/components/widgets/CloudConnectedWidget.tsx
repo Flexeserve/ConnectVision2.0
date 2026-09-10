@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Cloud } from "lucide-react";
-import { DonutWidget } from "./WidgetShell";
+import { Widget, RingView } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
 
 type CloudConnectedWidgetProps = {
@@ -8,8 +8,7 @@ type CloudConnectedWidgetProps = {
 };
 
 // Each store contributes its own device count; connected/offline units are
-// summed across the scope's stores so a region/root rolls up its stores'
-// totals while a single-store scope shows just that store's devices.
+// summed across the scope's stores.
 const buildGauge = (storeIds: string[]) => {
   let totalUnits = 0;
   let offlineCount = 0;
@@ -28,15 +27,18 @@ export default function CloudConnectedWidget({
   const { connected, offline } = useMemo(() => buildGauge(storeIds), [storeIds]);
 
   return (
-    <DonutWidget
-      title="Cloud Connected"
-      icon={<Cloud />}
-      centerValue={connected}
-      centerLabel="Connected"
-      segments={[
-        { name: "Connected", value: connected, color: "orange" },
-        { name: "No connection", value: offline, color: "gray" },
-      ]}
-    />
+    <Widget title="Cloud Connected" icon={<Cloud />}>
+      {(expanded) => (
+        <RingView
+          expanded={expanded}
+          centerValue={connected}
+          centerLabel="Connected"
+          segments={[
+            { name: "Connected", value: connected, color: "orange" },
+            { name: "No connection", value: offline, color: "gray" },
+          ]}
+        />
+      )}
+    </Widget>
   );
 }

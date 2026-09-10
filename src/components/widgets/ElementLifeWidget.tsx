@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Thermometer } from "lucide-react";
-import { WidgetShell, WidgetMetric } from "./WidgetShell";
+import { Widget, Metric } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
 
 type ElementLifeWidgetProps = {
@@ -17,8 +17,8 @@ export default function ElementLifeWidget({ storeIds = ["root"] }: ElementLifeWi
   );
 
   return (
-    <WidgetShell title="Element Life" icon={<Thermometer />}>
-      <WidgetMetric value={hours} unit="hrs" />
-    </WidgetShell>
+    <Widget title="Element Life" icon={<Thermometer />}>
+      {(expanded) => <Metric value={hours} unit="hrs" expanded={expanded} />}
+    </Widget>
   );
 }

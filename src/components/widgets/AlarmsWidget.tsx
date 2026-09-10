@@ -1,5 +1,5 @@
 import { TriangleAlert } from "lucide-react";
-import { WidgetShell, WidgetMetric } from "./WidgetShell";
+import { Widget, Metric } from "./Widget";
 
 type AlarmsWidgetProps = {
   value?: number;
@@ -7,8 +7,14 @@ type AlarmsWidgetProps = {
 
 export default function AlarmsWidget({ value = 12 }: AlarmsWidgetProps) {
   return (
-    <WidgetShell title="Active Alarms" icon={<TriangleAlert />}>
-      <WidgetMetric value={value} tone={value > 0 ? "danger" : "success"} />
-    </WidgetShell>
+    <Widget title="Active Alarms" icon={<TriangleAlert />}>
+      {(expanded) => (
+        <Metric
+          value={value}
+          tone={value > 0 ? "danger" : "success"}
+          expanded={expanded}
+        />
+      )}
+    </Widget>
   );
 }
