@@ -21,6 +21,7 @@ import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
 import TypewriterText from "../components/TypewriterText";
 import { WidgetGrid } from "../components/widgets/Widget";
+import { WidgetSpanContext, type WidgetSpan } from "../components/widgets/widgetSpan";
 import { useCityName } from "../hooks/useCityName";
 import { createBusinessManagerBeaconTour } from "../utils/businessManagerTour";
 import { GripVertical } from "lucide-react";
@@ -59,8 +60,6 @@ const GRID_GAP_PX = 12; // matches WidgetGrid's gap-3
 const GRID_ROW_PX = 240; // matches WidgetGrid's auto-rows-[15rem]
 const MAX_SPAN = 3;
 
-type WidgetSpan = { c: number; r: number };
-
 // One grid cell — sortable (drag to reorder) and, when ENABLE_WIDGET_RESIZE,
 // resizable (drag the SE corner) while editing. A manual span overrides the
 // inner <Widget>'s expand-to-2x2 :has() rule via inline style.
@@ -87,42 +86,67 @@ function SortableWidget({
     setNodeRef(node);
   };
 
+  // Live pixel-follow while dragging, then a short ease into the snapped
+  // grid cell on release — so it doesn't feel like it just jumps.
   const startResize = (e: React.PointerEvent) => {
-    if (!onResize || !elRef.current) return;
+    const el = elRef.current;
+    if (!onResize || !el) return;
     e.preventDefault();
     e.stopPropagation();
-    const rect = elRef.current.getBoundingClientRect();
+
+    const rect = el.getBoundingClientRect();
     const startC = span?.c ?? 1;
+    const startR = span?.r ?? 1;
     const cellW = (rect.width - (startC - 1) * GRID_GAP_PX) / startC;
     const rowStride = GRID_ROW_PX + GRID_GAP_PX;
+    const snapC = (w: number) =>
+      Math.min(MAX_SPAN, Math.max(1, Math.round((w + GRID_GAP_PX) / (cellW + GRID_GAP_PX))));
+    const snapR = (h: number) =>
+      Math.min(MAX_SPAN, Math.max(1, Math.round((h + GRID_GAP_PX) / rowStride)));
+    const pxForC = (c: number) => c * cellW + (c - 1) * GRID_GAP_PX;
+    const pxForR = (r: number) => r * GRID_ROW_PX + (r - 1) * GRID_GAP_PX;
+
+    let next = { c: startC, r: startR };
     setResizing(true);
-    (e.target as Element).setPointerCapture(e.pointerId);
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    el.style.transition = "none";
+    el.style.zIndex = "40";
 
     const move = (ev: PointerEvent) => {
-      const w = rect.width + (ev.clientX - e.clientX);
-      const h = rect.height + (ev.clientY - e.clientY);
-      const c = Math.min(
-        MAX_SPAN,
-        Math.max(1, Math.round((w + GRID_GAP_PX) / (cellW + GRID_GAP_PX))),
-      );
-      const r = Math.min(
-        MAX_SPAN,
-        Math.max(1, Math.round((h + GRID_GAP_PX) / rowStride)),
-      );
-      if (c !== (span?.c ?? 1) || r !== (span?.r ?? 1)) onResize(id, { c, r });
+      const w = Math.max(cellW * 0.7, rect.width + (ev.clientX - e.clientX));
+      const h = Math.max(GRID_ROW_PX * 0.7, rect.height + (ev.clientY - e.clientY));
+      el.style.width = `${w}px`;
+      el.style.height = `${h}px`;
+      next = { c: snapC(w), r: snapR(h) };
     };
-    const up = (ev: PointerEvent) => {
-      setResizing(false);
+
+    const finish = () => {
       window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      (e.target as Element).releasePointerCapture?.(ev.pointerId);
+      window.removeEventListener("pointerup", finish);
+      // ease from the free size to the exact snapped cell size…
+      el.style.transition = "width 160ms ease, height 160ms ease";
+      el.style.width = `${pxForC(next.c)}px`;
+      el.style.height = `${pxForR(next.r)}px`;
+      window.setTimeout(() => {
+        // …then hand sizing back to the grid via the committed span
+        el.style.transition = "";
+        el.style.width = "";
+        el.style.height = "";
+        el.style.zIndex = "";
+        setResizing(false);
+        onResize(id, next);
+      }, 170);
     };
+
     window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
+    window.addEventListener("pointerup", finish);
   };
 
   const spanStyle: React.CSSProperties = span
-    ? { gridColumn: `span ${span.c} / span ${span.c}`, gridRow: `span ${span.r} / span ${span.r}` }
+    ? {
+        gridColumn: `span ${span.c} / span ${span.c}`,
+        gridRow: `span ${span.r} / span ${span.r}`,
+      }
     : {};
 
   return (
@@ -131,10 +155,12 @@ function SortableWidget({
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        zIndex: isDragging || resizing ? 20 : undefined,
-        ...spanStyle,
+        zIndex: isDragging ? 20 : undefined,
+        ...(resizing ? {} : spanStyle),
       }}
-      className={`sortable-widget relative ${isDragging ? "opacity-70" : ""}`}
+      className={`sortable-widget relative ${isDragging ? "opacity-70" : ""} ${
+        resizing ? "overflow-visible" : ""
+      }`}
     >
       {isEditing && (
         <button
@@ -154,10 +180,12 @@ function SortableWidget({
           aria-label="Resize widget"
           aria-valuetext={`${span?.c ?? 1} by ${span?.r ?? 1}`}
           tabIndex={0}
-          className="absolute bottom-1 right-1 z-10 size-4 cursor-se-resize touch-none rounded-sm border-b-2 border-r-2 border-accent"
+          className="absolute -bottom-0.5 -right-0.5 z-20 size-5 cursor-se-resize touch-none rounded-br-widget border-b-[3px] border-r-[3px] border-accent"
         />
       )}
-      {children}
+      <WidgetSpanContext.Provider value={span ?? null}>
+        {children}
+      </WidgetSpanContext.Provider>
     </div>
   );
 }

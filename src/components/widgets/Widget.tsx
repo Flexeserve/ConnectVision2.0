@@ -1,11 +1,12 @@
-import { useState, type ReactNode } from "react";
+import { useContext, useState, type ReactNode } from "react";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { DonutChart } from "@tremor/react";
+import { WidgetSpanContext } from "./widgetSpan";
 
-// A dashboard widget with two states — default and expanded — toggled by a
-// button, not by resizing. In a CSS grid (see <WidgetGrid>) an expanded
-// widget spans 2x2; everything else is a single square tile and the grid
-// reflows to fill the gaps. No drag, no resize handles, no geometry math.
+// A dashboard widget with two states — default and expanded. Expanded is
+// entered either by the toggle button OR by the widget being resized to
+// span >= 2x2 cells in the grid (see widgetSpan.ts, provided by the
+// SortableWidget wrapper in BusinessManagerPage).
 
 type WidgetProps = {
   title: string;
@@ -31,10 +32,14 @@ export function Widget({
   onExpandedChange,
   className = "",
 }: WidgetProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [selfExpanded, setSelfExpanded] = useState(defaultExpanded);
+  const span = useContext(WidgetSpanContext);
+  // Resized to a big cell -> show the detailed view even without a click.
+  const spanForcesExpanded = !!span && span.c >= 2 && span.r >= 2;
+  const expanded = spanForcesExpanded || selfExpanded;
 
   const toggle = () =>
-    setExpanded((prev) => {
+    setSelfExpanded((prev) => {
       const next = !prev;
       onExpandedChange?.(next);
       return next;
@@ -42,10 +47,8 @@ export function Widget({
 
   return (
     <div
-      data-expanded={expanded}
-      className={`relative flex min-h-[220px] flex-col overflow-hidden rounded-widget border border-line bg-surface shadow-widget dark:shadow-widget-dark ${
-        expanded ? "sm:col-span-2 sm:row-span-2" : ""
-      } ${className}`}
+      data-expanded={expanded ? "true" : undefined}
+      className={`relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-widget border border-line bg-surface shadow-widget dark:shadow-widget-dark ${className}`}
     >
       <div className="flex shrink-0 items-center justify-between gap-2 px-3.5 pb-2 pt-3">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -56,19 +59,21 @@ export function Widget({
             {title}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={expanded ? "Collapse widget" : "Expand widget"}
-          aria-pressed={expanded}
-          className="-mr-1 shrink-0 rounded-md p-1 text-ink-subtle transition-colors hover:bg-surface-hover hover:text-ink"
-        >
-          {expanded ? (
-            <Minimize2 className="size-3.5" />
-          ) : (
-            <Maximize2 className="size-3.5" />
-          )}
-        </button>
+        {!spanForcesExpanded && (
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={expanded ? "Collapse widget" : "Expand widget"}
+            aria-pressed={expanded}
+            className="-mr-1 shrink-0 rounded-md p-1 text-ink-subtle transition-colors hover:bg-surface-hover hover:text-ink"
+          >
+            {expanded ? (
+              <Minimize2 className="size-3.5" />
+            ) : (
+              <Maximize2 className="size-3.5" />
+            )}
+          </button>
+        )}
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col px-3.5 pb-3.5">
