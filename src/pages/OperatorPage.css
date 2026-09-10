@@ -1,8 +1,8 @@
 /* src/pages/OperatorPage.css */
 .operator-page {
-  background: var(--app-bg);
+  background: rgb(var(--canvas));
   min-height: 100vh;
-  color: var(--text-primary);
+  color: rgb(var(--ink));
   display: flex;
   flex-direction: column;
   padding-bottom: 90px; /* space for fixed footer */
@@ -12,8 +12,8 @@
   width: 100%;
   min-width: 140px;
   min-height: 120px;
-  background: var(--panel-bg);
-  border: 2px solid var(--border-subtle);
+  background: rgb(var(--surface));
+  border: 2px solid rgb(var(--line));
   border-radius: 12px;
   padding: 8px 10px;
   box-sizing: border-box;
@@ -54,14 +54,14 @@
 .temp-select-unit {
   font-size: clamp(12px, 0.9vw, 15px);
   font-weight: 700;
-  color: var(--text-primary);
+  color: rgb(var(--ink));
 }
 
 .temp-select-input {
   width: 100%;
   min-height: 52px;
   background: none;
-  color: var(--text-primary);
+  color: rgb(var(--ink));
   font-size: clamp(16px, 1.3vw, 22px);
   font-weight: 700;
   padding: 8px 10px;
@@ -123,7 +123,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  border-left: 1px solid var(--border-subtle);
+  border-left: 1px solid rgb(var(--line));
   height: 100vh;
   padding: 32px 32px 48px;
   box-sizing: border-box;
@@ -163,7 +163,7 @@
 }
 
 .operator-camera-toggle-label {
-  color: var(--text-primary);
+  color: rgb(var(--ink));
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -171,7 +171,7 @@
 
 .operator-camera-toggle-hint {
   font-size: 0.72rem;
-  color: var(--text-muted);
+  color: rgb(var(--ink-muted));
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -245,8 +245,8 @@
   min-width: 210px;
   max-width: 280px;
   padding: 12px 18px;
-  background: var(--panel-bg);
-  color: var(--text-primary);
+  background: rgb(var(--surface));
+  color: rgb(var(--ink));
   font-weight: 600;
   border-radius: 999px;
 
@@ -488,9 +488,9 @@
 }
 
 .operator-card {
-  background: var(--panel-bg);
+  background: rgb(var(--surface));
   border-radius: 6px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgb(var(--line));
 
   overflow: hidden;
 }
@@ -499,7 +499,7 @@
   padding: 12px 10px;
   text-align: center;
   font-weight: 600;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid rgb(var(--line-strong));
 }
 
 .operator-card-body {
@@ -591,8 +591,8 @@
 /* Footer section at bottom */
 .page-footer {
   width: 100%;
-  background: var(--panel-bg);
-  border-top: 1px solid var(--border-color);
+  background: rgb(var(--surface));
+  border-top: 1px solid rgb(var(--line));
   padding: 12px clamp(1.5rem, 3vw, 3rem);
   display: flex;
   justify-content: space-between;

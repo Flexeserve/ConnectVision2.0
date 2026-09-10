@@ -1,31 +1,31 @@
 /* Custom Driver.js tour styling for Business Manager */
 
 .driver-popover.business-manager-tour-popover {
-  background: #ffffff;
+  background: rgb(var(--surface));
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgb(var(--line));
 }
 
 .driver-popover.business-manager-tour-popover .driver-popover-title {
   font-family: "Inter", sans-serif;
   font-size: 1rem;
   font-weight: 600;
-  color: #333333;
+  color: rgb(var(--ink));
   margin-bottom: 8px;
 }
 
 .driver-popover.business-manager-tour-popover .driver-popover-description {
   font-family: "Inter", sans-serif;
   font-size: 0.9rem;
-  color: #5d5d5d;
+  color: rgb(var(--ink-muted));
   line-height: 1.5;
 }
 
 .driver-popover.business-manager-tour-popover .driver-popover-progress-text {
   font-family: "Inter", sans-serif;
   font-size: 0.85rem;
-  color: #999999;
+  color: rgb(var(--ink-subtle));
 }
 
 /* Button styling */
@@ -52,7 +52,7 @@
 
 .driver-popover.business-manager-tour-popover .driver-popover-prev-btn {
   background: #ededee;
-  color: #333333;
+  color: rgb(var(--ink));
   border: 1px solid #c0c0c0;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .driver-popover.business-manager-tour-popover .driver-popover-close-btn {
-  color: #999999;
+  color: rgb(var(--ink-subtle));
   font-size: 1.5rem;
   line-height: 1;
   background: none;
@@ -72,7 +72,7 @@
 }
 
 .driver-popover.business-manager-tour-popover .driver-popover-close-btn:hover {
-  color: #333333;
+  color: rgb(var(--ink));
 }
 
 /* Highlight overlay */

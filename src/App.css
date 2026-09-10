@@ -12,7 +12,7 @@
   z-index: 800;
   display: flex;
   flex-direction: column;
-  background: #fff; /* avoids flash while sliding */
+  background: rgb(var(--canvas)); /* avoids flash while sliding */
   will-change: transform, opacity;
   transition:
     transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -43,7 +43,7 @@
   z-index: 900;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: rgb(var(--canvas));
   will-change: transform, opacity;
   transition:
     transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -100,8 +100,8 @@
   margin: 0;
   padding: 10px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #202020;
+  background: rgb(var(--surface) / 0.95);
+  color: rgb(var(--ink));
   font-family: "Inter", "Inter var", sans-serif;
   font-size: clamp(24px, 2.4vw, 38px);
   font-weight: 800;
@@ -118,7 +118,7 @@
   font-size: 34px;
   line-height: 1;
   font-weight: 800;
-  color: #202020;
+  color: rgb(var(--ink));
 }
 
 .connect-helper-trigger {
@@ -130,7 +130,7 @@
 }
 
 .connect-helper.docked .connect-helper-trigger:focus-visible {
-  outline: 2px solid #d94d14;
+  outline: 2px solid rgb(var(--accent));
   outline-offset: 4px;
 }
 
@@ -138,8 +138,8 @@
   position: absolute;
   left: 0;
   bottom: calc(100% + 8px);
-  background: rgba(255, 255, 255, 0.96);
-  color: #202020;
+  background: rgb(var(--surface) / 0.96);
+  color: rgb(var(--ink));
   border-radius: 10px;
   padding: 14px 18px;
   font-family: "Inter", "Inter var", sans-serif;
@@ -168,7 +168,7 @@
    as a stray icon rather than something clickable. The intro (centered)
    phase stays bare since the pulsing callout text already frames it. */
 .connect-helper.docked .connect-helper-icon-wrap {
-  background: #ffffff;
+  background: rgb(var(--surface));
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
 }

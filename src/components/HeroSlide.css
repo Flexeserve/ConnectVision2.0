@@ -5,8 +5,8 @@
   display: flex;
   align-items: safe center;
   justify-content: safe center;
-  background: var(--app-bg);
-  color: var(--text-primary);
+  background: rgb(var(--canvas));
+  color: rgb(var(--ink));
   z-index: 9999;
   overflow-x: hidden;
   overflow-y: auto;
@@ -109,12 +109,12 @@
 .hero-title-brand {
   font-size: clamp(0.5rem, 2.4vw, 2.6rem);
   letter-spacing: 0.1rem;
-  color: var(--text-primary);
+  color: rgb(var(--ink));
 }
 
 .hero-title-main {
   font-size: clamp(6rem, 4.8vw, 8rem);
-  color: var(--text-primary);
+  color: rgb(var(--ink));
   letter-spacing: clamp(0.08rem, 0.9vw, 0.35rem);
 }
 
@@ -127,7 +127,7 @@
   text-align: center;
   justify-content: center;
   font-size: clamp(1rem, 2vw, 1.4rem);
-  color: var(--text-primary);
+  color: rgb(var(--ink));
   display: flex;
   align-self: center;
   width: 100%;
@@ -154,7 +154,7 @@
 .hero-cta-description {
   font-size: 1.0rem;
   line-height: 1.55;
-  color: var(--text-muted);
+  color: rgb(var(--ink-muted));
   margin: 0;
   width: 100%;
   text-align: left;
@@ -353,7 +353,7 @@ body.dark .hero-logo {
   font-size: 0.85rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--text-primary);
+  color: rgb(var(--ink));
   opacity: 0.75;
 }
 
@@ -367,7 +367,7 @@ body.dark .hero-logo {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--text-primary);
+  color: rgb(var(--ink));
   display: inline-flex;
   align-items: center;
   justify-content: center;

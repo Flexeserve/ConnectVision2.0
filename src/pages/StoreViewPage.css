@@ -1,7 +1,7 @@
 .store-view-page {
   min-height: 100vh;
-  background: var(--app-bg);
-  color: var(--text-primary);
+  background: rgb(var(--canvas));
+  color: rgb(var(--ink));
 }
 
 .beacon-host {
@@ -114,28 +114,28 @@
   grid-template-columns: 1.8fr 1fr 1.3fr 0.5fr;
   gap: 12px;
   align-items: center;
-  background: var(--panel-bg);
+  background: rgb(var(--surface));
   padding: 10px 12px;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .store-device-cell {
-  color: var(--text-primary);
+  color: rgb(var(--ink));
   font-size: 0.95rem;
   font-weight: 600;
 }
 
 .store-device-select {
   width: 100%;
-  background: var(--panel-bg);
-  border: 2px solid var(--border-color);
+  background: rgb(var(--surface));
+  border: 2px solid rgb(var(--line));
   border-radius: 12px;
   min-height: 40px;
   padding: 0 12px;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: rgb(var(--ink));
 }
 
 .store-device-status {
@@ -148,7 +148,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 3px solid var(--text-primary);
+  border: 3px solid rgb(var(--ink));
   background: #1e7d3f;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -161,15 +161,15 @@
 
 .store-row {
   width: 100%;
-  background: var(--panel-bg);
-  border: 1px solid var(--border-color);
+  background: rgb(var(--surface));
+  border: 1px solid rgb(var(--line));
   padding: 12px 14px;
   cursor: pointer;
   transition: background-color 150ms ease;
 }
 
 .store-row:hover {
-  background: var(--panel-bg-hover);
+  background: rgb(var(--surface-hover));
 }
 
 body.dark .store-icon {
