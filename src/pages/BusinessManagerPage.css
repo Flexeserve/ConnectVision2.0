@@ -8,6 +8,18 @@
   background: rgb(var(--surface));
 }
 
+/* The sortable wrapper is the grid cell now — make it pass its size
+   through to the <Widget> inside (which owns the card, the flex column and
+   the flex-1 chart areas). Without this an expanded widget's chart has no
+   height to grow into. */
+.sortable-widget {
+  display: flex;
+}
+.sortable-widget > :not(button) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 /* An expanded widget takes 2x2 in the grid. The <Widget> sets
    data-expanded on its own root; the sortable wrapper is the actual grid
    item, so mirror the span onto it here (>= sm, matching the Tailwind

@@ -2,7 +2,6 @@ import React from "react";
 import { Search } from "lucide-react";
 import connectLogo from "../assets/connect_flexeserve.svg";
 import connectLogoInversed from "../assets/connect_flexeserve_inversed.svg";
-import viewAllBUsLogo from "../assets/ViewAllBUsLogo.svg";
 import Header from "../components/Header";
 import "./BusinessManagerPage.css";
 import "../styles/tour.css";
@@ -490,14 +489,9 @@ export default function BusinessManagerPage({
               key={levelKey ?? heading ?? "root"}
               className="mx-auto w-full max-w-5xl animate-fade-in-up px-4 pt-2"
             >
-              <div className="relative mb-6 flex items-center gap-8">
-                <img
-                  src={viewAllBUsLogo}
-                  alt="View All Markets"
-                  className="h-16 dark:brightness-110 dark:invert"
-                />
-                <span className="text-lg font-semibold text-ink">
-                  {heading ?? "View All Markets"}
+              <div className="relative mb-6 flex items-center">
+                <span className="font-sans text-4xl font-bold text-ink">
+                  Markets
                 </span>
               </div>
               <div className="relative flex flex-col items-stretch gap-3">
