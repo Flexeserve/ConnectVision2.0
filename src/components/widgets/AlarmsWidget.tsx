@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { TriangleAlert } from "lucide-react";
-import { BarChart } from "@tremor/react";
-import { Widget, Metric, StoreList, Alternator } from "./Widget";
+import { Widget, Metric, RingView, StoreList, Alternator } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
 
 type AlarmsWidgetProps = {
@@ -27,6 +26,23 @@ export default function AlarmsWidget({
     [storeIds, names],
   );
   const total = storeIds ? perStore.reduce((s, r) => s + r.count, 0) : value;
+  const withAlarms = perStore.filter((r) => r.count > 0).length;
+  const clear = perStore.length - withAlarms;
+
+  const ring = (
+    <RingView
+      centerValue={total}
+      centerLabel="Alarms"
+      segments={
+        total === 0
+          ? [{ name: "All clear", value: 1, color: "emerald" }]
+          : [
+              { name: "Stores with alarms", value: withAlarms, color: "red" },
+              { name: "Clear", value: clear, color: "emerald" },
+            ]
+      }
+    />
+  );
 
   return (
     <Widget title="Active Alarms" icon={<TriangleAlert />}>
@@ -34,6 +50,7 @@ export default function AlarmsWidget({
         expanded && perStore.length ? (
           <Alternator
             panes={[
+              { key: "ring", label: "Alarm spread", node: ring },
               {
                 key: "by-store",
                 label: "By store",
@@ -48,23 +65,10 @@ export default function AlarmsWidget({
                   />
                 ),
               },
-              {
-                key: "chart",
-                label: "Alarms per store",
-                node: (
-                  <BarChart
-                    className="h-full"
-                    data={perStore.map((r) => ({ store: r.name, Alarms: r.count }))}
-                    index="store"
-                    categories={["Alarms"]}
-                    colors={["red"]}
-                    showLegend={false}
-                    yAxisWidth={28}
-                  />
-                ),
-              },
             ]}
           />
+        ) : perStore.length ? (
+          ring
         ) : (
           <Metric
             value={total}
