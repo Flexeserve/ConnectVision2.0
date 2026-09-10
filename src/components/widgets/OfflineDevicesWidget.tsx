@@ -1,8 +1,25 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TriangleAlert } from "lucide-react";
 import { ProgressCircle } from "@tremor/react";
 import { Widget } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
+
+// Track the smaller side of an element so a child can be sized to fit it.
+function useSquareFit<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [side, setSide] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const box = entries[0]?.contentRect;
+      if (box) setSide(Math.floor(Math.min(box.width, box.height)));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, side] as const;
+}
 
 type OfflineDevicesWidgetProps = {
   storeIds?: string[];
@@ -17,20 +34,34 @@ type Category = {
   color: "red" | "amber" | "blue";
 };
 
-// A single radial gauge — offline share of a device category.
+// A single radial gauge — offline share of a device category. The circle
+// sizes itself to whatever space the widget hands each column.
 function Gauge({ cat }: { cat: Category }) {
   const pct = cat.total > 0 ? Math.round((cat.offline / cat.total) * 100) : 0;
+  const [fitRef, side] = useSquareFit<HTMLDivElement>();
+  const radius = Math.max(26, Math.min(64, Math.round(side / 2) - 6));
+  const strokeWidth = Math.max(6, Math.round(radius / 5));
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 text-center">
-      <ProgressCircle value={pct} size="lg" color={pct === 0 ? "gray" : cat.color}>
-        <span
-          className={`text-lg font-bold tabular-nums ${
-            cat.offline > 0 ? "text-danger" : "text-ink"
-          }`}
+      <div
+        ref={fitRef}
+        className="flex min-h-[3.5rem] w-full flex-1 items-center justify-center"
+      >
+        <ProgressCircle
+          value={pct}
+          radius={radius}
+          strokeWidth={strokeWidth}
+          color={pct === 0 ? "gray" : cat.color}
         >
-          {cat.offline}
-        </span>
-      </ProgressCircle>
+          <span
+            className={`text-lg font-bold tabular-nums ${
+              cat.offline > 0 ? "text-danger" : "text-ink"
+            }`}
+          >
+            {cat.offline}
+          </span>
+        </ProgressCircle>
+      </div>
       <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
         {cat.label}
       </div>
@@ -88,7 +119,7 @@ export default function OfflineDevicesWidget({
     <Widget title="Offline Devices" icon={<TriangleAlert />}>
       {(expanded) =>
         expanded ? (
-          <div className="flex min-h-0 flex-1 items-center justify-around gap-2">
+          <div className="flex min-h-0 flex-1 items-stretch justify-around gap-2">
             {categories.map((cat) => (
               <Gauge key={cat.key} cat={cat} />
             ))}

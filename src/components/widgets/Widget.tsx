@@ -35,7 +35,7 @@ export function Widget({
   const [selfExpanded, setSelfExpanded] = useState(defaultExpanded);
   const span = useContext(WidgetSpanContext);
   // Resized to a big cell -> show the detailed view even without a click.
-  const spanForcesExpanded = !!span && span.c >= 2 && span.r >= 2;
+  const spanForcesExpanded = !!span && (span.c >= 2 || span.r >= 2);
   const expanded = spanForcesExpanded || selfExpanded;
 
   const toggle = () =>
@@ -148,6 +148,8 @@ export type RingSegment = {
 };
 
 // A Tremor donut with a headline number overlaid and a colour-keyed legend.
+// The ring itself is fluid — it grows to fill whatever vertical space the
+// widget gives it (kept square, never overflowing) rather than a fixed size.
 export function RingView({
   centerValue,
   centerLabel,
@@ -160,33 +162,35 @@ export function RingView({
   expanded?: boolean;
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-3">
-      <div className="relative">
-        <DonutChart
-          data={segments}
-          category="value"
-          index="name"
-          colors={segments.map((s) => s.color)}
-          showLabel={false}
-          showTooltip={expanded}
-          className={expanded ? "h-44 w-44" : "h-28 w-28"}
-        />
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span
-            className={`font-bold leading-none tabular-nums text-ink ${
-              expanded ? "text-3xl" : "text-2xl"
-            }`}
-          >
-            {centerValue}
-          </span>
-          {centerLabel ? (
-            <span className="mt-0.5 text-[10px] uppercase tracking-wide text-ink-subtle">
-              {centerLabel}
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3">
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center">
+        <div className="relative aspect-square h-full max-h-full min-h-[6rem] max-w-full">
+          <DonutChart
+            data={segments}
+            category="value"
+            index="name"
+            colors={segments.map((s) => s.color)}
+            showLabel={false}
+            showTooltip={expanded}
+            className="h-full w-full"
+          />
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            <span
+              className={`font-bold leading-none tabular-nums text-ink ${
+                expanded ? "text-3xl" : "text-2xl"
+              }`}
+            >
+              {centerValue}
             </span>
-          ) : null}
+            {centerLabel ? (
+              <span className="mt-0.5 text-[10px] uppercase tracking-wide text-ink-subtle">
+                {centerLabel}
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
-      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+      <div className="flex shrink-0 flex-wrap justify-center gap-x-4 gap-y-1">
         {segments.map((s) => (
           <span
             key={s.name}
@@ -236,9 +240,10 @@ export function StoreList({
   );
 }
 
-// Cycles an expanded widget through a set of views on a timer, with a small
-// toolbar (progress pips + a "next" button) at the top. Clicking next pauses
-// the auto-cycle so you can hold on a view.
+// Cycles an expanded widget through a set of views on a timer. A standalone
+// toggle button (top-right) turns the auto-cycle on/off; the progress dots sit
+// in a bar along the bottom and can be clicked to jump straight to a view
+// (which also pauses the cycle so you can hold on it).
 export function Alternator({
   panes,
   intervalMs = 6000,
@@ -262,32 +267,20 @@ export function Alternator({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {count > 1 && (
-        <div className="mb-1.5 flex shrink-0 items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
+        <div className="mb-1.5 flex shrink-0 items-center justify-between gap-2">
+          <span className="truncate text-[11px] font-medium uppercase tracking-wide text-ink-muted">
             {active.label}
           </span>
           <button
             type="button"
-            onClick={() => {
-              setAuto(false);
-              setI((p) => (p + 1) % count);
-            }}
-            onDoubleClick={() => setAuto(true)}
-            aria-label={`Next view (${auto ? "auto-cycling" : "paused"})`}
-            title={auto ? "Auto-cycling — click to hold" : "Paused — double-click to resume"}
-            className="flex items-center gap-1.5 rounded-md border border-line px-1.5 py-0.5 text-ink-muted transition-colors hover:text-ink"
+            onClick={() => setAuto((a) => !a)}
+            aria-label={auto ? "Auto-cycling views — pause" : "Views paused — resume"}
+            aria-pressed={auto}
+            title={auto ? "Auto-cycling — click to hold" : "Paused — click to resume"}
+            className="flex shrink-0 items-center gap-1 rounded-md border border-line px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ink-muted transition-colors hover:text-ink"
           >
-            <span className="flex gap-0.5">
-              {panes.map((p, n) => (
-                <span
-                  key={p.key}
-                  className={`size-1 rounded-full ${
-                    n === i ? "bg-accent" : "bg-line-strong"
-                  }`}
-                />
-              ))}
-            </span>
             <RefreshCw className={`size-3 ${auto ? "opacity-100" : "opacity-40"}`} />
+            {auto ? "Auto" : "Hold"}
           </button>
         </div>
       )}
@@ -303,6 +296,25 @@ export function Alternator({
           </div>
         ))}
       </div>
+      {count > 1 && (
+        <div className="mt-2 flex shrink-0 items-center justify-center gap-1.5">
+          {panes.map((p, n) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => {
+                setAuto(false);
+                setI(n);
+              }}
+              aria-label={`Show ${p.label}`}
+              aria-current={n === i}
+              className={`size-1.5 rounded-full transition-colors ${
+                n === i ? "bg-accent" : "bg-line-strong hover:bg-ink-subtle"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
