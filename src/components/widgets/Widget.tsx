@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState, type ReactNode } from "react";
 import { Maximize2, Minimize2, RefreshCw } from "lucide-react";
-import { ProgressCircle } from "@tremor/react";
 import { WidgetSpanContext } from "./widgetSpan";
 import useElementSize from "../../hooks/useElementSize";
 
@@ -148,11 +147,74 @@ export type RingSegment = {
   color: "emerald" | "gray" | "amber" | "red" | "blue" | "orange";
 };
 
-// A radial progress ring (Tremor ProgressCircle) with a headline number and
-// short caption in the middle and a colour-keyed legend below. The arc shows
-// the first segment's share of the total. The ring is fluid — it sizes itself
-// to whatever space the widget hands it (kept square, never overflowing),
-// matching the gauges in Offline Devices.
+// A thick radial gauge (ProgressCircle-weight, self-sizing) where every
+// segment is drawn round the ring in its own colour — so the ring itself
+// carries the legend rather than a dead grey track. Pass `max` to hold the
+// unfilled remainder as a faint track (single-value gauges); omit it and the
+// segments fill the whole ring proportionally.
+export function RadialGauge({
+  radius,
+  strokeWidth,
+  segments,
+  max,
+  children,
+}: {
+  radius: number;
+  strokeWidth: number;
+  segments: { color: RingSegment["color"]; value: number }[];
+  max?: number;
+  children?: ReactNode;
+}) {
+  const size = (radius + strokeWidth) * 2;
+  const circ = 2 * Math.PI * radius;
+  const total =
+    (max ?? segments.reduce((sum, s) => sum + s.value, 0)) || 1;
+  // Arc length for each segment, plus how far round the ring it starts.
+  const lengths = segments.map((s) => (Math.max(0, s.value) / total) * circ);
+  const offsets = lengths.map((_, i) =>
+    lengths.slice(0, i).reduce((a, b) => a + b, 0),
+  );
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className="-rotate-90"
+      >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          strokeWidth={strokeWidth}
+          className="stroke-line"
+        />
+        {segments.map((s, i) => (
+          <circle
+            key={i}
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            strokeWidth={strokeWidth}
+            strokeDasharray={`${lengths[i]} ${circ - lengths[i]!}`}
+            strokeDashoffset={-offsets[i]!}
+            className={`stroke-${s.color}-500`}
+          />
+        ))}
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// A radial gauge with a headline number and short caption in the middle and a
+// colour-keyed legend below. Every segment shows in the ring in its legend
+// colour. The ring is fluid — it sizes itself to whatever space the widget
+// hands it (kept square, never overflowing), matching Offline Devices.
 export function RingView({
   centerValue,
   centerLabel,
@@ -168,9 +230,6 @@ export function RingView({
   const side = Math.min(width, height);
   const radius = Math.max(28, Math.min(90, Math.floor(side / 2) - 12));
   const strokeWidth = Math.max(7, Math.round(radius / 6));
-  const total = segments.reduce((sum, s) => sum + s.value, 0) || 1;
-  const primary = segments[0]!;
-  const pct = Math.round((primary.value / total) * 100);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3">
@@ -178,12 +237,10 @@ export function RingView({
         ref={fitRef}
         className="flex min-h-[6rem] w-full flex-1 items-center justify-center"
       >
-        <ProgressCircle
-          value={pct}
+        <RadialGauge
           radius={radius}
           strokeWidth={strokeWidth}
-          color={primary.color}
-          showAnimation={false}
+          segments={segments}
         >
           <div className="flex flex-col items-center px-1 text-center">
             <span
@@ -199,7 +256,7 @@ export function RingView({
               </span>
             ) : null}
           </div>
-        </ProgressCircle>
+        </RadialGauge>
       </div>
       <div className="flex shrink-0 flex-wrap justify-center gap-x-4 gap-y-1">
         {segments.map((s) => (

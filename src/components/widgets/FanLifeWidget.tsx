@@ -43,10 +43,10 @@ export default function FanLifeWidget({
   const ring = (
     <RingView
       centerValue={count}
-      centerLabel="Fans near EOL"
+      centerLabel="Fans"
       segments={
         count === 0
-          ? [{ name: "All healthy", value: 0, color: "emerald" }]
+          ? [{ name: "All healthy", value: 1, color: "emerald" }]
           : [
               { name: "Near end of life", value: count, color: "amber" },
               { name: "Healthy", value: healthy, color: "emerald" },

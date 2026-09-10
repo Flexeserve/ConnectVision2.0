@@ -108,7 +108,7 @@ export default function TemperatureAlarmsWidget({
             centerLabel="Today"
             segments={
               totalCount === 0
-                ? [{ name: "None", value: 0, color: "gray" }]
+                ? [{ name: "None", value: 1, color: "gray" }]
                 : [
                     { name: "High", value: highCount, color: "red" },
                     { name: "Low", value: lowCount, color: "blue" },

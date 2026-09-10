@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { TriangleAlert } from "lucide-react";
-import { ProgressCircle } from "@tremor/react";
-import { Widget } from "./Widget";
+import { Widget, RadialGauge } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
 import useElementSize from "../../hooks/useElementSize";
 
@@ -21,7 +20,6 @@ type Category = {
 // A single radial gauge — offline share of a device category. The circle
 // sizes itself to whatever space the widget hands each column.
 function Gauge({ cat }: { cat: Category }) {
-  const pct = cat.total > 0 ? Math.round((cat.offline / cat.total) * 100) : 0;
   const [fitRef, { width, height }] = useElementSize<HTMLDivElement>();
   const side = Math.min(width, height);
   const radius = Math.max(24, Math.min(72, Math.floor(side / 2) - 10));
@@ -32,11 +30,16 @@ function Gauge({ cat }: { cat: Category }) {
         ref={fitRef}
         className="flex min-h-[3.5rem] w-full flex-1 items-center justify-center"
       >
-        <ProgressCircle
-          value={pct}
+        <RadialGauge
           radius={radius}
           strokeWidth={strokeWidth}
-          color={pct === 0 ? "gray" : cat.color}
+          max={cat.total || 1}
+          segments={[
+            {
+              color: cat.offline > 0 ? cat.color : "gray",
+              value: cat.offline,
+            },
+          ]}
         >
           <span
             className={`text-lg font-bold tabular-nums ${
@@ -45,7 +48,7 @@ function Gauge({ cat }: { cat: Category }) {
           >
             {cat.offline}
           </span>
-        </ProgressCircle>
+        </RadialGauge>
       </div>
       <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
         {cat.label}
