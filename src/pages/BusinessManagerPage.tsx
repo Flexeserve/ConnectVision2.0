@@ -42,6 +42,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 const BEACON_OFFSETS_KEY = "cv_beacon_offsets";
 const WIDGET_ORDER_KEY = "cv_widget_order";
+const WIDGET_SPANS_KEY = "cv_widget_spans";
 const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
 const BEACONS_VISIBILITY_EVENT = "cv_beacons_visibility_updated";
 const HEADER_BRAND_KEY = "cv_header_brand";
@@ -49,27 +50,89 @@ const HEADER_BRAND_EVENT = "cv_header_brand_updated";
 const HIDDEN_WIDGETS_KEY = "cv_hidden_widgets";
 const SHOW_DEV_MENU = false;
 
-// One grid cell — sortable (drag to reorder, only while editing). Mirrors
-// the inner <Widget>'s expanded 2x2 span onto the grid item via a :has()
-// rule in BusinessManagerPage.css.
+// Manual widget resizing (drag the corner in edit mode to change how many
+// grid cells a widget spans). Flip to false to disable — the expand button
+// still works, widgets just can't be free-resized.
+const ENABLE_WIDGET_RESIZE = true;
+
+const GRID_GAP_PX = 12; // matches WidgetGrid's gap-3
+const GRID_ROW_PX = 240; // matches WidgetGrid's auto-rows-[15rem]
+const MAX_SPAN = 3;
+
+type WidgetSpan = { c: number; r: number };
+
+// One grid cell — sortable (drag to reorder) and, when ENABLE_WIDGET_RESIZE,
+// resizable (drag the SE corner) while editing. A manual span overrides the
+// inner <Widget>'s expand-to-2x2 :has() rule via inline style.
 function SortableWidget({
   id,
   isEditing,
+  span,
+  onResize,
   children,
 }: {
   id: string;
   isEditing: boolean;
+  span?: WidgetSpan;
+  onResize?: (id: string, span: WidgetSpan) => void;
   children: React.ReactNode;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id, disabled: !isEditing });
+  const elRef = React.useRef<HTMLDivElement | null>(null);
+  const [resizing, setResizing] = React.useState(false);
+
+  const setRefs = (node: HTMLDivElement | null) => {
+    elRef.current = node;
+    setNodeRef(node);
+  };
+
+  const startResize = (e: React.PointerEvent) => {
+    if (!onResize || !elRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = elRef.current.getBoundingClientRect();
+    const startC = span?.c ?? 1;
+    const cellW = (rect.width - (startC - 1) * GRID_GAP_PX) / startC;
+    const rowStride = GRID_ROW_PX + GRID_GAP_PX;
+    setResizing(true);
+    (e.target as Element).setPointerCapture(e.pointerId);
+
+    const move = (ev: PointerEvent) => {
+      const w = rect.width + (ev.clientX - e.clientX);
+      const h = rect.height + (ev.clientY - e.clientY);
+      const c = Math.min(
+        MAX_SPAN,
+        Math.max(1, Math.round((w + GRID_GAP_PX) / (cellW + GRID_GAP_PX))),
+      );
+      const r = Math.min(
+        MAX_SPAN,
+        Math.max(1, Math.round((h + GRID_GAP_PX) / rowStride)),
+      );
+      if (c !== (span?.c ?? 1) || r !== (span?.r ?? 1)) onResize(id, { c, r });
+    };
+    const up = (ev: PointerEvent) => {
+      setResizing(false);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      (e.target as Element).releasePointerCapture?.(ev.pointerId);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  const spanStyle: React.CSSProperties = span
+    ? { gridColumn: `span ${span.c} / span ${span.c}`, gridRow: `span ${span.r} / span ${span.r}` }
+    : {};
+
   return (
     <div
-      ref={setNodeRef}
+      ref={setRefs}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        zIndex: isDragging ? 20 : undefined,
+        zIndex: isDragging || resizing ? 20 : undefined,
+        ...spanStyle,
       }}
       className={`sortable-widget relative ${isDragging ? "opacity-70" : ""}`}
     >
@@ -83,6 +146,16 @@ function SortableWidget({
         >
           <GripVertical className="size-3.5" />
         </button>
+      )}
+      {isEditing && ENABLE_WIDGET_RESIZE && onResize && (
+        <span
+          onPointerDown={startResize}
+          role="slider"
+          aria-label="Resize widget"
+          aria-valuetext={`${span?.c ?? 1} by ${span?.r ?? 1}`}
+          tabIndex={0}
+          className="absolute bottom-1 right-1 z-10 size-4 cursor-se-resize touch-none rounded-sm border-b-2 border-r-2 border-accent"
+        />
       )}
       {children}
     </div>
@@ -399,6 +472,40 @@ export default function BusinessManagerPage({
     window.localStorage.setItem(WIDGET_ORDER_KEY, JSON.stringify(widgetOrder));
   }, [widgetOrder]);
 
+  // Manual per-widget grid spans (from corner-resizing). { [id]: {c, r} }.
+  const [widgetSpans, setWidgetSpans] = React.useState<Record<string, WidgetSpan>>(
+    () => {
+      if (typeof window === "undefined" || !ENABLE_WIDGET_RESIZE) return {};
+      try {
+        const raw = window.localStorage.getItem(WIDGET_SPANS_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch {
+        return {};
+      }
+    },
+  );
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(WIDGET_SPANS_KEY, JSON.stringify(widgetSpans));
+  }, [widgetSpans]);
+
+  const handleWidgetResize = React.useCallback((id: string, span: WidgetSpan) => {
+    setWidgetSpans((prev) => {
+      // 1x1 is the default — don't store it
+      if (span.c === 1 && span.r === 1) {
+        if (!prev[id]) return prev;
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+      const cur = prev[id];
+      if (cur && cur.c === span.c && cur.r === span.r) return prev;
+      return { ...prev, [id]: span };
+    });
+  }, []);
+
   const orderedWidgets = React.useMemo(() => {
     const registryIds = widgetComponents.map((w) => w.id);
     const rank = new Map(widgetOrder.map((id, i) => [id, i]));
@@ -654,7 +761,13 @@ export default function BusinessManagerPage({
                   >
                     <WidgetGrid>
                       {orderedWidgets.map((w) => (
-                        <SortableWidget key={w.id} id={w.id} isEditing={isEditing}>
+                        <SortableWidget
+                          key={w.id}
+                          id={w.id}
+                          isEditing={isEditing}
+                          span={widgetSpans[w.id]}
+                          onResize={handleWidgetResize}
+                        >
                           {w.element}
                         </SortableWidget>
                       ))}
