@@ -1,5 +1,5 @@
-import { useContext, useState, type ReactNode } from "react";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { useContext, useEffect, useState, type ReactNode } from "react";
+import { Maximize2, Minimize2, RefreshCw } from "lucide-react";
 import { DonutChart } from "@tremor/react";
 import { WidgetSpanContext } from "./widgetSpan";
 
@@ -232,6 +232,77 @@ export function StoreList({
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+// Cycles an expanded widget through a set of views on a timer, with a small
+// toolbar (progress pips + a "next" button) at the top. Clicking next pauses
+// the auto-cycle so you can hold on a view.
+export function Alternator({
+  panes,
+  intervalMs = 6000,
+}: {
+  panes: { key: string; label: string; node: ReactNode }[];
+  intervalMs?: number;
+}) {
+  const [i, setI] = useState(0);
+  const [auto, setAuto] = useState(true);
+  const count = panes.length;
+
+  useEffect(() => {
+    if (!auto || count < 2) return;
+    const t = setInterval(() => setI((p) => (p + 1) % count), intervalMs);
+    return () => clearInterval(t);
+  }, [auto, count, intervalMs]);
+
+  if (count === 0) return null;
+  const active = panes[Math.min(i, count - 1)]!;
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      {count > 1 && (
+        <div className="mb-1.5 flex shrink-0 items-center justify-between">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
+            {active.label}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setAuto(false);
+              setI((p) => (p + 1) % count);
+            }}
+            onDoubleClick={() => setAuto(true)}
+            aria-label={`Next view (${auto ? "auto-cycling" : "paused"})`}
+            title={auto ? "Auto-cycling — click to hold" : "Paused — double-click to resume"}
+            className="flex items-center gap-1.5 rounded-md border border-line px-1.5 py-0.5 text-ink-muted transition-colors hover:text-ink"
+          >
+            <span className="flex gap-0.5">
+              {panes.map((p, n) => (
+                <span
+                  key={p.key}
+                  className={`size-1 rounded-full ${
+                    n === i ? "bg-accent" : "bg-line-strong"
+                  }`}
+                />
+              ))}
+            </span>
+            <RefreshCw className={`size-3 ${auto ? "opacity-100" : "opacity-40"}`} />
+          </button>
+        </div>
+      )}
+      <div className="relative min-h-0 flex-1">
+        {panes.map((p, n) => (
+          <div
+            key={p.key}
+            className={`absolute inset-0 flex flex-col transition-opacity duration-500 ${
+              n === i ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+          >
+            {p.node}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

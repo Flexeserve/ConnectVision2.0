@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { TriangleAlert } from "lucide-react";
-import { Widget, Metric, StoreList } from "./Widget";
+import { BarChart } from "@tremor/react";
+import { Widget, Metric, StoreList, Alternator } from "./Widget";
 import { seededInt, storeName } from "../../lib/seededRandom";
 
 type AlarmsWidgetProps = {
@@ -30,13 +31,38 @@ export default function AlarmsWidget({
     <Widget title="Active Alarms" icon={<TriangleAlert />}>
       {(expanded) =>
         expanded && perStore.length ? (
-          <StoreList
-            rows={perStore.map((r) => ({
-              key: r.id,
-              name: r.name,
-              value: r.count,
-              tone: r.count > 0 ? "danger" : "success",
-            }))}
+          <Alternator
+            panes={[
+              {
+                key: "by-store",
+                label: "By store",
+                node: (
+                  <StoreList
+                    rows={perStore.map((r) => ({
+                      key: r.id,
+                      name: r.name,
+                      value: r.count,
+                      tone: r.count > 0 ? "danger" : "success",
+                    }))}
+                  />
+                ),
+              },
+              {
+                key: "chart",
+                label: "Alarms per store",
+                node: (
+                  <BarChart
+                    className="h-full"
+                    data={perStore.map((r) => ({ store: r.name, Alarms: r.count }))}
+                    index="store"
+                    categories={["Alarms"]}
+                    colors={["red"]}
+                    showLegend={false}
+                    yAxisWidth={28}
+                  />
+                ),
+              },
+            ]}
           />
         ) : (
           <Metric

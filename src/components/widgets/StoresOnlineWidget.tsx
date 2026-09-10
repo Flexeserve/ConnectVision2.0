@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Store } from "lucide-react";
-import { Widget, RingView, StoreList } from "./Widget";
+import { Widget, RingView, StoreList, Alternator } from "./Widget";
 import { seededInt, storeName } from "../../lib/seededRandom";
 
 type StoresOnlineWidgetProps = {
@@ -27,27 +27,42 @@ export default function StoresOnlineWidget({
   const online = perStore.filter((s) => s.online).length;
   const offline = perStore.length - online;
 
+  const ring = (
+    <RingView
+      centerValue={online}
+      centerLabel="Online"
+      segments={[
+        { name: "Online", value: online, color: "emerald" },
+        { name: "Offline", value: offline, color: "gray" },
+      ]}
+    />
+  );
+
   return (
     <Widget title="Stores Online" icon={<Store />}>
       {(expanded) =>
         expanded ? (
-          <StoreList
-            rows={perStore.map((s) => ({
-              key: s.id,
-              name: s.name,
-              value: s.online ? "Online" : "Offline",
-              tone: s.online ? "success" : "danger",
-            }))}
-          />
-        ) : (
-          <RingView
-            centerValue={online}
-            centerLabel="Online"
-            segments={[
-              { name: "Online", value: online, color: "emerald" },
-              { name: "Offline", value: offline, color: "gray" },
+          <Alternator
+            panes={[
+              {
+                key: "by-store",
+                label: "By store",
+                node: (
+                  <StoreList
+                    rows={perStore.map((s) => ({
+                      key: s.id,
+                      name: s.name,
+                      value: s.online ? "Online" : "Offline",
+                      tone: s.online ? "success" : "danger",
+                    }))}
+                  />
+                ),
+              },
+              { key: "ring", label: "Online vs offline", node: ring },
             ]}
           />
+        ) : (
+          ring
         )
       }
     </Widget>
