@@ -79,11 +79,12 @@ export function Widget({
 }
 
 // Drop <Widget>s straight into this. Columns auto-fill the container width;
-// rows are a fixed height and an expanded widget takes 2x2; `dense` reflow
-// backfills the holes that leaves.
+// rows are a FIXED height (so widgets stay uniform tiles and content that
+// overflows scrolls locally rather than stretching the cell); an expanded
+// widget takes 2x2 and `dense` reflow backfills the holes that leaves.
 export function WidgetGrid({ children }: { children: ReactNode }) {
   return (
-    <div className="grid auto-rows-[minmax(220px,auto)] grid-cols-[repeat(auto-fill,minmax(280px,1fr))] grid-flow-row-dense gap-3">
+    <div className="grid auto-rows-[15rem] grid-cols-[repeat(auto-fill,minmax(280px,1fr))] grid-flow-row-dense gap-3">
       {children}
     </div>
   );
