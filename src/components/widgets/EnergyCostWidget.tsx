@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { PoundSterling } from "lucide-react";
-import { LineChart, BadgeDelta } from "@tremor/react";
+import { AreaChart, BadgeDelta } from "@tremor/react";
 import { Widget } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
 
@@ -11,6 +11,9 @@ const CURRENCY_OPTIONS = [
   { code: "EUR", symbol: "€", rate: 0.21 },
   { code: "USD", symbol: "$", rate: 0.23 },
 ];
+
+const TREND_DOWN = "#a4130e";
+const TREND_UP = "#1e7d3f";
 
 const buildDataset = (storeIds: string[]) =>
   DAYS.map((day) => ({
@@ -25,6 +28,48 @@ const buildDataset = (storeIds: string[]) =>
     ),
   }));
 
+// A hand-rolled mini area chart — exact colour control, no axes, tiny.
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  const w = 140;
+  const h = 40;
+  const pad = 2;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const span = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = pad + (i / Math.max(1, data.length - 1)) * (w - pad * 2);
+    const y = pad + (1 - (v - min) / span) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const line = `M ${pts.join(" L ")}`;
+  const area = `${line} L ${w - pad},${h - pad} L ${pad},${h - pad} Z`;
+  const gid = `spark-grad-${color.replace("#", "")}`;
+  return (
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      className="h-10 w-full max-w-[180px]"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gid})`} />
+      <path
+        d={line}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 type EnergyCostWidgetProps = {
   storeIds?: string[];
 };
@@ -35,12 +80,14 @@ export default function EnergyCostWidget({
   const chartData = useMemo(() => buildDataset(storeIds), [storeIds]);
   const [currency, setCurrency] = useState(CURRENCY_OPTIONS[0]);
 
+  const thisWeekSeries = chartData.map((d) => d["This week"]);
   const totalKwh = chartData.reduce((s, v) => s + v["This week"], 0);
   const totalLastKwh = chartData.reduce((s, v) => s + v["Last week"], 0);
   const totalCost = totalKwh * currency.rate;
   const lastCost = totalLastKwh * currency.rate;
   const deltaPct = lastCost === 0 ? 0 : ((totalCost - lastCost) / lastCost) * 100;
-  const isSaving = deltaPct <= 0;
+  const goingDown = deltaPct < 0;
+  const trendColor = goingDown ? TREND_DOWN : TREND_UP;
 
   return (
     <Widget title="Energy Consumption / Cost" icon={<PoundSterling />}>
@@ -87,22 +134,27 @@ export default function EnergyCostWidget({
             <BadgeDelta
               className="mt-1"
               size="xs"
-              deltaType={isSaving ? "moderateDecrease" : "moderateIncrease"}
+              deltaType={goingDown ? "moderateDecrease" : "moderateIncrease"}
               isIncreasePositive={false}
             >
-              {Math.abs(deltaPct).toFixed(1)}% {isSaving ? "saved" : "more"} vs last
+              {Math.abs(deltaPct).toFixed(1)}% {goingDown ? "saved" : "more"} vs last
               week
             </BadgeDelta>
           </div>
 
+          {!expanded && (
+            <Sparkline data={thisWeekSeries} color={trendColor} />
+          )}
+
           {expanded && (
-            <LineChart
+            <AreaChart
               className="min-h-0 flex-1"
               data={chartData}
               index="day"
               categories={["This week", "Last week"]}
               colors={["orange", "gray"]}
               valueFormatter={(v) => `${v} kWh`}
+              showGradient
               showLegend
               curveType="monotone"
               yAxisWidth={40}
