@@ -33,24 +33,16 @@ import {
 } from "../lib/widgetSizing";
 import { WidgetSizeContext, type WidgetSize } from "../components/widgets/WidgetSizeContext";
 
-// Own layout-item shape (react-grid-layout's `Layout` type is gone) — kept
-// deliberately small and grid-library-agnostic, with `i` as the item key
-// (matching the persisted cookie/localStorage format from before, so
-// existing saved layouts keep working). Mapped to/from GridStack's own
-// `id`-keyed shape only at the two boundary points (building `children` for
-// <GridStack>, and reading nodes back from its onChange). Widgets free-resize
-// again between minW/minH and maxW/maxH; the toggle button (see WidgetSlot)
-// stays as a shortcut that snaps to the SMALL / LARGE presets.
+// Own layout-item shape — just position + size per widget, keyed by `i`
+// (matching the persisted localStorage format). Resize bounds aren't stored
+// per item: they're the same WIDGET_BOUNDS for every widget, applied where
+// they're actually used (clamping on load, and the GridStack children).
 type LayoutItem = {
   i: string;
   x: number;
   y: number;
   w: number;
   h: number;
-  minW?: number;
-  minH?: number;
-  maxW?: number;
-  maxH?: number;
 };
 
 // A widget renders its compact view or its detail view based on aspect: a
@@ -116,9 +108,8 @@ const GRID_COMPONENTS = { WidgetSlot };
 
 const LAYOUT_COOKIE_NAME = "cv_widget_layout";
 const LAYOUT_STORAGE_KEY = "cv_widget_layout_json";
-// v4: dropped free-resize (minW/minH/maxW/maxH) in favor of two fixed sizes
-// — bumped so pre-v4 saved layouts (which may have any w/h) reset to
-// DEFAULT_LAYOUT rather than trying to reinterpret arbitrary old dimensions.
+// Bump this to force existing saved layouts to reset to DEFAULT_LAYOUT
+// (used when the default layout or size model changes meaningfully).
 const LAYOUT_VERSION = "v4";
 const LAYOUT_VERSION_KEY = "cv_widget_layout_version";
 const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
@@ -478,25 +469,22 @@ export default function BusinessManagerPage({
 
   const DEFAULT_LAYOUT: LayoutItem[] = React.useMemo(
     () => [
-      // Starting layout: SMALL (w:10 h:10, a square tile — half the
-      // 20-column grid wide) everywhere except Fan Life, which starts LARGE
-      // (w:10 h:20) for its progress-bar list. Packed two per column
-      // (x:0/x:10), each column with its own running y so a taller widget in
-      // one column doesn't force a gap in the other. Every widget then
-      // free-resizes between WIDGET_BOUNDS, or snaps to a preset via the
-      // toggle button.
-      { i: "fan-life", x: 0, y: 0, ...WIDGET_SIZE_LARGE, ...WIDGET_BOUNDS },
-      { i: "door-opened", x: 0, y: 20, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "element", x: 0, y: 30, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "alarm-summary", x: 0, y: 40, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "energy-widget", x: 0, y: 50, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "stores-online", x: 0, y: 60, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "offline-devices", x: 10, y: 0, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "alarms", x: 10, y: 10, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "energy", x: 10, y: 20, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "cloud", x: 10, y: 30, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "energy-cost", x: 10, y: 40, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
-      { i: "temp-alarms", x: 10, y: 50, ...WIDGET_SIZE_SMALL, ...WIDGET_BOUNDS },
+      // Starting layout, two widgets per column (x:0 / x:10), each column
+      // stacking on its own running y. Fan Life starts LARGE for its
+      // progress-bar list; everything else starts SMALL. Resize bounds come
+      // from WIDGET_BOUNDS later, not stored here.
+      { i: "fan-life", x: 0, y: 0, ...WIDGET_SIZE_LARGE },
+      { i: "door-opened", x: 0, y: 20, ...WIDGET_SIZE_SMALL },
+      { i: "element", x: 0, y: 30, ...WIDGET_SIZE_SMALL },
+      { i: "alarm-summary", x: 0, y: 40, ...WIDGET_SIZE_SMALL },
+      { i: "energy-widget", x: 0, y: 50, ...WIDGET_SIZE_SMALL },
+      { i: "stores-online", x: 0, y: 60, ...WIDGET_SIZE_SMALL },
+      { i: "offline-devices", x: 10, y: 0, ...WIDGET_SIZE_SMALL },
+      { i: "alarms", x: 10, y: 10, ...WIDGET_SIZE_SMALL },
+      { i: "energy", x: 10, y: 20, ...WIDGET_SIZE_SMALL },
+      { i: "cloud", x: 10, y: 30, ...WIDGET_SIZE_SMALL },
+      { i: "energy-cost", x: 10, y: 40, ...WIDGET_SIZE_SMALL },
+      { i: "temp-alarms", x: 10, y: 50, ...WIDGET_SIZE_SMALL },
     ],
     [],
   );
@@ -516,16 +504,12 @@ export default function BusinessManagerPage({
         const incoming = persistedMap.get(base.i);
         if (!incoming) return base;
 
-        // Clamp the persisted size into this widget's bounds (defensive
-        // against stale/malformed saved values).
+        // Clamp the persisted size into WIDGET_BOUNDS (defensive against
+        // stale/malformed saved values).
         const width =
-          clampNumber(incoming.w, base.minW ?? 1, base.maxW ?? GRID_COLS) ?? base.w;
+          clampNumber(incoming.w, WIDGET_BOUNDS.minW, WIDGET_BOUNDS.maxW) ?? base.w;
         const height =
-          clampNumber(
-            incoming.h,
-            base.minH ?? 1,
-            base.maxH ?? Number.MAX_SAFE_INTEGER,
-          ) ?? base.h;
+          clampNumber(incoming.h, WIDGET_BOUNDS.minH, WIDGET_BOUNDS.maxH) ?? base.h;
         const maxX = Math.max(GRID_COLS - width, 0);
         const x = clampNumber(incoming.x, 0, maxX) ?? base.x;
         const y = clampNumber(incoming.y, 0, Number.MAX_SAFE_INTEGER) ?? base.y;
@@ -670,10 +654,7 @@ export default function BusinessManagerPage({
           y: item.y,
           w: item.w,
           h: item.h,
-          minW: item.minW,
-          maxW: item.maxW,
-          minH: item.minH,
-          maxH: item.maxH,
+          ...WIDGET_BOUNDS,
           component: "WidgetSlot",
           props: {
             widgetId: item.i,
