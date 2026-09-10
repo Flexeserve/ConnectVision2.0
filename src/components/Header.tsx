@@ -1,15 +1,6 @@
-import {
-  AppBar,
-  Toolbar,
-  Box,
-  Typography,
-  IconButton,
-  Popover,
-  FormControlLabel,
-  Switch,
-} from "@mui/material";
-import settingsIcon from "../assets/SettingsIcon.svg";
 import React from "react";
+import { Popover, PopoverContent, PopoverTrigger, Switch } from "@heroui/react";
+import settingsIcon from "../assets/SettingsIcon.svg";
 import BackButton from "./BackButton";
 import flexeserveLogo from "../assets/flexeserveLogo.svg";
 import flexeserveLogoInversed from "../assets/flexeserveLogoInversed.svg";
@@ -24,14 +15,8 @@ type Props = {
 const HEADER_BRAND_KEY = "cv_header_brand";
 const HEADER_BRAND_EVENT = "cv_header_brand_updated";
 
-export default function Header({
-  onBack,
-  title,
-  headerBrand,
-}: Props) {
+export default function Header({ onBack, title, headerBrand }: Props) {
   const [now, setNow] = React.useState(() => new Date());
-  const [settingsAnchor, setSettingsAnchor] =
-    React.useState<HTMLElement | null>(null);
   const [isDarkMode, setIsDarkMode] = React.useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("cv_theme") === "dark";
@@ -129,8 +114,6 @@ export default function Header({
 
   const effectiveHeaderBrand = headerBrand ?? globalHeaderBrand;
   const isHebHeader = effectiveHeaderBrand === "heb";
-  const headerBg = isHebHeader ? "#ee2824" : "var(--header-bg)";
-  const headerText = isHebHeader ? "#ffffff" : "var(--header-text)";
   const logoSrc = isHebHeader
     ? hebLogo
     : isDarkMode
@@ -138,103 +121,54 @@ export default function Header({
       : flexeserveLogo;
 
   return (
-    <AppBar
-      position="static"
-      color="default"
-      sx={{
-        backgroundColor: headerBg,
-        color: headerText,
-        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.35)",
-        borderBottom: "1px solid var(--border-color)",
-        position: "relative",
-        zIndex: 2,
-      }}
+    <header
+      className={`relative z-[2] flex items-center justify-between gap-4 border-b border-line px-4 py-2 shadow-[0_2px_6px_rgba(0,0,0,0.35)] ${
+        isHebHeader ? "bg-[#ee2824] text-white" : "bg-surface text-ink"
+      }`}
     >
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Box display="flex" alignItems="center" gap={2}>
-          {onBack && <BackButton onClick={onBack} />}
-          <Box
-            component="img"
-            src={logoSrc}
-            alt="Flexeserve Logo"
-            className="header-logo"
-            sx={{ height: 20 }}
-          />
-          {title && (
-            <>
-              <Typography
-                component="span"
-                aria-hidden
-                sx={{
-                  fontFamily: '"Inter", "Inter var", sans-serif',
-                  fontWeight: 600,
-                  color: headerText,
-                }}
-              >
-                |
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontFamily: '"Inter", "Inter var", sans-serif',
-                  fontWeight: 600,
-                  color: headerText,
-                }}
-              >
-                {title}
-              </Typography>
-            </>
-          )}
-        </Box>
+      <div className="flex items-center gap-4">
+        {onBack && <BackButton onClick={onBack} />}
+        <img src={logoSrc} alt="Flexeserve Logo" className="h-5" />
+        {title && (
+          <>
+            <span aria-hidden className="font-semibold opacity-70">
+              |
+            </span>
+            <span className="text-base font-semibold">{title}</span>
+          </>
+        )}
+      </div>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography variant="caption" sx={{ opacity: 0.7, color: headerText }}>
-            {timeLabel}
-          </Typography>
-          <IconButton
-            className="settings-button"
-            color="inherit"
-            aria-label="Settings"
-            onClick={(event) => setSettingsAnchor(event.currentTarget)}
-          >
-            <Box
-              component="img"
-              src={settingsIcon}
-              alt=""
-              sx={{
-                width: 48,
-                height: 48,
-                background:
-                  "linear-gradient(45deg, #d94d14 0%, #f06a24 100%)",
-                borderRadius: "6px",
-                padding: "2px 12px",
-              }}
-            />
-          </IconButton>
-          <Popover
-            open={Boolean(settingsAnchor)}
-            anchorEl={settingsAnchor}
-            onClose={() => setSettingsAnchor(null)}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
-          >
-            <Box sx={{ p: 2, minWidth: 220 }}>
-              <Typography sx={{ fontWeight: 600, mb: 1 }}>
-                Appearance
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isDarkMode}
-                    onChange={(event) => setIsDarkMode(event.target.checked)}
-                  />
-                }
-                label={isDarkMode ? darkModeLabel : lightModeLabel}
+      <div className="flex items-center gap-2">
+        <span className="text-xs opacity-70">{timeLabel}</span>
+        <Popover placement="bottom-end">
+          <PopoverTrigger>
+            <button
+              type="button"
+              aria-label="Settings"
+              className="inline-flex items-center justify-center rounded-md"
+            >
+              <img
+                src={settingsIcon}
+                alt=""
+                className="h-12 w-12 rounded-md bg-gradient-to-br from-accent to-[#f06a24] px-3 py-0.5"
               />
-            </Box>
-          </Popover>
-        </Box>
-      </Toolbar>
-    </AppBar>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="min-w-[220px] p-4">
+            <div className="w-full">
+              <p className="mb-2 font-semibold text-ink">Appearance</p>
+              <Switch
+                isSelected={isDarkMode}
+                onValueChange={setIsDarkMode}
+                size="sm"
+              >
+                {isDarkMode ? darkModeLabel : lightModeLabel}
+              </Switch>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </header>
   );
 }

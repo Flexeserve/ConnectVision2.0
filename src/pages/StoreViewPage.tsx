@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  InputAdornment,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Search } from "lucide-react";
 import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import Header from "../components/Header";
@@ -244,30 +237,17 @@ export default function StoreViewPage({
 
         <div className="store-view-main">
           <div className="store-view-left">
-            <Container maxWidth="lg" sx={{ mt: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                <Box
-                  component="img"
-                  src={storeIcon}
-                  alt="Store Icon"
-                  className="store-icon"
-                  sx={{ height: 64 }}
-                />
-                <Typography
-                  sx={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: "1.1rem",
-                    fontWeight: 600,
-                    color: "var(--text-primary)",
-                  }}
-                >
+            <div className="mx-auto mt-2 w-full max-w-5xl">
+              <div className="mb-6 flex items-center gap-4">
+                <img src={storeIcon} alt="Store Icon" className="h-16" />
+                <span className="text-lg font-semibold text-ink">
                   {title ?? "View All Markets"}
-                </Typography>
-              </Box>
+                </span>
+              </div>
               {rows.length > 0 && (
-                <Box className="store-list">
+                <div className="store-list">
                   {rows.map((row) => (
-                    <Box
+                    <div
                       key={row.id}
                       className="store-row"
                       onClick={() => onOpen?.(row.id)}
@@ -281,95 +261,37 @@ export default function StoreViewPage({
                         }
                       }}
                     >
-                      <Typography
-                        sx={{
-                          fontFamily: "Inter, sans-serif",
-                          fontWeight: 600,
-                          color: "var(--text-primary)",
-                          fontSize: "0.98rem",
-                        }}
-                      >
+                      <span className="text-[0.98rem] font-semibold text-ink">
                         {row.title}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   ))}
-                </Box>
+                </div>
               )}
-            </Container>
+            </div>
           </div>
 
           <div className="store-view-right">
-            <Box className="greetings-search">
-              <TextField
-                variant="outlined"
-                size="small"
-                placeholder="Write to start search"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment
-                      position="end"
-                      sx={{
-                        m: 0,
-                        height: "100%",
-                        alignSelf: "stretch",
-                        display: "flex",
-                        alignItems: "center",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        aria-label="Search"
-                        className="search-button"
-                      >
-                        <SearchIcon fontSize="small" sx={{ color: "#fff" }} />
-                      </button>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  width: { xs: "100%", sm: 360, md: 460 },
-                  maxWidth: { xs: "100%", sm: 420, md: 500 },
-                  "& .MuiInputBase-root": {
-                    color: "var(--text-primary)",
-                    backgroundColor: "var(--panel-bg)",
-                    paddingRight: 0,
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                  },
-                  "& .MuiInputBase-input::placeholder": {
-                    color: "var(--text-muted)",
-                    opacity: 1,
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    paddingRight: 0,
-                    height: 36,
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                  "& .MuiInputAdornment-positionEnd": {
-                    marginRight: 0,
-                    height: "100%",
-                    alignSelf: "stretch",
-                  },
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "var(--border-strong)",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "var(--text-primary)",
-                  },
-                }}
-              />
-            </Box>
+            <div className="greetings-search">
+              <div className="relative flex w-full max-w-[500px] sm:w-[460px]">
+                <input
+                  type="text"
+                  placeholder="Write to start search"
+                  className="h-9 w-full rounded-l-md border border-line-strong bg-surface px-3 text-sm text-ink placeholder:text-ink-muted hover:border-ink focus:border-ink focus:outline-none"
+                />
+                <button
+                  type="button"
+                  aria-label="Search"
+                  className="flex h-9 w-16 shrink-0 items-center justify-center rounded-r-md bg-gradient-to-br from-accent to-[#f06a24] text-white"
+                >
+                  <Search className="size-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         <div className="store-view-bottom">
-          <Container maxWidth={false} className="store-device-container">
+          <div className="store-device-container w-full">
             <div className="store-device-header">
               <span>Device</span>
               <span>Model</span>
@@ -446,7 +368,7 @@ export default function StoreViewPage({
                 </div>
               ))}
             </div>
-          </Container>
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 // src/components/RoleSelector.tsx
 import React from "react";
 import "./RoleSelector.css";
-import { Box, Typography, Button } from "@mui/material";
 import BackButton from "./BackButton";
 import businessManagerImage from "../assets/BusinessManager.webp";
 import operatorImage from "../assets/Operator.webp";
@@ -42,7 +41,7 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
     >
       {onBack && (
         <div className="role-back">
-          <BackButton onClick={onBack} color="#ffffff" />
+          <BackButton onClick={onBack} className="!text-white hover:!bg-white/15" />
         </div>
       )}
       <div
@@ -54,41 +53,19 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
           aria-hidden
         />
         <div className="panel-content-wrapper">
-          <Box
-            className="panel-content"
-            textAlign="center"
-            sx={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 1.5,
-            }}
-          >
-            <Typography sx={{ color: "#fff", fontWeight: 600 }} variant="h3" gutterBottom>
-              Business Manager
-            </Typography>
-            <Typography
-              sx={{
-                mb: 2,
-                maxWidth: 420,
-                mx: "auto",
-                color: "#fff",
-                fontFamily: '"Inter", "Inter var", sans-serif',
-              }}
-            >
+          <div className="panel-content flex w-full flex-col items-center justify-center gap-3 text-center">
+            <h3 className="text-4xl font-semibold text-white">Business Manager</h3>
+            <p className="mx-auto mb-2 max-w-[420px] text-white">
               Remote management of all connected devices across the business.
-            </Typography>
-            <Button
-              variant="contained"
+            </p>
+            <button
+              type="button"
               onClick={() => handleClick("manager")}
-              sx={{ backgroundColor: "#d94d14" }}
-              className="panel-cta-button"
+              className="panel-cta-button rounded-lg bg-accent px-5 py-2.5 font-semibold text-white shadow-md transition-transform hover:scale-[1.03]"
             >
               View Business Manager
-            </Button>
-          </Box>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -101,41 +78,20 @@ export default function RoleSelector({ onSelect, onClose, onBack }: Props) {
           aria-hidden
         />
         <div className="panel-content-wrapper">
-          <Box
-            className="panel-content"
-            textAlign="center"
-            sx={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 1.5,
-            }}
-          >
-            <Typography sx={{ color: "#fff", fontWeight: 600 }} variant="h3" gutterBottom>
-              Operator
-            </Typography>
-            <Typography
-              sx={{
-                mb: 2,
-                maxWidth: 420,
-                mx: "auto",
-                color: "#fff",
-                fontFamily: '"Inter", "Inter var", sans-serif',
-              }}
-            >
-              On-site interaction with connected devices within the parameters set-out by the business manager.
-            </Typography>
-            <Button
-              variant="contained"
+          <div className="panel-content flex w-full flex-col items-center justify-center gap-3 text-center">
+            <h3 className="text-4xl font-semibold text-white">Operator</h3>
+            <p className="mx-auto mb-2 max-w-[420px] text-white">
+              On-site interaction with connected devices within the parameters
+              set-out by the business manager.
+            </p>
+            <button
+              type="button"
               onClick={() => handleClick("operator")}
-              sx={{ backgroundColor: "#d94d14", fontWeight: "bold" }}
-              className="panel-cta-button"
+              className="panel-cta-button rounded-lg bg-accent px-5 py-2.5 font-bold text-white shadow-md transition-transform hover:scale-[1.03]"
             >
               View Operator
-            </Button>
-          </Box>
+            </button>
+          </div>
         </div>
       </div>
     </div>

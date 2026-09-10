@@ -1,244 +1,24 @@
-/* BusinessManagerPage.css */
-.app-container {
-  display: flex;
-  flex-wrap: wrap;
-  min-height: calc(100vh - 64px);
-  background-color: var(--app-bg);
-  color: var(--text-primary);
-  flex: 1;
-  padding: 0 clamp(16px, 3vw, 48px);
-  box-sizing: border-box;
-}
+/* BusinessManagerPage residual styles.
+   The page shell is Tailwind utilities on the JSX now — what's left here is
+   what utilities can't express: the gridstack target class, a :has()
+   selector, and the dev-only radial menu (SHOW_DEV_MENU). */
 
-.app-left {
-  display: flex; /* Enable flexbox */
-  flex-direction: column; /* Stack items vertically */
-  padding-top: calc(20vh - 100px); /* Center items vertically */
-  align-items: center; /* Optional: center horizontally */
-  flex: 0 0 30%;
-  min-width: 0;
-  height: 80vh; /* Full viewport height */
-  color: var(--text-primary);
-  padding: 0;
-  animation: shrinkLeftPanel 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  
-}
-
-.greetings {
-  flex: 0 0 100%;
-  font-size: 45px;
-  font-weight: 800;
-  font-family: "Inter", "Inter var", sans-serif;
-  color: #d94d14;
-  text-align: left;
-  padding: 0 clamp(1.5rem, 4vw, 3rem);
-  margin: clamp(1rem, 3vw, 2rem) 0 0 0;
-  box-sizing: border-box;
-}
-
-.typewriter-cursor {
-  display: inline-block;
-  margin-left: 2px;
-  font-weight: 400;
-  opacity: 1;
-}
-
-.bu-panel-transition {
-  animation: buPanelFade 260ms ease;
-}
-
-@keyframes buPanelFade {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.app-right {
-  flex: 0 0 70%;
-  min-width: 0;
-  padding: 0;
-  margin-bottom: 24px;
-  animation: expandWidgetsPanel 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.business-manager-page {
-  color: var(--text-primary);
-  min-height: 100vh;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 90px; /* space for fixed footer */
-}
-
-.bu-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: stretch;
-}
-
-/* Widget panel styles moved to MUI Box sx props */
-/* Keeping only the className for reference and animations */
-
-@keyframes expandWidgetsPanel {
-  0% {
-    flex-basis: 10%;
-    transform: translateX(40px);
-  }
-  100% {
-    flex-basis: 70%;
-    transform: translateX(0);
-  }
-}
-
-@keyframes shrinkLeftPanel {
-  0% {
-    flex-basis: 70%;
-  }
-  100% {
-    flex-basis: 30%;
-  }
-}
-
-@keyframes fadeWidgets {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.dashboard-title {
-  letter-spacing: 0.08em;
-}
-
-.dashboard-divider {
-  flex: 1;
-  height: 1px;
-  background: var(--border-color);
-}
-
-.dashboard-edit-button {
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  background: var(--panel-bg);
-  color: var(--text-primary);
-  width: 32px;
-  height: 32px;
-  font-size: 0.85rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition:
-    background 150ms ease,
-    color 150ms ease;
-}
-
-.widget-visibility-panel {
+.widgets-grid {
   width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: -8px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--panel-bg);
-  animation: fadeWidgets 220ms ease;
+  min-height: 240px;
+  padding-bottom: 40px;
 }
 
-.widget-visibility-panel-label {
-  font-family: "Inter", "Inter var", sans-serif;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-right: 4px;
+/* Don't trigger the row hover highlight when hovering a beacon control. */
+.bu-row-content:has(.beacon-button:hover) {
+  background: rgb(var(--surface));
 }
 
-.widget-visibility-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-family: "Inter", "Inter var", sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  background: var(--app-bg);
-  cursor: pointer;
-  transition:
-    background 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease,
-    opacity 150ms ease;
-}
-
-.widget-visibility-chip-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #1e7d3f;
-  flex: 0 0 auto;
-}
-
-.widget-visibility-chip--hidden {
-  color: var(--text-muted);
-  opacity: 0.65;
-}
-
-.widget-visibility-chip--hidden .widget-visibility-chip-dot {
-  background: var(--text-muted);
-}
-
-.widget-visibility-chip:hover {
-  border-color: var(--text-primary);
-}
-
-.dashboard-edit-fab {
-  position: sticky;
-  top: 12px;
-  z-index: 5;
-  display: flex;
-  justify-content: flex-end;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 150ms ease;
-}
-
-.dashboard-edit-fab.is-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.dashboard-edit-button--fab {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
-}
-
-.dashboard-edit-button:hover {
-  background: var(--text-primary);
-  color: var(--panel-bg);
-}
-
+/* --- dev-only radial menu (rendered only when SHOW_DEV_MENU) --- */
 .dev-radial-menu {
   position: fixed;
   left: 20px;
   bottom: 98px;
-  transform: none;
   z-index: 30;
   display: grid;
   place-items: center;
@@ -251,8 +31,7 @@
 .dev-radial-item {
   border: none;
   background: transparent;
-  color: var(--text-primary);
-  font-family: "Inter", "Inter var", sans-serif;
+  color: rgb(var(--ink));
   font-weight: 700;
   cursor: pointer;
 }
@@ -288,15 +67,12 @@
 .dev-radial-item--left {
   transform: translateX(-8px);
 }
-
 .dev-radial-item--top {
   transform: translateY(-8px);
 }
-
 .dev-radial-item--right {
   transform: translateX(8px);
 }
-
 .dev-radial-item--bottom {
   transform: translateY(8px);
 }
@@ -305,321 +81,15 @@
   opacity: 1;
   pointer-events: auto;
 }
-
 .dev-radial-menu.is-open .dev-radial-item--left {
   transform: translateX(140px);
 }
-
 .dev-radial-menu.is-open .dev-radial-item--top {
   transform: translate(128px, -72px);
 }
-
 .dev-radial-menu.is-open .dev-radial-item--right {
   transform: translateX(244px);
 }
-
 .dev-radial-menu.is-open .dev-radial-item--bottom {
   transform: translate(128px, 72px);
-}
-
-/* Grid scroll container styles moved to MUI Box sx props */
-
-.widgets-grid {
-  width: 100%;
-  min-height: 240px;
-  padding-bottom: 40px;
-}
-
-/* .widget-cell / .widget-drag-handle / .widget-size-toggle chrome moved to
-   Tailwind classes on WidgetSlot in BusinessManagerPage.tsx. */
-
-.bu-row {
-  width: 100%;
-  background: #2b2b2b;
-  border-radius: 0;
-  align-self: stretch;
-  cursor: pointer;
-}
-
-.bu-row-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 18px;
-  background-color: var(--panel-bg);
-  min-height: 42px;
-  transition: background-color 150ms ease;
-}
-
-.bu-row-content:hover {
-  background: var(--panel-bg-hover);
-}
-
-/* Do not trigger row hover highlight when hovering beacon controls */
-.bu-row-content:has(.beacon-button:hover) {
-  background: var(--panel-bg);
-}
-
-.bu-row-text {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.bu-row-pill {
-  display: inline-block;
-  width: 180px;
-  height: 14px;
-  border-radius: 99px;
-  background: rgba(0, 0, 0, 0.12);
-}
-
-.bu-row-pill--small {
-  width: 120px;
-  opacity: 0.7;
-}
-
-.icon-border {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: 4px;
-}
-
-.icon-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1px solid var(--border-subtle);
-  background: var(--icon-dot-bg);
-  display: inline-block;
-}
-
-.offline-icon {
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-}
-
-.warning-icon {
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-}
-
-.icon-separator {
-  width: 1px;
-  height: 18px;
-  background: var(--border-strong);
-  display: inline-block;
-}
-
-/* Footer section at bottom */
-.page-footer {
-  width: 100%;
-  background: var(--panel-bg);
-  border-top: 1px solid var(--border-color);
-  padding: 12px clamp(1.5rem, 3vw, 3rem);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 20;
-}
-
-.footer-logo {
-  height: 42px;
-  opacity: 0.95;
-}
-
-.widgets-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #d94d14 transparent;
-}
-
-.widgets-scroll::-webkit-scrollbar {
-  width: 10px;
-}
-
-.widgets-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.widgets-scroll::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #d94d14 0%, #f06a24 100%);
-  border-radius: 6px;
-}
-
-.widgets-scroll::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #c04412 0%, #e05a1c 100%);
-}
-
-/* Orange scrollbar styling */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #d94d14 var(--scroll-track);
-}
-
-*::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-*::-webkit-scrollbar-track {
-  background: var(--scroll-track);
-  border-radius: 5px;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #d94d14 0%, #f06a24 100%);
-  border-radius: 5px;
-  border: 2px solid var(--scroll-track);
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #c04412 0%, #e05a1c 100%);
-}
-
-.greetings-search {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  margin: 12px 0 20px;
-  padding: 0 clamp(1.5rem, 4vw, 3rem);
-  box-sizing: border-box;
-}
-
-body.dark .view-all-logo {
-  filter: invert(1) brightness(1.1);
-}
-
-.greetings-icon {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.left-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.beacon-host {
-  position: relative;
-}
-
-.beacon-host--app .beacon-button {
-  top: 12px;
-  right: 12px;
-  bottom: auto;
-}
-
-.beacon-host--header .beacon-button {
-  top: 8px;
-  right: 8px;
-  bottom: auto;
-}
-
-.beacon-host--search .beacon-button {
-  top: 4px;
-  right: 4px;
-  bottom: auto;
-  z-index: 3;
-}
-
-.beacon-host--bu-text .beacon-button {
-  top: 0;
-  right: -6px;
-  bottom: auto;
-  width: 24px;
-  height: 24px;
-  z-index: 3;
-}
-
-.beacon-host--bu-text .beacon-dot {
-  width: 16px;
-  height: 16px;
-}
-
-.beacon-host--icon .beacon-button {
-  width: 28px;
-  height: 28px;
-  right: -8px;
-  bottom: -8px;
-}
-
-.beacon-host--icon .beacon-dot {
-  width: 20px;
-  height: 20px;
-}
-
-.widgets-panel .beacon-button {
-  top: 10px;
-  right: 10px;
-  bottom: auto;
-  width: 46px;
-  height: 46px;
-  z-index: 2;
-}
-
-.widgets-panel .beacon-dot {
-  width: 46px;
-  height: 46px;
-}
-
-.search-button {
-  background: linear-gradient(45deg, #d94d14 0%, #f06a24 100%);
-  border-radius: 0 6px 6px 0;
-  border: none;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 35px;
-  position: relative;
-  top: 2px;
-  cursor: pointer;
-}
-
-@media (max-width: 1100px) {
-  .app-container {
-    flex-direction: column;
-  }
-
-  .app-left,
-  .app-right {
-    flex: 1 1 auto;
-  }
-}
-
-@media (max-width: 900px) {
-  .app-right {
-    padding: 16px;
-  }
-
-  .widgets-panel {
-    min-height: 220px;
-  }
-
-  .greetings-search {
-    margin: 24px auto;
-    padding: 0 16px;
-  }
-
-  .bu-row-content {
-    height: auto;
-    padding: 12px 12px;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
 }

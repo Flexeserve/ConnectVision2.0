@@ -1,8 +1,6 @@
 // src/App.tsx
 import React from "react";
-import { ThemeProvider } from "@mui/material/styles";
 import { HeroUIProvider } from "@heroui/react";
-import { getAppTheme } from "./theme";
 import "./App.css";
 import HeroSlide from "./components/HeroSlide";
 import type { Role } from "./components/RoleSelector";
@@ -364,32 +362,9 @@ const HEB_ALL_STORE_IDS: string[] = HEB_REGIONS.flatMap((region) =>
 );
 
 export default function App() {
-  // Drives the MUI theme (used by widget Cards) in sync with the existing
-  // body.dark toggle — the toggle itself still lives in Header/HeroSlide;
-  // this just observes it so MUI-themed components stay in step.
-  const [isDarkMode, setIsDarkMode] = React.useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("cv_theme") === "dark";
-  });
-  const muiTheme = React.useMemo(
-    () => getAppTheme(isDarkMode ? "dark" : "light"),
-    [isDarkMode],
-  );
-
-  React.useEffect(() => {
-    if (typeof document === "undefined") return;
-    const handleThemeChange = () => {
-      setIsDarkMode(document.body.classList.contains("dark"));
-    };
-    handleThemeChange();
-    const observer = new MutationObserver(handleThemeChange);
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    return () => observer.disconnect();
-  }, []);
-
+  // Dark mode is driven entirely by the `.dark` class on <body> (toggled in
+  // Header / HeroSlide) — Tailwind's `dark:` variants and the token overrides
+  // in index.css key off it. No JS theme object to keep in sync any more.
   const [heroVisible, setHeroVisible] = React.useState(true);
   const [selectorVisible, setSelectorVisible] = React.useState(false);
   const [selectedRole, setSelectedRole] = React.useState<Role | null>(null);
@@ -634,7 +609,6 @@ export default function App() {
   }, [heroVisible]);
 
   return (
-    <ThemeProvider theme={muiTheme}>
     <HeroUIProvider>
     <div className="app-root">
       <HeroSlide visible={heroVisible} onClose={handleGetStarted} />
@@ -762,6 +736,5 @@ export default function App() {
       )}
     </div>
     </HeroUIProvider>
-    </ThemeProvider>
   );
 }

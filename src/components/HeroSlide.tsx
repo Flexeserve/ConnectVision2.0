@@ -1,7 +1,6 @@
 // src/components/HeroSlide.tsx
 import React from "react";
 import "./HeroSlide.css";
-import { Box, Button } from "@mui/material";
 
 import heroProductImage from "../assets/HeroImage.webp";
 import heroFanIcon from "../assets/Flexeserve fan icon watermark light grey.svg";
@@ -52,7 +51,7 @@ export default function HeroSlide({ visible, onClose }: Props) {
       aria-modal="true"
       aria-labelledby="hero-title"
     >
-      <Box className="hero-content">
+      <div className="hero-content">
         <div className="hero-layout">
           <div className="hero-left">
             <div className="hero-title" id="hero-title">
@@ -68,66 +67,16 @@ export default function HeroSlide({ visible, onClose }: Props) {
                 />
               </div>
               <div className="hero-cta">
-                <Button
-                  variant="contained"
+                {/* Sized as a kiosk touch target, not a desktop link. */}
+                <button
+                  type="button"
                   onClick={onClose}
                   ref={primaryRef}
                   aria-label="Get started"
-                  className="hero-get-connected"
-                  sx={{
-                    // Sized as a kiosk touch target, not a desktop link: tall
-                    // enough to comfortably tap (≈60px) and wide enough to
-                    // read at a distance, well past the ~44px accessibility
-                    // minimum.
-                    px: 4,
-                    py: 2,
-                    minWidth: "16rem",
-                    minHeight: "3.75rem",
-                    fontSize: "1.25rem",
-                    fontWeight: 800,
-                    letterSpacing: "0.01em",
-                    textTransform: "none",
-                    color: "#fff",
-                    borderRadius: "18px",
-                    position: "relative",
-                    background: "#d94d14",
-                    boxShadow: "0 10px 24px rgba(217, 77, 20, 0.4)",
-                    transition:
-                      "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease",
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      inset: 0,
-                      borderRadius: "inherit",
-                      padding: "2px",
-                      background:
-                        "linear-gradient(120deg, rgba(255,255,255,0.25), transparent 60%)",
-                      WebkitMask:
-                        "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                      WebkitMaskComposite: "xor",
-                      maskComposite: "exclude",
-                      opacity: 0.4,
-                      pointerEvents: "none",
-                    },
-                    "&:hover": {
-                      background: "#d94d14",
-                      transform: "translateY(-4px) scale(1.03)",
-                      boxShadow: "0 14px 28px rgba(217, 77, 20, 0.48)",
-                    },
-                    "&:active": {
-                      transform: "translateY(-1px) scale(0.97)",
-                      boxShadow: "0 6px 16px rgba(217, 77, 20, 0.4)",
-                    },
-                    "&:focus-visible": {
-                      outline: "3px solid #fff",
-                      outlineOffset: "3px",
-                      boxShadow:
-                        "0 0 0 6px rgba(217, 77, 20, 0.35), 0 10px 24px rgba(217, 77, 20, 0.4)",
-                    },
-                  }}
+                  className="hero-get-connected relative min-h-[3.75rem] min-w-[16rem] rounded-[18px] bg-accent px-8 py-4 text-xl font-extrabold tracking-[0.01em] text-white shadow-[0_10px_24px_rgba(217,77,20,0.4)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_14px_28px_rgba(217,77,20,0.48)] active:translate-y-0 active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-white focus-visible:outline-offset-[3px]"
                 >
                   Get Connected
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -182,7 +131,7 @@ export default function HeroSlide({ visible, onClose }: Props) {
             </svg>
           )}
         </button>
-      </Box>
+      </div>
     </div>
   );
 }

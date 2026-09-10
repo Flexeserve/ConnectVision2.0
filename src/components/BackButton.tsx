@@ -1,24 +1,24 @@
-import { IconButton } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { ArrowLeft } from "lucide-react";
 
 type Props = {
   onClick?: () => void;
   ariaLabel?: string;
-  color?: string;
+  className?: string;
 };
 
 export default function BackButton({
   onClick,
   ariaLabel = "Back",
-  color = "var(--header-text)",
+  className = "",
 }: Props) {
   return (
-    <IconButton
-      sx={{ color }}
+    <button
+      type="button"
       onClick={onClick}
       aria-label={ariaLabel}
+      className={`inline-flex size-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/10 ${className}`}
     >
-      <ArrowBackIcon />
-    </IconButton>
+      <ArrowLeft className="size-5" />
+    </button>
   );
 }

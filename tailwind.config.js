@@ -140,6 +140,37 @@ export default {
         "tremor-title": ["1.125rem", { lineHeight: "1.75rem" }],
         "tremor-metric": ["1.875rem", { lineHeight: "2.25rem" }],
       },
+      keyframes: {
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in-scale": {
+          from: { opacity: "0", transform: "scale(0.96)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        "shrink-left-panel": {
+          from: { flexBasis: "70%" },
+          to: { flexBasis: "30%" },
+        },
+        "expand-widgets-panel": {
+          from: { flexBasis: "10%", transform: "translateX(40px)" },
+          to: { flexBasis: "70%", transform: "translateX(0)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 0.9s ease forwards",
+        "fade-in-up": "fade-in-up 260ms ease",
+        "fade-in-scale": "fade-in-scale 220ms ease",
+        "shrink-left-panel":
+          "shrink-left-panel 0.9s cubic-bezier(0.22,1,0.36,1) forwards",
+        "expand-widgets-panel":
+          "expand-widgets-panel 0.9s cubic-bezier(0.22,1,0.36,1) forwards",
+      },
     },
   },
   plugins: [require("tailwindcss-animate"), heroui()],

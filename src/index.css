@@ -121,4 +121,23 @@
     outline: 2px solid rgb(var(--accent));
     outline-offset: 2px;
   }
+
+  /* Brand scrollbar — pseudo-elements can't be expressed as utilities. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--accent)) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(var(--accent));
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
 }

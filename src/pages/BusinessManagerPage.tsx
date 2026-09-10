@@ -1,19 +1,11 @@
 import React from "react";
-import {
-  Container,
-  Box,
-  Typography,
-  Stack,
-  TextField,
-  InputAdornment,
-} from "@mui/material";
+import { Search } from "lucide-react";
 import connectLogo from "../assets/connect_flexeserve.svg";
 import connectLogoInversed from "../assets/connect_flexeserve_inversed.svg";
 import viewAllBUsLogo from "../assets/ViewAllBUsLogo.svg";
 import Header from "../components/Header";
 import "./BusinessManagerPage.css";
 import "../styles/tour.css";
-import SearchIcon from "@mui/icons-material/Search";
 import FanLifeWidget from "../components/widgets/FanLifeWidget";
 import EnergyUsageWidget from "../components/widgets/EnergyUsageWidget";
 import EnergyCostWidget from "../components/widgets/EnergyCostWidget";
@@ -676,322 +668,221 @@ export default function BusinessManagerPage({
 
 
   return (
-    <div className="business-manager-page">
+    <div className="relative flex min-h-screen flex-col pb-24 text-ink">
       <Header onBack={onBack} title="Manager View" />
-      <div className="beacon-host beacon-host--app">
-      <div className="app-container bm-container-beacon">
-        <div className="greetings">
-          <TypewriterText text="Good Morning, London" />
-        </div>
-        <div className="app-left">
-          <div className="greetings-search">
-            <Box className="search-beacon-target beacon-host beacon-host--search">
-              <Beacon
-                label="Search tour"
-                beaconId="search"
-                onClick={() => startTourFrom(6)}
-                devMode={isBeaconDevMode}
-                offset={beaconOffsets.search}
-                onOffsetChange={(next) => handleBeaconOffsetChange("search", next)}
-              />
-              <TextField
-                variant="outlined"
-                size="small"
-                placeholder="Write to start search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment
-                      position="end"
-                      sx={{
-                        m: 0,
-                        height: "100%",
-                        alignSelf: "stretch",
-                        display: "flex",
-                        alignItems: "center",
-                        color: "#333333",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        aria-label="Search"
-                        className="search-button"
-                      >
-                        <SearchIcon fontSize="small" sx={{ color: "#fff" }} />
-                      </button>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  width: { xs: "100%", sm: 360, md: 460 },
-                  maxWidth: { xs: "100%", sm: 420, md: 500 },
-                  "& .MuiInputBase-root": {
-                    color: "var(--text-primary)",
-                    backgroundColor: "var(--panel-bg)",
-                    paddingRight: 0,
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                  },
-                  "& .MuiInputBase-input::placeholder": {
-                    color: "var(--text-muted)",
-                    opacity: 1,
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    paddingRight: 0,
-                    height: 36,
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                  "& .MuiInputAdornment-positionEnd": {
-                    marginRight: 0,
-                    height: "100%",
-                    alignSelf: "stretch",
-                  },
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "var(--border-strong)",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "var(--text-primary)",
-                  },
-                }}
-              />
-            </Box>
+      <div className="relative">
+        <div
+          className="flex flex-1 flex-wrap bg-canvas px-4 text-ink sm:px-8 lg:px-12 max-lg:flex-col"
+          style={{ minHeight: "calc(100vh - 64px)" }}
+        >
+          <div className="w-full basis-full px-6 pt-4 text-left text-4xl font-extrabold text-accent sm:px-12 sm:text-[45px]">
+            <TypewriterText text="Good Morning, London" />
           </div>
-          <Container maxWidth="lg" sx={{ mt: 2 }}>
-            <Box key={levelKey ?? heading ?? "root"} className="bu-panel-transition">
-            <Box
-              className="beacon-host beacon-host--header"
-              sx={{ display: "flex", alignItems: "center", gap: 4, mb: 3 }}
-            >
 
-              <Box
-                component="img"
-                src={viewAllBUsLogo}
-                alt="View All Markets"
-                className="view-all-logo"
-                sx={{ height: 64 }}
-              />
-              <Typography
-                sx={{
-                  fontFamily: "Inter, sans-serif",
-                  fontSize: "1.1rem",
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                }}
-              >
-                {heading ?? "View All Markets"}
-              </Typography>
-            </Box>
-            <Box className="bu-list burows-beacon-target beacon-host">
-              <Beacon
-                label="Business units tour"
-                beaconId="bu-list"
-                onClick={() => startTourFrom(3)}
-                devMode={isBeaconDevMode}
-                offset={beaconOffsets["bu-list"]}
-                onOffsetChange={(next) => handleBeaconOffsetChange("bu-list", next)}
-              />
-              {visibleBuRows.length === 0 && (
-                <Typography
-                  variant="body2"
-                  sx={{ color: "var(--text-muted)", padding: "12px 4px" }}
-                >
-                  No matches for "{searchQuery}"
-                </Typography>
-              )}
-              {visibleBuRows.map((r, index) => (
-                <Box
-                  key={r.id}
-                  className="bu-row"
-                  sx={{ borderLeft: "4px solid var(--text-primary)" }}
-                  onClick={() => onOpen?.(r.id)}
-                  role={onOpen ? "button" : undefined}
-                  tabIndex={onOpen ? 0 : -1}
-                  onKeyDown={(event) => {
-                    if (!onOpen) return;
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onOpen(r.id);
-                    }
-                  }}
-                >
-                  <Box className="bu-row-content">
-                    <Box
-                      className={`bu-row-text ${index === 0 ? "beacon-host beacon-host--bu-text" : ""}`}
-                    >
-                      {index === 0 ? (
-                        <Beacon
-                          label="Region alarms tour"
-                          beaconId="region-alarms"
-                          onClick={() => startTourFrom(9)}
-                          devMode={isBeaconDevMode}
-                          offset={beaconOffsets["region-alarms"]}
-                          onOffsetChange={(next) =>
-                            handleBeaconOffsetChange("region-alarms", next)
-                          }
-                        />
-                      ) : null}
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontFamily: "Inter, sans-serif",
-                          fontWeight: 400,
-                          color: "var(--text-primary)",
-                        }}
-                      >
-                        {r.title}
-                      </Typography>
-                      {r.subtitle ? (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            fontFamily: "Inter, sans-serif",
-                            fontWeight: 500,
-                            color: "var(--text-muted)",
-                          }}
-                        >
-                          {r.subtitle}
-                        </Typography>
-                      ) : null}
-                    </Box>
-
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <div className="icon-border">
-                        <img
-                          src={onlineStatusIcon}
-                          alt="Online status"
-                          className="offline-icon"
-                        />
-                      </div>
-                    </Stack>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-            </Box>
-          </Container>
-        </div>
-        
-        <div className="app-right">
-          <Box
-            className="widgets-panel widgets-scroll widgets-beacon-target beacon-host"
-            ref={widgetsPanelRef}
-            onScroll={(event) => {
-              const target = event.currentTarget;
-              setIsWidgetsScrolled(target.scrollTop > 8);
-            }}
-            sx={{
-              borderLeft: "1px solid var(--border-color)",
-                height: "auto",
-                maxHeight: "calc(100vh - 120px)",
-              padding: "20px 16px 48px",
-              paddingRight: "40px",
-              paddingBottom: `${dynamicBottomPadding}px`,
-              color: "var(--text-muted)",
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              width: "100%",
-                overflowY: "auto",
-              background: "var(--app-bg)",
-              opacity: 0,
-              animation: "fadeWidgets 0.9s ease forwards 0.15s",
-            }}
-          >
-            <Beacon
-              label="Widgets panel tour"
-              beaconId="widgets"
-              onClick={() => startTourFrom(7)}
-              devMode={isBeaconDevMode}
-              offset={beaconOffsets.widgets}
-              onOffsetChange={(next) => handleBeaconOffsetChange("widgets", next)}
-            />
-            <div
-              className={`dashboard-edit-fab ${
-                isWidgetsScrolled ? "is-visible" : ""
-              }`}
-            >
-              <button
-                type="button"
-                className="dashboard-edit-button dashboard-edit-button--fab"
-                aria-label="Edit dashboard layout"
-                aria-pressed={isEditing}
-                onClick={() => setIsEditing((prev) => !prev)}
-              >
-                {isEditing ? "✓" : "✎"}
-              </button>
-            </div>
-            
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-                color: "var(--text-primary)",
-                fontFamily: '"Inter", sans-serif',
-                fontSize: "0.95rem",
-                fontWeight: 600,
-                textTransform: "uppercase",
-              }}
-            >
-              <span className="dashboard-title">Overview dashboard</span>
-              <span className="dashboard-divider" aria-hidden />
-              <button
-                type="button"
-                className="dashboard-edit-button"
-                aria-label="Edit dashboard layout"
-                aria-pressed={isEditing}
-                onClick={() => setIsEditing((prev) => !prev)}
-              >
-                {isEditing ? "✓" : "✎"}
-              </button>
-            </Box>
-            {isEditing && (
-              <Box className="widget-visibility-panel" role="group" aria-label="Show or hide widgets">
-                <span className="widget-visibility-panel-label">Widgets</span>
-                {widgetComponents.map((widget) => {
-                  const isHidden = hiddenWidgetIds.includes(widget.id);
-                  return (
-                    <button
-                      key={widget.id}
-                      type="button"
-                      className={`widget-visibility-chip ${isHidden ? "widget-visibility-chip--hidden" : ""}`}
-                      aria-pressed={!isHidden}
-                      onClick={() => toggleWidgetVisibility(widget.id)}
-                    >
-                      <span className="widget-visibility-chip-dot" aria-hidden />
-                      {widget.label}
-                    </button>
-                  );
-                })}
-              </Box>
-            )}
-            <Box
-              sx={{
-                flex: 1,
-                padding: "8px 12px 48px 0",
-              }}
-            >
-              <WidgetElementsContext.Provider value={widgetElementsMap}>
-                <GridStack
-                  options={gridStackOptions}
-                  components={GRID_COMPONENTS}
-                  className={`widgets-grid ${isEditing ? "widgets-grid--editing" : ""}`}
-                  onChange={handleGridChange}
+          <div className="flex min-w-0 basis-[30%] flex-col items-center max-lg:basis-auto lg:animate-shrink-left-panel">
+            <div className="my-4 flex w-full items-center px-6 sm:px-12">
+              <div className="relative flex w-full max-w-[500px] sm:w-[460px]">
+                <Beacon
+                  label="Search tour"
+                  beaconId="search"
+                  onClick={() => startTourFrom(6)}
+                  devMode={isBeaconDevMode}
+                  offset={beaconOffsets.search}
+                  onOffsetChange={(next) => handleBeaconOffsetChange("search", next)}
                 />
-              </WidgetElementsContext.Provider>
-            </Box>
-          </Box>
+                <input
+                  type="text"
+                  placeholder="Write to start search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="h-9 w-full rounded-l-md border border-line-strong bg-surface px-3 text-sm text-ink placeholder:text-ink-muted hover:border-ink focus:border-ink focus:outline-none"
+                />
+                <button
+                  type="button"
+                  aria-label="Search"
+                  className="flex h-9 w-16 shrink-0 items-center justify-center rounded-r-md bg-gradient-to-br from-accent to-[#f06a24] text-white"
+                >
+                  <Search className="size-4" />
+                </button>
+              </div>
+            </div>
+
+            <div
+              key={levelKey ?? heading ?? "root"}
+              className="mx-auto w-full max-w-5xl animate-fade-in-up px-4 pt-2"
+            >
+              <div className="relative mb-6 flex items-center gap-8">
+                <img
+                  src={viewAllBUsLogo}
+                  alt="View All Markets"
+                  className="h-16 dark:brightness-110 dark:invert"
+                />
+                <span className="text-lg font-semibold text-ink">
+                  {heading ?? "View All Markets"}
+                </span>
+              </div>
+              <div className="relative flex flex-col items-stretch gap-3">
+                <Beacon
+                  label="Business units tour"
+                  beaconId="bu-list"
+                  onClick={() => startTourFrom(3)}
+                  devMode={isBeaconDevMode}
+                  offset={beaconOffsets["bu-list"]}
+                  onOffsetChange={(next) => handleBeaconOffsetChange("bu-list", next)}
+                />
+                {visibleBuRows.length === 0 && (
+                  <p className="px-1 py-3 text-sm text-ink-muted">
+                    No matches for "{searchQuery}"
+                  </p>
+                )}
+                {visibleBuRows.map((r, index) => (
+                  <div
+                    key={r.id}
+                    className="w-full cursor-pointer self-stretch border-l-4 border-ink"
+                    onClick={() => onOpen?.(r.id)}
+                    role={onOpen ? "button" : undefined}
+                    tabIndex={onOpen ? 0 : -1}
+                    onKeyDown={(event) => {
+                      if (!onOpen) return;
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onOpen(r.id);
+                      }
+                    }}
+                  >
+                    <div className="bu-row-content flex min-h-[42px] items-center justify-between bg-surface px-[18px] py-2 transition-colors hover:bg-surface-hover">
+                      <div className="relative flex flex-col gap-1.5">
+                        {index === 0 ? (
+                          <Beacon
+                            label="Region alarms tour"
+                            beaconId="region-alarms"
+                            onClick={() => startTourFrom(9)}
+                            devMode={isBeaconDevMode}
+                            offset={beaconOffsets["region-alarms"]}
+                            onOffsetChange={(next) =>
+                              handleBeaconOffsetChange("region-alarms", next)
+                            }
+                          />
+                        ) : null}
+                        <span className="text-sm text-ink">{r.title}</span>
+                        {r.subtitle ? (
+                          <span className="text-xs font-medium text-ink-muted">
+                            {r.subtitle}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="inline-flex items-center gap-2 rounded border border-line-strong px-2.5 py-1.5">
+                          <img
+                            src={onlineStatusIcon}
+                            alt="Online status"
+                            className="size-6"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6 min-w-0 basis-[70%] max-lg:basis-auto lg:animate-expand-widgets-panel">
+            <div
+              className="widgets-scroll flex w-full animate-fade-in flex-col gap-4 overflow-y-auto border-l border-line bg-canvas py-5 pl-4 pr-10 text-ink-muted [animation-delay:150ms]"
+              ref={widgetsPanelRef}
+              onScroll={(event) =>
+                setIsWidgetsScrolled(event.currentTarget.scrollTop > 8)
+              }
+              style={{
+                maxHeight: "calc(100vh - 120px)",
+                paddingBottom: `${dynamicBottomPadding}px`,
+              }}
+            >
+              <Beacon
+                label="Widgets panel tour"
+                beaconId="widgets"
+                onClick={() => startTourFrom(7)}
+                devMode={isBeaconDevMode}
+                offset={beaconOffsets.widgets}
+                onOffsetChange={(next) => handleBeaconOffsetChange("widgets", next)}
+              />
+              <div
+                className={`pointer-events-none sticky top-3 z-[5] flex justify-end transition-opacity ${
+                  isWidgetsScrolled ? "pointer-events-auto opacity-100" : "opacity-0"
+                }`}
+              >
+                <button
+                  type="button"
+                  aria-label="Edit dashboard layout"
+                  aria-pressed={isEditing}
+                  onClick={() => setIsEditing((prev) => !prev)}
+                  className="flex size-[42px] items-center justify-center rounded-full border border-line-strong bg-surface text-sm text-ink shadow-lg hover:bg-ink hover:text-surface"
+                >
+                  {isEditing ? "✓" : "✎"}
+                </button>
+              </div>
+
+              <div className="flex w-full items-center gap-1.5 text-[0.95rem] font-semibold uppercase tracking-wider text-ink">
+                <span>Overview dashboard</span>
+                <span className="h-px flex-1 bg-line" aria-hidden />
+                <button
+                  type="button"
+                  aria-label="Edit dashboard layout"
+                  aria-pressed={isEditing}
+                  onClick={() => setIsEditing((prev) => !prev)}
+                  className="flex size-8 items-center justify-center rounded-md border border-line-strong bg-surface text-sm text-ink transition-colors hover:bg-ink hover:text-surface"
+                >
+                  {isEditing ? "✓" : "✎"}
+                </button>
+              </div>
+              {isEditing && (
+                <div
+                  className="-mt-2 flex w-full flex-wrap items-center gap-2 rounded-lg border border-line bg-surface p-3 animate-fade-in-scale"
+                  role="group"
+                  aria-label="Show or hide widgets"
+                >
+                  <span className="mr-1 text-[0.7rem] font-bold uppercase tracking-wider text-ink-muted">
+                    Widgets
+                  </span>
+                  {widgetComponents.map((widget) => {
+                    const isHidden = hiddenWidgetIds.includes(widget.id);
+                    return (
+                      <button
+                        key={widget.id}
+                        type="button"
+                        className={`inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-canvas px-3 py-[5px] text-xs font-semibold text-ink transition-colors hover:border-ink ${
+                          isHidden ? "opacity-60 !text-ink-muted" : ""
+                        }`}
+                        aria-pressed={!isHidden}
+                        onClick={() => toggleWidgetVisibility(widget.id)}
+                      >
+                        <span
+                          className={`size-[7px] shrink-0 rounded-full ${
+                            isHidden ? "bg-ink-muted" : "bg-success"
+                          }`}
+                          aria-hidden
+                        />
+                        {widget.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="flex-1 pb-12 pr-3 pt-2">
+                <WidgetElementsContext.Provider value={widgetElementsMap}>
+                  <GridStack
+                    options={gridStackOptions}
+                    components={GRID_COMPONENTS}
+                    className={`widgets-grid ${isEditing ? "widgets-grid--editing" : ""}`}
+                    onChange={handleGridChange}
+                  />
+                </WidgetElementsContext.Provider>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
         <Beacon
           label="Settings tour"
           beaconId="settings"
@@ -1058,12 +949,12 @@ export default function BusinessManagerPage({
           </div>
         )}
       </div>
-      <footer className="page-footer">
+      <footer className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-between border-t border-line bg-surface px-6 py-3 text-ink shadow-[0_-2px_6px_rgba(0,0,0,0.15)] sm:px-12">
         <span>© {new Date().getFullYear()} Flexeserve Connect</span>
         <img
           src={isDarkMode ? connectLogoInversed : connectLogo}
           alt="Connect by Flexeserve"
-          className="footer-logo"
+          className="h-[42px] opacity-95"
         />
       </footer>
     </div>
