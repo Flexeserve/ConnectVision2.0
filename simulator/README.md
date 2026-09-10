@@ -5,6 +5,10 @@ Flexeserve units, fans, heating elements, gateways, commanders — and serves
 their evolving telemetry over HTTP. Built so the dashboard can consume
 live-ish data instead of generating it client-side.
 
+**Live:** https://connectvision-device-simulator-production.up.railway.app
+(Railway project `connectvision-device-simulator`, separate from the
+dashboard app.)
+
 ## Run locally
 
 ```bash
