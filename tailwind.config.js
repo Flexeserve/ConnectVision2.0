@@ -1,6 +1,8 @@
 import { heroui } from "@heroui/react";
 import colors from "tailwindcss/colors";
 
+const withAlpha = (v) => `rgb(var(${v}) / <alpha-value>)`;
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
@@ -8,59 +10,53 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     "./node_modules/@heroui/*/dist/**/*.{js,jsx,ts,tsx}",
-    // Tremor (spike — evaluating it as the widget chart/UI layer)
     "./node_modules/@tremor/**/*.{js,ts,jsx,tsx,mjs}",
   ],
-  // Tremor composes chart series color classes dynamically, so the ones it
-  // may emit have to be safelisted or PurgeCSS drops them. Scoped to just
-  // the colors these widgets actually pass to Tremor charts (orange / gray /
-  // blue / emerald / red) — a full-palette safelist bloated the CSS bundle
-  // by ~200KB.
+  // Tremor composes chart series color classes dynamically — safelist the
+  // ones these widgets pass to Tremor charts so PurgeCSS keeps them.
   safelist: [
     {
       pattern:
-        /^(bg|text|border|ring|stroke|fill)-(gray|orange|blue|emerald|red)-(100|200|300|400|500|600|700)$/,
+        /^(bg|text|border|ring|stroke|fill)-(gray|orange|blue|emerald|red|amber)-(100|200|300|400|500|600|700)$/,
       variants: ["hover", "ui-selected"],
     },
   ],
   theme: {
     extend: {
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        // Tremor
-        "tremor-small": "0.375rem",
-        "tremor-default": "0.5rem",
-        "tremor-full": "9999px",
-      },
-      fontSize: {
-        "tremor-label": ["0.75rem", { lineHeight: "1rem" }],
-        "tremor-default": ["0.875rem", { lineHeight: "1.25rem" }],
-        "tremor-title": ["1.125rem", { lineHeight: "1.75rem" }],
-        "tremor-metric": ["1.875rem", { lineHeight: "2.25rem" }],
-      },
-      boxShadow: {
-        "tremor-input": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-        "tremor-card":
-          "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-        "tremor-dropdown":
-          "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-        "dark-tremor-input": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-        "dark-tremor-card":
-          "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-        "dark-tremor-dropdown":
-          "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-      },
       colors: {
-        // Tremor palette (light + dark), keyed off tailwind's default colors
+        // --- app design tokens ---
+        canvas: withAlpha("--canvas"),
+        surface: {
+          DEFAULT: withAlpha("--surface"),
+          muted: withAlpha("--surface-muted"),
+          hover: withAlpha("--surface-hover"),
+        },
+        ink: {
+          DEFAULT: withAlpha("--ink"),
+          muted: withAlpha("--ink-muted"),
+          subtle: withAlpha("--ink-subtle"),
+        },
+        line: {
+          DEFAULT: withAlpha("--line"),
+          strong: withAlpha("--line-strong"),
+        },
+        accent: {
+          DEFAULT: withAlpha("--accent"),
+          fg: withAlpha("--accent-fg"),
+        },
+        success: withAlpha("--success"),
+        danger: withAlpha("--danger"),
+        warning: withAlpha("--warning"),
+        info: withAlpha("--info"),
+
+        // --- Tremor palette (light + dark) ---
         tremor: {
           brand: {
-            faint: colors.blue[50],
-            muted: colors.blue[200],
-            subtle: colors.blue[400],
-            DEFAULT: colors.blue[500],
-            emphasis: colors.blue[700],
+            faint: colors.orange[50],
+            muted: colors.orange[200],
+            subtle: colors.orange[400],
+            DEFAULT: "#d94d14",
+            emphasis: colors.orange[700],
             inverted: colors.white,
           },
           background: {
@@ -81,70 +77,68 @@ export default {
         },
         "dark-tremor": {
           brand: {
-            faint: "#0B1229",
-            muted: colors.blue[950],
-            subtle: colors.blue[800],
-            DEFAULT: colors.blue[500],
-            emphasis: colors.blue[400],
-            inverted: colors.blue[950],
-          },
-          background: {
-            muted: "#131A2B",
-            subtle: colors.gray[800],
-            DEFAULT: colors.gray[900],
-            emphasis: colors.gray[300],
-          },
-          border: { DEFAULT: colors.gray[800] },
-          ring: { DEFAULT: colors.gray[800] },
-          content: {
-            subtle: colors.gray[600],
-            DEFAULT: colors.gray[500],
-            emphasis: colors.gray[200],
-            strong: colors.gray[50],
+            faint: "#221410",
+            muted: "#7c2d12",
+            subtle: colors.orange[800],
+            DEFAULT: "#f0672f",
+            emphasis: colors.orange[400],
             inverted: colors.gray[950],
           },
+          background: {
+            muted: "#1f1f22",
+            subtle: colors.zinc[800],
+            DEFAULT: colors.zinc[900],
+            emphasis: colors.zinc[300],
+          },
+          border: { DEFAULT: colors.zinc[700] },
+          ring: { DEFAULT: colors.zinc[700] },
+          content: {
+            subtle: colors.zinc[600],
+            DEFAULT: colors.zinc[500],
+            emphasis: colors.zinc[200],
+            strong: colors.zinc[50],
+            inverted: colors.zinc[950],
+          },
         },
-        // Pre-existing shadcn-style tokens (kept as-is)
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        chart: {
-          1: "hsl(var(--chart-1))",
-          2: "hsl(var(--chart-2))",
-          3: "hsl(var(--chart-3))",
-          4: "hsl(var(--chart-4))",
-          5: "hsl(var(--chart-5))",
-        },
+      },
+      fontFamily: {
+        sans: [
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
+      },
+      borderRadius: {
+        widget: "0.875rem",
+        "tremor-small": "0.375rem",
+        "tremor-default": "0.5rem",
+        "tremor-full": "9999px",
+      },
+      boxShadow: {
+        widget: "0 1px 2px rgb(0 0 0 / 0.04), 0 1px 3px rgb(0 0 0 / 0.06)",
+        "widget-dark": "0 1px 2px rgb(0 0 0 / 0.4), 0 2px 6px rgb(0 0 0 / 0.3)",
+        "tremor-input": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "tremor-card":
+          "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "tremor-dropdown":
+          "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "dark-tremor-input": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "dark-tremor-card":
+          "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "dark-tremor-dropdown":
+          "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+      },
+      fontSize: {
+        "tremor-label": ["0.75rem", { lineHeight: "1rem" }],
+        "tremor-default": ["0.875rem", { lineHeight: "1.25rem" }],
+        "tremor-title": ["1.125rem", { lineHeight: "1.75rem" }],
+        "tremor-metric": ["1.875rem", { lineHeight: "2.25rem" }],
       },
     },
   },
