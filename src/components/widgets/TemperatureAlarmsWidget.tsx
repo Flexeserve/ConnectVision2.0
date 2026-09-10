@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { ThermometerSnowflake } from "lucide-react";
 import { BarChart } from "@tremor/react";
 import { Widget, RingView, StoreList, Alternator } from "./Widget";
-import { seededInt, storeName } from "../../lib/seededRandom";
+import { seededInt } from "../../lib/seededRandom";
 
 const DAYS = 7;
 const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -33,23 +33,24 @@ const alarmsToday = (id: string, seedKey: string) => {
 
 type TemperatureAlarmsWidgetProps = {
   storeIds?: string[];
-  locations?: string[];
+  /** Real store names, parallel to storeIds. */
+  names?: string[];
 };
 
 export default function TemperatureAlarmsWidget({
   storeIds = ["root"],
-  locations = [],
+  names = [],
 }: TemperatureAlarmsWidgetProps) {
   const perStore = useMemo(
     () =>
       storeIds
-        .map((id) => {
+        .map((id, i) => {
           const high = alarmsToday(id, "temp-alarm-high");
           const low = alarmsToday(id, "temp-alarm-low");
-          return { id, name: storeName(id, locations), high, low, total: high + low };
+          return { id, name: names[i] ?? id, high, low, total: high + low };
         })
         .sort((a, b) => b.total - a.total),
-    [storeIds, locations],
+    [storeIds, names],
   );
   const highDaily = useMemo(() => dailyCounts(storeIds, "temp-alarm-high"), [storeIds]);
   const lowDaily = useMemo(() => dailyCounts(storeIds, "temp-alarm-low"), [storeIds]);
@@ -104,9 +105,10 @@ export default function TemperatureAlarmsWidget({
         ) : (
           <RingView
             centerValue={totalCount}
+            centerLabel="Today"
             segments={
               totalCount === 0
-                ? [{ name: "None", value: 1, color: "gray" }]
+                ? [{ name: "None", value: 0, color: "gray" }]
                 : [
                     { name: "High", value: highCount, color: "red" },
                     { name: "Low", value: lowCount, color: "blue" },

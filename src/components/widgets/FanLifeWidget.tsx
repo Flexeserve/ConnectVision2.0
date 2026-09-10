@@ -1,38 +1,34 @@
 import { useMemo } from "react";
 import { Fan } from "lucide-react";
-import { BarChart, ProgressBar } from "@tremor/react";
+import { ProgressBar } from "@tremor/react";
 import { Widget, RingView, Alternator } from "./Widget";
-import { createSeededRandom, seededInt, seededPick } from "../../lib/seededRandom";
+import { seededInt } from "../../lib/seededRandom";
 
 type FanLifeWidgetProps = {
   storeIds?: string[];
-  locations?: string[];
+  /** Real store names, parallel to storeIds. */
+  names?: string[];
 };
 
 type FanEntry = { id: string; name: string; percentUsed: number };
 
-const buildFanEntries = (storeIds: string[], locations: string[]): FanEntry[] => {
-  const pool = locations.length ? locations : storeIds;
-  return storeIds.map((id) => {
-    const nameRand = createSeededRandom(`${id}:fan-life-store-name`);
-    return {
-      id,
-      name: seededPick(nameRand, pool),
-      percentUsed: seededInt(`${id}:fan-life-percent`, 20, 99),
-    };
-  });
-};
+const buildFanEntries = (storeIds: string[], names: string[]): FanEntry[] =>
+  storeIds.map((id, i) => ({
+    id,
+    name: names[i] ?? id,
+    percentUsed: seededInt(`${id}:fan-life-percent`, 20, 99),
+  }));
 
 const NEAR_END_OF_LIFE_THRESHOLD = 80;
 const CRITICAL_THRESHOLD = 95;
 
 export default function FanLifeWidget({
   storeIds = ["root"],
-  locations = [],
+  names = [],
 }: FanLifeWidgetProps) {
   const entries = useMemo(
-    () => buildFanEntries(storeIds, locations),
-    [storeIds, locations],
+    () => buildFanEntries(storeIds, names),
+    [storeIds, names],
   );
   const nearingEndOfLife = useMemo(
     () =>
@@ -42,20 +38,18 @@ export default function FanLifeWidget({
     [entries],
   );
   const count = nearingEndOfLife.length;
-  const criticalCount = nearingEndOfLife.filter(
-    (e) => e.percentUsed >= CRITICAL_THRESHOLD,
-  ).length;
-  const warningCount = count - criticalCount;
+  const healthy = entries.length - count;
 
   const ring = (
     <RingView
       centerValue={count}
+      centerLabel="Fans near EOL"
       segments={
         count === 0
-          ? [{ name: "None", value: 1, color: "gray" }]
+          ? [{ name: "All healthy", value: 0, color: "emerald" }]
           : [
-              { name: "Critical", value: criticalCount, color: "red" },
-              { name: "Warning", value: warningCount, color: "amber" },
+              { name: "Near end of life", value: count, color: "amber" },
+              { name: "Healthy", value: healthy, color: "emerald" },
             ]
       }
     />
@@ -94,26 +88,7 @@ export default function FanLifeWidget({
           <Alternator
             panes={[
               { key: "list", label: "Nearing end of life", node: list },
-              {
-                key: "chart",
-                label: "Wear % (all fans)",
-                node: (
-                  <BarChart
-                    className="h-full"
-                    data={[...entries]
-                      .sort((a, b) => b.percentUsed - a.percentUsed)
-                      .map((e) => ({ store: e.name, "Wear %": e.percentUsed }))}
-                    index="store"
-                    categories={["Wear %"]}
-                    colors={["amber"]}
-                    showLegend={false}
-                    minValue={0}
-                    maxValue={100}
-                    yAxisWidth={32}
-                  />
-                ),
-              },
-              { key: "ring", label: "Critical vs warning", node: ring },
+              { key: "ring", label: "Fleet health", node: ring },
             ]}
           />
         ) : (

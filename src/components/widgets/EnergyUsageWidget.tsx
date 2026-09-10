@@ -2,25 +2,26 @@ import { useMemo } from "react";
 import { CalendarCheck } from "lucide-react";
 import { BarChart } from "@tremor/react";
 import { Widget, RingView, StoreList, Alternator } from "./Widget";
-import { seededInt, storeName } from "../../lib/seededRandom";
+import { seededInt } from "../../lib/seededRandom";
 
 type EnergyUsageWidgetProps = {
   storeIds?: string[];
-  locations?: string[];
+  /** Real store names, parallel to storeIds. */
+  names?: string[];
 };
 
 const rateFor = (id: string) => seededInt(`${id}:compliance-rate`, 55, 96);
 
 export default function EnergyUsageWidget({
   storeIds = ["root"],
-  locations = [],
+  names = [],
 }: EnergyUsageWidgetProps) {
   const perStore = useMemo(
     () =>
       storeIds
-        .map((id) => ({ id, name: storeName(id, locations), rate: rateFor(id) }))
+        .map((id, i) => ({ id, name: names[i] ?? id, rate: rateFor(id) }))
         .sort((a, b) => a.rate - b.rate),
-    [storeIds, locations],
+    [storeIds, names],
   );
   const compliantRate = perStore.length
     ? Math.round(perStore.reduce((s, r) => s + r.rate, 0) / perStore.length)

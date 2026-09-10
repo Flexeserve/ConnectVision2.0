@@ -361,6 +361,17 @@ const HEB_ALL_STORE_IDS: string[] = HEB_REGIONS.flatMap((region) =>
   region.stores.map((store) => store.id),
 );
 
+// Every id (region, sub-region, store) -> its real display name. Widgets use
+// this to label per-store rows and bar charts with the actual store name
+// instead of a seeded stand-in.
+const NAME_BY_ID: Record<string, string> = {
+  ...REGION_TITLE_BY_ID,
+  ...SUB_REGION_TITLE_BY_ID,
+  ...STORE_TITLE_BY_ID,
+  ...HEB_REGION_TITLE_BY_ID,
+  ...HEB_STORE_TITLE_BY_ID,
+};
+
 export default function App() {
   // Dark mode is driven entirely by the `.dark` class on <body> (toggled in
   // Header / HeroSlide) — Tailwind's `dark:` variants and the token overrides
@@ -676,6 +687,7 @@ export default function App() {
             onOpen={bmOnOpen}
             levelKey={bmLevelKey}
             storeIds={bmStoreIds}
+            nameById={NAME_BY_ID}
           />
           {selectedStoreId && (
             <div

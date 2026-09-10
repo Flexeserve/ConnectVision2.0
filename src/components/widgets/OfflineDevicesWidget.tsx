@@ -1,25 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { TriangleAlert } from "lucide-react";
 import { ProgressCircle } from "@tremor/react";
 import { Widget } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
-
-// Track the smaller side of an element so a child can be sized to fit it.
-function useSquareFit<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  const [side, setSide] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const box = entries[0]?.contentRect;
-      if (box) setSide(Math.floor(Math.min(box.width, box.height)));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  return [ref, side] as const;
-}
+import useElementSize from "../../hooks/useElementSize";
 
 type OfflineDevicesWidgetProps = {
   storeIds?: string[];
@@ -38,9 +22,10 @@ type Category = {
 // sizes itself to whatever space the widget hands each column.
 function Gauge({ cat }: { cat: Category }) {
   const pct = cat.total > 0 ? Math.round((cat.offline / cat.total) * 100) : 0;
-  const [fitRef, side] = useSquareFit<HTMLDivElement>();
-  const radius = Math.max(26, Math.min(64, Math.round(side / 2) - 6));
-  const strokeWidth = Math.max(6, Math.round(radius / 5));
+  const [fitRef, { width, height }] = useElementSize<HTMLDivElement>();
+  const side = Math.min(width, height);
+  const radius = Math.max(24, Math.min(72, Math.floor(side / 2) - 10));
+  const strokeWidth = Math.max(6, Math.round(radius / 6));
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 text-center">
       <div

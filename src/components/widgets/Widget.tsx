@@ -1,7 +1,8 @@
 import { useContext, useEffect, useState, type ReactNode } from "react";
 import { Maximize2, Minimize2, RefreshCw } from "lucide-react";
-import { DonutChart } from "@tremor/react";
+import { ProgressCircle } from "@tremor/react";
 import { WidgetSpanContext } from "./widgetSpan";
+import useElementSize from "../../hooks/useElementSize";
 
 // A dashboard widget with two states — default and expanded. Expanded is
 // entered either by the toggle button OR by the widget being resized to
@@ -147,9 +148,11 @@ export type RingSegment = {
   color: "emerald" | "gray" | "amber" | "red" | "blue" | "orange";
 };
 
-// A Tremor donut with a headline number overlaid and a colour-keyed legend.
-// The ring itself is fluid — it grows to fill whatever vertical space the
-// widget gives it (kept square, never overflowing) rather than a fixed size.
+// A radial progress ring (Tremor ProgressCircle) with a headline number and
+// short caption in the middle and a colour-keyed legend below. The arc shows
+// the first segment's share of the total. The ring is fluid — it sizes itself
+// to whatever space the widget hands it (kept square, never overflowing),
+// matching the gauges in Offline Devices.
 export function RingView({
   centerValue,
   centerLabel,
@@ -161,20 +164,28 @@ export function RingView({
   segments: RingSegment[];
   expanded?: boolean;
 }) {
+  const [fitRef, { width, height }] = useElementSize<HTMLDivElement>();
+  const side = Math.min(width, height);
+  const radius = Math.max(28, Math.min(90, Math.floor(side / 2) - 12));
+  const strokeWidth = Math.max(7, Math.round(radius / 6));
+  const total = segments.reduce((sum, s) => sum + s.value, 0) || 1;
+  const primary = segments[0]!;
+  const pct = Math.round((primary.value / total) * 100);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3">
-      <div className="flex min-h-0 w-full flex-1 items-center justify-center">
-        <div className="relative aspect-square h-full max-h-full min-h-[6rem] max-w-full">
-          <DonutChart
-            data={segments}
-            category="value"
-            index="name"
-            colors={segments.map((s) => s.color)}
-            showLabel={false}
-            showTooltip={expanded}
-            className="h-full w-full"
-          />
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+      <div
+        ref={fitRef}
+        className="flex min-h-[6rem] w-full flex-1 items-center justify-center"
+      >
+        <ProgressCircle
+          value={pct}
+          radius={radius}
+          strokeWidth={strokeWidth}
+          color={primary.color}
+          showAnimation={false}
+        >
+          <div className="flex flex-col items-center px-1 text-center">
             <span
               className={`font-bold leading-none tabular-nums text-ink ${
                 expanded ? "text-3xl" : "text-2xl"
@@ -188,7 +199,7 @@ export function RingView({
               </span>
             ) : null}
           </div>
-        </div>
+        </ProgressCircle>
       </div>
       <div className="flex shrink-0 flex-wrap justify-center gap-x-4 gap-y-1">
         {segments.map((s) => (

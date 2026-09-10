@@ -229,6 +229,15 @@ const DEFAULT_BU_ROWS: BURow[] = [
   },
 ];
 
+// Turn a store id like "city-centre-willow-park" into "City Centre Willow Park"
+// so an unmapped id still reads as a name on a chart axis.
+const prettifyId = (id: string): string =>
+  id
+    .split(/[-_/]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ") || id;
+
 export default function BusinessManagerPage({
   onBack,
   onOpen,
@@ -236,6 +245,7 @@ export default function BusinessManagerPage({
   heading,
   levelKey,
   storeIds,
+  nameById,
 }: {
   onBack?: () => void;
   onOpen?: (id: string) => void;
@@ -243,6 +253,7 @@ export default function BusinessManagerPage({
   heading?: string;
   levelKey?: string;
   storeIds?: string[];
+  nameById?: Record<string, string>;
 }) {
   const buRows = rows ?? DEFAULT_BU_ROWS;
   const scopeSeed = levelKey ?? heading ?? "root";
@@ -258,6 +269,12 @@ export default function BusinessManagerPage({
     () => buRows.map((row) => row.title),
     [buRows],
   );
+  // The real display name for each store in scope, parallel to scopeStoreIds.
+  // Falls back to a readable form of the id when no name is known.
+  const scopeNames = React.useMemo(
+    () => scopeStoreIds.map((id) => nameById?.[id] ?? prettifyId(id)),
+    [scopeStoreIds, nameById],
+  );
   const totalOfflineDevices = React.useMemo(
     () => buRows.reduce((sum, row) => sum + (row.alarms ?? 0), 0),
     [buRows],
@@ -271,13 +288,13 @@ export default function BusinessManagerPage({
       {
         id: "fan-life",
         label: "Fan Life",
-        element: <FanLifeWidget storeIds={scopeStoreIds} locations={scopeLocations} />,
+        element: <FanLifeWidget storeIds={scopeStoreIds} names={scopeNames} />,
       },
       {
         id: "energy",
         label: "Schedule Compliance",
         element: (
-          <EnergyUsageWidget storeIds={scopeStoreIds} locations={scopeLocations} />
+          <EnergyUsageWidget storeIds={scopeStoreIds} names={scopeNames} />
         ),
       },
       {
@@ -296,7 +313,7 @@ export default function BusinessManagerPage({
         element: (
           <AlarmsWidget
             storeIds={scopeStoreIds}
-            locations={scopeLocations}
+            names={scopeNames}
             value={totalActiveAlarms}
           />
         ),
@@ -317,17 +334,14 @@ export default function BusinessManagerPage({
         id: "stores-online",
         label: "Stores Online",
         element: (
-          <StoresOnlineWidget storeIds={scopeStoreIds} locations={scopeLocations} />
+          <StoresOnlineWidget storeIds={scopeStoreIds} names={scopeNames} />
         ),
       },
       {
         id: "temp-alarms",
         label: "Temperature Alarms",
         element: (
-          <TemperatureAlarmsWidget
-            storeIds={scopeStoreIds}
-            locations={scopeLocations}
-          />
+          <TemperatureAlarmsWidget storeIds={scopeStoreIds} names={scopeNames} />
         ),
       },
       {
@@ -348,7 +362,14 @@ export default function BusinessManagerPage({
         element: <EnergyWidget storeIds={scopeStoreIds} />,
       },
     ],
-    [totalActiveAlarms, totalOfflineDevices, scopeSeed, scopeStoreIds, scopeLocations],
+    [
+      totalActiveAlarms,
+      totalOfflineDevices,
+      scopeSeed,
+      scopeStoreIds,
+      scopeLocations,
+      scopeNames,
+    ],
   );
 
   const [searchQuery, setSearchQuery] = React.useState("");

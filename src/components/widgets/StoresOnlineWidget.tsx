@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { Store } from "lucide-react";
 import { Widget, RingView, StoreList, Alternator } from "./Widget";
-import { seededInt, storeName } from "../../lib/seededRandom";
+import { seededInt } from "../../lib/seededRandom";
 
 type StoresOnlineWidgetProps = {
   storeIds?: string[];
-  locations?: string[];
+  /** Real store names, parallel to storeIds. */
+  names?: string[];
 };
 
 // Almost every store reads online; each store independently has a small
@@ -14,15 +15,15 @@ const isOnline = (id: string) => seededInt(`${id}:store-online-roll`, 0, 99) >= 
 
 export default function StoresOnlineWidget({
   storeIds = ["root"],
-  locations = [],
+  names = [],
 }: StoresOnlineWidgetProps) {
   const perStore = useMemo(
     () =>
       storeIds
-        .map((id) => ({ id, name: storeName(id, locations), online: isOnline(id) }))
+        .map((id, i) => ({ id, name: names[i] ?? id, online: isOnline(id) }))
         // offline first so problems surface at the top
         .sort((a, b) => Number(a.online) - Number(b.online)),
-    [storeIds, locations],
+    [storeIds, names],
   );
   const online = perStore.filter((s) => s.online).length;
   const offline = perStore.length - online;

@@ -2,11 +2,12 @@ import { useMemo } from "react";
 import { TriangleAlert } from "lucide-react";
 import { BarChart } from "@tremor/react";
 import { Widget, Metric, StoreList, Alternator } from "./Widget";
-import { seededInt, storeName } from "../../lib/seededRandom";
+import { seededInt } from "../../lib/seededRandom";
 
 type AlarmsWidgetProps = {
   storeIds?: string[];
-  locations?: string[];
+  /** Real store names, parallel to storeIds. */
+  names?: string[];
   /** Fallback headline when no storeIds are supplied. */
   value?: number;
 };
@@ -15,15 +16,15 @@ const alarmsFor = (id: string) => seededInt(`${id}:active-alarms`, 0, 6);
 
 export default function AlarmsWidget({
   storeIds,
-  locations = [],
+  names = [],
   value = 12,
 }: AlarmsWidgetProps) {
   const perStore = useMemo(
     () =>
       (storeIds ?? [])
-        .map((id) => ({ id, name: storeName(id, locations), count: alarmsFor(id) }))
+        .map((id, i) => ({ id, name: names[i] ?? id, count: alarmsFor(id) }))
         .sort((a, b) => b.count - a.count),
-    [storeIds, locations],
+    [storeIds, names],
   );
   const total = storeIds ? perStore.reduce((s, r) => s + r.count, 0) : value;
 
