@@ -411,7 +411,8 @@ export default function BusinessManagerPage({
   });
   const [isBeaconsHidden, setIsBeaconsHidden] = React.useState(() => {
     if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) !== "0";
+    // Beacons are on by default; only an explicit "1" hides them.
+    return window.localStorage.getItem(BEACONS_HIDDEN_KEY) === "1";
   });
   const [beaconOffsets, setBeaconOffsets] = React.useState<Record<string, BeaconOffset>>(() => {
     if (typeof window === "undefined") return {};
