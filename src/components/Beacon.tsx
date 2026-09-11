@@ -1,5 +1,6 @@
 import "./Beacon.css";
 import React from "react";
+import { Tooltip } from "@heroui/react";
 
 export type BeaconOffset = {
   x: number;
@@ -13,6 +14,10 @@ type Props = {
   devMode?: boolean;
   offset?: BeaconOffset;
   onOffsetChange?: (next: BeaconOffset) => void;
+  /** Which corner of the positioned ancestor the beacon badges. */
+  corner?: "bottom-right" | "top-right";
+  /** Hover/focus tooltip copy — defaults to `label`. */
+  tooltip?: string;
 };
 
 export default function Beacon({
@@ -22,6 +27,8 @@ export default function Beacon({
   devMode = false,
   offset,
   onOffsetChange,
+  corner = "bottom-right",
+  tooltip,
 }: Props) {
   const dragStateRef = React.useRef<{
     pointerId: number;
@@ -79,10 +86,12 @@ export default function Beacon({
     onClick?.();
   };
 
-  return (
+  const button = (
     <button
       type="button"
-      className={`beacon-button ${devMode ? "beacon-button--dev" : ""}`}
+      className={`beacon-button ${devMode ? "beacon-button--dev" : ""} ${
+        corner === "top-right" ? "beacon-button--top-right" : ""
+      }`}
       aria-label={label}
       onClick={handleClick}
       onPointerDown={handlePointerDown}
@@ -102,5 +111,17 @@ export default function Beacon({
         </span>
       ) : null}
     </button>
+  );
+
+  return (
+    <Tooltip
+      content={tooltip ?? label}
+      placement={corner === "top-right" ? "bottom" : "top"}
+      showArrow
+      delay={250}
+      closeDelay={0}
+    >
+      {button}
+    </Tooltip>
   );
 }

@@ -39,6 +39,12 @@
   outline: none;
 }
 
+.beacon-button--top-right {
+  bottom: auto;
+  top: -12px;
+  right: -12px;
+}
+
 .beacon-button--dev {
   cursor: grab;
 }

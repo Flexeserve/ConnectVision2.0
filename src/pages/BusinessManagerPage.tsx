@@ -721,7 +721,7 @@ export default function BusinessManagerPage({
 
           <div className="mb-6 min-w-0 basis-[70%] max-lg:basis-auto lg:animate-expand-widgets-panel">
             <div
-              className="widgets-scroll flex w-full animate-fade-in flex-col gap-4 overflow-y-auto border-l border-line bg-canvas py-5 pl-4 pr-10 text-ink-muted [animation-delay:150ms]"
+              className="widgets-scroll relative flex w-full animate-fade-in flex-col gap-4 overflow-y-auto border-l border-line bg-canvas py-5 pl-4 pr-10 text-ink-muted [animation-delay:150ms]"
               ref={widgetsPanelRef}
               onScroll={(event) =>
                 setIsWidgetsScrolled(event.currentTarget.scrollTop > 8)
@@ -731,6 +731,7 @@ export default function BusinessManagerPage({
               <Beacon
                 label="Widgets panel tour"
                 beaconId="widgets"
+                corner="top-right"
                 onClick={() => startTourFrom(7)}
                 devMode={isBeaconDevMode}
                 offset={beaconOffsets.widgets}
