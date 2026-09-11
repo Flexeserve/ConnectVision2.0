@@ -113,8 +113,12 @@ export const createBusinessManagerBeaconTour = (stepIndex: number) => {
     smoothScroll: true,
     animate: true,
     popoverClass: "business-manager-tour-popover",
-    onPopoverRender: (popover, { state }) => {
-      if (state.activeStep?.element !== WIDGETS_PANEL_ELEMENT) return;
+    onPopoverRender: (popover) => {
+      // Each tour instance here is scoped to exactly one step (`steps: [step]`
+      // above), so `step` itself — not driver.js's `state.activeStep`, which
+      // isn't reliably populated yet on this very first render — tells us
+      // whether this is the widgets-panel step.
+      if (step.element !== WIDGETS_PANEL_ELEMENT) return;
       popover.description.innerHTML = "";
       legendRoot = createRoot(popover.description);
       legendRoot.render(createElement(WidgetPanelTooltip));
