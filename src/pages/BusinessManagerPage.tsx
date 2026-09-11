@@ -19,7 +19,6 @@ import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget
 import EnergyWidget from "../components/widgets/EnergyWidget";
 import onlineStatusIcon from "../assets/OnlineStatus.svg";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
-import WidgetPanelTooltip from "../components/widgets/widgetLegend";
 import Greeting from "../components/Greeting";
 import { WidgetGrid } from "../components/widgets/Widget";
 import { WidgetSpanContext, type WidgetSpan } from "../components/widgets/widgetSpan";
@@ -783,7 +782,6 @@ export default function BusinessManagerPage({
               <div className="widgets-beacon-target relative flex-1 pb-28 pr-3 pt-2">
                 <Beacon
                   label="Widgets panel tour"
-                  tooltip={<WidgetPanelTooltip />}
                   beaconId="widgets"
                   corner="top-right"
                   onClick={() => startTourFrom(7)}

@@ -80,13 +80,10 @@ const WIDGET_LEGEND: { title: string; icon: ReactNode; description: string }[] =
 
 export default function WidgetPanelTooltip() {
   return (
-    <div className="max-h-80 w-72 overflow-y-auto p-1 text-left">
-      <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
-        Dashboard widgets
-      </p>
-      <div className="space-y-2">
+    <div className="max-h-[26rem] w-full overflow-y-auto pr-1">
+      <div className="space-y-2.5">
         {WIDGET_LEGEND.map((w) => (
-          <div key={w.title} className="flex items-start gap-2 px-1">
+          <div key={w.title} className="flex items-start gap-2">
             <span className="mt-0.5 shrink-0 text-accent [&_svg]:size-4">
               {w.icon}
             </span>
