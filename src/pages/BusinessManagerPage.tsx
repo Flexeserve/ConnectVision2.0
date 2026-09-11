@@ -721,22 +721,13 @@ export default function BusinessManagerPage({
 
           <div className="mb-6 min-w-0 basis-[70%] max-lg:basis-auto lg:animate-expand-widgets-panel">
             <div
-              className="widgets-scroll relative flex w-full animate-fade-in flex-col gap-4 overflow-y-auto border-l border-line bg-canvas py-5 pl-4 pr-10 text-ink-muted [animation-delay:150ms]"
+              className="widgets-scroll flex w-full animate-fade-in flex-col gap-4 overflow-y-auto border-l border-line bg-canvas py-5 pl-4 pr-10 text-ink-muted [animation-delay:150ms]"
               ref={widgetsPanelRef}
               onScroll={(event) =>
                 setIsWidgetsScrolled(event.currentTarget.scrollTop > 8)
               }
               style={{ maxHeight: "calc(100dvh - 200px)" }}
             >
-              <Beacon
-                label="Widgets panel tour"
-                beaconId="widgets"
-                corner="top-right"
-                onClick={() => startTourFrom(7)}
-                devMode={isBeaconDevMode}
-                offset={beaconOffsets.widgets}
-                onOffsetChange={(next) => handleBeaconOffsetChange("widgets", next)}
-              />
               <div
                 className={`pointer-events-none sticky top-3 z-[5] flex justify-end transition-opacity ${
                   isWidgetsScrolled ? "pointer-events-auto opacity-100" : "opacity-0"
@@ -800,7 +791,16 @@ export default function BusinessManagerPage({
                 </div>
               )}
               {/* extra bottom padding so the last row clears the fixed footer */}
-              <div className="flex-1 pb-28 pr-3 pt-2">
+              <div className="relative flex-1 pb-28 pr-3 pt-2">
+                <Beacon
+                  label="Widgets panel tour"
+                  beaconId="widgets"
+                  corner="top-right"
+                  onClick={() => startTourFrom(7)}
+                  devMode={isBeaconDevMode}
+                  offset={beaconOffsets.widgets}
+                  onOffsetChange={(next) => handleBeaconOffsetChange("widgets", next)}
+                />
                 <DndContext
                   sensors={dndSensors}
                   collisionDetection={closestCenter}
