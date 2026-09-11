@@ -43,7 +43,10 @@ import { CSS } from "@dnd-kit/utilities";
 const BEACON_OFFSETS_KEY = "cv_beacon_offsets";
 const WIDGET_ORDER_KEY = "cv_widget_order";
 const WIDGET_SPANS_KEY = "cv_widget_spans";
-const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
+// v2: beacons now default to visible; the old key may already hold an
+// explicit "hidden" value from before that flip, so start fresh under a new
+// key rather than have that stale value keep suppressing them.
+const BEACONS_HIDDEN_KEY = "cv_beacons_hidden_v2";
 const BEACONS_VISIBILITY_EVENT = "cv_beacons_visibility_updated";
 const HEADER_BRAND_KEY = "cv_header_brand";
 const HEADER_BRAND_EVENT = "cv_header_brand_updated";

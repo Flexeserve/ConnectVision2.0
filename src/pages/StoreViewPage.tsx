@@ -16,7 +16,10 @@ type StoreViewPageProps = {
 };
 
 const STORE_BEACON_OFFSETS_KEY = "cv_store_beacon_offsets";
-const BEACONS_HIDDEN_KEY = "cv_beacons_hidden";
+// v2: beacons now default to visible; the old key may already hold an
+// explicit "hidden" value from before that flip, so start fresh under a new
+// key rather than have that stale value keep suppressing them.
+const BEACONS_HIDDEN_KEY = "cv_beacons_hidden_v2";
 
 const storeViewTourSteps: DriveStep[] = [
   {
