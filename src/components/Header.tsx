@@ -128,7 +128,7 @@ export default function Header({ onBack, title, headerBrand }: Props) {
     >
       <div className="flex items-center gap-4">
         {onBack && <BackButton onClick={onBack} />}
-        <img src={logoSrc} alt="Flexeserve Logo" className="h-5" />
+        <img src={logoSrc} alt="Flexeserve Logo" className="header-logo h-5" />
         {title && (
           <>
             <span aria-hidden className="font-semibold opacity-70">
@@ -146,7 +146,7 @@ export default function Header({ onBack, title, headerBrand }: Props) {
             <button
               type="button"
               aria-label="Settings"
-              className="inline-flex items-center justify-center rounded-md"
+              className="settings-button inline-flex items-center justify-center rounded-md"
             >
               <img
                 src={settingsIcon}

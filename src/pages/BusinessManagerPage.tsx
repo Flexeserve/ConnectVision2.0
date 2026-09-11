@@ -617,7 +617,7 @@ export default function BusinessManagerPage({
 
           <div className="flex min-w-0 basis-[30%] flex-col items-center max-lg:basis-auto lg:animate-shrink-left-panel">
             <div className="my-4 flex w-full items-center justify-center px-6 sm:px-12">
-              <div className="relative flex w-full max-w-[500px] sm:w-[460px]">
+              <div className="search-beacon-target relative flex w-full max-w-[500px] sm:w-[460px]">
                 <Beacon
                   label="Search tour"
                   beaconId="search"
@@ -652,7 +652,7 @@ export default function BusinessManagerPage({
                   Markets
                 </span>
               </div>
-              <div className="relative flex flex-col items-stretch gap-3">
+              <div className="burows-beacon-target relative flex flex-col items-stretch gap-3">
                 <Beacon
                   label="Business units tour"
                   beaconId="bu-list"
@@ -703,7 +703,7 @@ export default function BusinessManagerPage({
                         ) : null}
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="region-alerts-stack-target flex items-center gap-2">
                         <div className="inline-flex items-center gap-2 rounded border border-line-strong px-2.5 py-1.5">
                           <img
                             src={onlineStatusIcon}
@@ -791,7 +791,7 @@ export default function BusinessManagerPage({
                 </div>
               )}
               {/* extra bottom padding so the last row clears the fixed footer */}
-              <div className="relative flex-1 pb-28 pr-3 pt-2">
+              <div className="widgets-beacon-target relative flex-1 pb-28 pr-3 pt-2">
                 <Beacon
                   label="Widgets panel tour"
                   beaconId="widgets"
