@@ -1,5 +1,5 @@
 import "./Beacon.css";
-import React from "react";
+import React, { type ReactNode } from "react";
 import { Tooltip } from "@heroui/react";
 
 export type BeaconOffset = {
@@ -16,8 +16,8 @@ type Props = {
   onOffsetChange?: (next: BeaconOffset) => void;
   /** Which corner of the positioned ancestor the beacon badges. */
   corner?: "bottom-right" | "top-right";
-  /** Hover/focus tooltip copy — defaults to `label`. */
-  tooltip?: string;
+  /** Hover/focus tooltip content — plain text or rich JSX. Defaults to `label`. */
+  tooltip?: ReactNode;
 };
 
 export default function Beacon({
@@ -120,6 +120,7 @@ export default function Beacon({
       showArrow
       delay={250}
       closeDelay={0}
+      classNames={{ content: "max-w-none" }}
     >
       {button}
     </Tooltip>
