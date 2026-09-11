@@ -89,16 +89,6 @@ export const businessManagerTourSteps: DriveStep[] = [
       align: "end",
     },
   },
-  {
-    element: ".region-alerts-stack-target",
-    popover: {
-      title: "Alarms",
-      description:
-        "Status and performance alerts for the relevant region to draw your attention to any issues that need addressing",
-      side: "right",
-      align: "center",
-    },
-  },
 ];
 
 export const createBusinessManagerBeaconTour = (stepIndex: number) => {

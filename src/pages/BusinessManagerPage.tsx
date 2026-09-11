@@ -666,7 +666,7 @@ export default function BusinessManagerPage({
                     No matches for "{searchQuery}"
                   </p>
                 )}
-                {visibleBuRows.map((r, index) => (
+                {visibleBuRows.map((r) => (
                   <div
                     key={r.id}
                     className="w-full cursor-pointer self-stretch border-l-4 border-ink"
@@ -683,18 +683,6 @@ export default function BusinessManagerPage({
                   >
                     <div className="bu-row-content flex min-h-[42px] items-center justify-between bg-surface px-[18px] py-2 transition-colors hover:bg-surface-hover">
                       <div className="relative flex flex-col gap-1.5">
-                        {index === 0 ? (
-                          <Beacon
-                            label="Region alarms tour"
-                            beaconId="region-alarms"
-                            onClick={() => startTourFrom(9)}
-                            devMode={isBeaconDevMode}
-                            offset={beaconOffsets["region-alarms"]}
-                            onOffsetChange={(next) =>
-                              handleBeaconOffsetChange("region-alarms", next)
-                            }
-                          />
-                        ) : null}
                         <span className="text-sm text-ink">{r.title}</span>
                         {r.subtitle ? (
                           <span className="text-xs font-medium text-ink-muted">
@@ -703,7 +691,7 @@ export default function BusinessManagerPage({
                         ) : null}
                       </div>
 
-                      <div className="region-alerts-stack-target flex items-center gap-2">
+                      <div className="flex items-center gap-2">
                         <div className="inline-flex items-center gap-2 rounded border border-line-strong px-2.5 py-1.5">
                           <img
                             src={onlineStatusIcon}
