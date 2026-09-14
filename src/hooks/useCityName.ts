@@ -85,20 +85,35 @@ export function useCityName(fallback = "London"): string {
 
   useEffect(() => {
     let cancelled = false;
-    const apply = (value: string | null) => {
-      if (!cancelled && value) setCity(value);
+    // Whichever of the two lookups resolves last would otherwise win, even
+    // if it's the coarse IP result landing after the precise fix (e.g. once
+    // geolocation permission is already granted from earlier in the
+    // session, the GPS fix can resolve before the IP lookup's network
+    // round-trip finishes). Once the precise result lands, it always wins.
+    let preciseApplied = false;
+
+    const applyCoarse = (value: string | null) => {
+      if (!cancelled && !preciseApplied && value) setCity(value);
+    };
+    const applyPrecise = (value: string | null) => {
+      if (!cancelled && value) {
+        preciseApplied = true;
+        setCity(value);
+      }
     };
 
     // 1. immediate, prompt-free
     void cityFromIp().then((c) => {
       if (!c) console.debug("[useCityName] IP lookup returned no city");
-      apply(c);
+      applyCoarse(c);
     });
 
     // 2. precise, if the user allows it — overrides the IP result
     void getPosition().then((pos) => {
       if (!pos) return;
-      void reverseGeocode(pos.coords.latitude, pos.coords.longitude).then(apply);
+      void reverseGeocode(pos.coords.latitude, pos.coords.longitude).then(
+        applyPrecise,
+      );
     });
 
     return () => {
