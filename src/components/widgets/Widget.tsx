@@ -161,7 +161,8 @@ export function RadialGauge({
 }: {
   radius: number;
   strokeWidth: number;
-  segments: { color: RingSegment["color"]; value: number }[];
+  /** Tailwind palette name (e.g. "emerald"), or a raw "#rrggbb" hex colour. */
+  segments: { color: RingSegment["color"] | (string & {}); value: number }[];
   max?: number;
   children?: ReactNode;
 }) {
@@ -190,19 +191,23 @@ export function RadialGauge({
           strokeWidth={strokeWidth}
           className="stroke-line"
         />
-        {segments.map((s, i) => (
-          <circle
-            key={i}
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${lengths[i]} ${circ - lengths[i]!}`}
-            strokeDashoffset={-offsets[i]!}
-            className={`stroke-${s.color}-500`}
-          />
-        ))}
+        {segments.map((s, i) => {
+          const isHex = s.color.startsWith("#");
+          return (
+            <circle
+              key={i}
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              strokeWidth={strokeWidth}
+              strokeDasharray={`${lengths[i]} ${circ - lengths[i]!}`}
+              strokeDashoffset={-offsets[i]!}
+              className={isHex ? undefined : `stroke-${s.color}-500`}
+              stroke={isHex ? s.color : undefined}
+            />
+          );
+        })}
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         {children}

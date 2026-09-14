@@ -14,7 +14,8 @@ type Category = {
   label: string;
   offline: number;
   total: number;
-  color: "red" | "amber" | "blue";
+  /** Raw "#rrggbb" hex colour for this category's gauge arc. */
+  color: string;
 };
 
 // A single radial gauge — offline share of a device category. The circle
@@ -82,21 +83,21 @@ export default function OfflineDevicesWidget({
         label: "Gateways",
         offline: Math.min(gatewayOffline, n),
         total: n,
-        color: "red",
+        color: "#d94d14",
       },
       {
         key: "commander",
         label: "Commanders",
         offline: Math.min(commanderOffline || commanderSeeded, n),
         total: n,
-        color: "amber",
+        color: "#5b6771",
       },
       {
         key: "sensor",
         label: "Sensors",
         offline: sensorOffline,
         total: n * 4,
-        color: "blue",
+        color: "#ffcb71",
       },
     ];
   }, [storeIds, commanderOffline]);
