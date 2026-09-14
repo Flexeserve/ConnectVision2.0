@@ -1074,7 +1074,7 @@ export default function OperatorPage({
                 >
                   <div className="operator-card">
                     <div className="operator-card-header">
-                      {col === 0 ? "Flexeserve - LEFT" : "Flexeserve - RIGHT*"}
+                      {col === 0 ? "Flexeserve - LEFT" : "Flexeserve - RIGHT"}
                     </div>
                     <div className="operator-card-body">
                       {[0, 1].map((row) => {

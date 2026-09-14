@@ -393,7 +393,7 @@ export default function StoreViewPage({
           </div>
         </div>
 
-        <div className="store-view-widgets">
+        <div className="store-view-widgets max-h-[640px] overflow-y-auto pr-1">
           <WidgetGrid>
             <FanLifeWidget storeIds={storeIds} names={[storeName]} />
             <EnergyUsageWidget storeIds={storeIds} names={[storeName]} />
