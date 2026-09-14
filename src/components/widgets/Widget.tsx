@@ -143,8 +143,15 @@ export function Metric({
 export type RingSegment = {
   name: string;
   value: number;
-  /** Tailwind palette name (also a Tremor colour name). */
-  color: "emerald" | "gray" | "amber" | "red" | "blue" | "orange";
+  /** Tailwind palette name (also a Tremor colour name), or a raw "#rrggbb" hex colour. */
+  color:
+    | "emerald"
+    | "gray"
+    | "amber"
+    | "red"
+    | "blue"
+    | "orange"
+    | (string & {});
 };
 
 // A thick radial gauge (ProgressCircle-weight, self-sizing) where every
@@ -264,15 +271,21 @@ export function RingView({
         </RadialGauge>
       </div>
       <div className="flex shrink-0 flex-wrap justify-center gap-x-4 gap-y-1">
-        {segments.map((s) => (
-          <span
-            key={s.name}
-            className="flex items-center gap-1.5 text-xs text-ink-muted"
-          >
-            <span className={`size-2 rounded-full bg-${s.color}-500`} />
-            {s.name}
-          </span>
-        ))}
+        {segments.map((s) => {
+          const isHex = s.color.startsWith("#");
+          return (
+            <span
+              key={s.name}
+              className="flex items-center gap-1.5 text-xs text-ink-muted"
+            >
+              <span
+                className={`size-2 rounded-full ${isHex ? "" : `bg-${s.color}-500`}`}
+                style={isHex ? { backgroundColor: s.color } : undefined}
+              />
+              {s.name}
+            </span>
+          );
+        })}
       </div>
     </div>
   );

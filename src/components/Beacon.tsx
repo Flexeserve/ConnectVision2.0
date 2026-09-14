@@ -15,7 +15,7 @@ type Props = {
   offset?: BeaconOffset;
   onOffsetChange?: (next: BeaconOffset) => void;
   /** Which corner of the positioned ancestor the beacon badges. */
-  corner?: "bottom-right" | "top-right";
+  corner?: "bottom-right" | "top-right" | "top-left";
   /** Hover/focus tooltip content — plain text or rich JSX. Defaults to `label`. */
   tooltip?: ReactNode;
 };
@@ -90,7 +90,11 @@ export default function Beacon({
     <button
       type="button"
       className={`beacon-button ${devMode ? "beacon-button--dev" : ""} ${
-        corner === "top-right" ? "beacon-button--top-right" : ""
+        corner === "top-right"
+          ? "beacon-button--top-right"
+          : corner === "top-left"
+            ? "beacon-button--top-left"
+            : ""
       }`}
       aria-label={label}
       onClick={handleClick}
@@ -116,7 +120,7 @@ export default function Beacon({
   return (
     <Tooltip
       content={tooltip ?? label}
-      placement={corner === "top-right" ? "bottom" : "top"}
+      placement={corner === "bottom-right" ? "top" : "bottom"}
       showArrow
       delay={250}
       closeDelay={0}

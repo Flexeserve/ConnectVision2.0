@@ -35,10 +35,14 @@ export default function AlarmsWidget({
       centerLabel="Alarms"
       segments={
         total === 0
-          ? [{ name: "All clear", value: 1, color: "emerald" }]
+          ? [{ name: "All clear", value: 1, color: "#1e7d3f" }]
           : [
-              { name: "Stores with alarms", value: withAlarms, color: "red" },
-              { name: "Clear", value: clear, color: "emerald" },
+              {
+                name: "Stores with alarms",
+                value: withAlarms,
+                color: "#a4130e",
+              },
+              { name: "Clear", value: clear, color: "#1e7d3f" },
             ]
       }
     />

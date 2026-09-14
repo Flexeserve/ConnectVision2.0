@@ -79,7 +79,7 @@ export default function TemperatureAlarmsWidget({
                     data={barData}
                     index="day"
                     categories={["High", "Low"]}
-                    colors={["red", "blue"]}
+                    colors={["#a4130e", "#ffcb71"]}
                     stack
                     showLegend
                     yAxisWidth={28}
@@ -110,8 +110,8 @@ export default function TemperatureAlarmsWidget({
               totalCount === 0
                 ? [{ name: "None", value: 1, color: "gray" }]
                 : [
-                    { name: "High", value: highCount, color: "red" },
-                    { name: "Low", value: lowCount, color: "blue" },
+                    { name: "High", value: highCount, color: "#a4130e" },
+                    { name: "Low", value: lowCount, color: "#ffcb71" },
                   ]
             }
           />

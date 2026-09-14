@@ -4,7 +4,20 @@ import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import Header from "../components/Header";
 import Beacon, { type BeaconOffset } from "../components/Beacon";
+import Greeting from "../components/Greeting";
 import storeIcon from "../assets/StoreIcon.svg";
+import { WidgetGrid } from "../components/widgets/Widget";
+import FanLifeWidget from "../components/widgets/FanLifeWidget";
+import EnergyUsageWidget from "../components/widgets/EnergyUsageWidget";
+import EnergyCostWidget from "../components/widgets/EnergyCostWidget";
+import ElementLifeWidget from "../components/widgets/ElementLifeWidget";
+import AlarmsWidget from "../components/widgets/AlarmsWidget";
+import OfflineDevicesWidget from "../components/widgets/OfflineDevicesWidget";
+import CloudConnectedWidget from "../components/widgets/CloudConnectedWidget";
+import TemperatureAlarmsWidget from "../components/widgets/TemperatureAlarmsWidget";
+import AlarmSummaryWidget from "../components/widgets/AlarmSummaryWidget";
+import DoorOpenedAlarmsWidget from "../components/widgets/DoorOpenedAlarmsWidget";
+import EnergyWidget from "../components/widgets/EnergyWidget";
 import "./StoreViewPage.css";
 import "../styles/tour.css";
 
@@ -143,6 +156,8 @@ export default function StoreViewPage({
     () => buildStoreDevices(title ?? "Store View"),
     [title],
   );
+  const storeName = title ?? "Store View";
+  const storeIds = React.useMemo(() => [storeName], [storeName]);
   const [isBeaconDevMode, setIsBeaconDevMode] = React.useState(false);
   const [isBeaconsHidden, setIsBeaconsHidden] = React.useState(() => {
     if (typeof window === "undefined") return false;
@@ -236,8 +251,9 @@ export default function StoreViewPage({
           onOffsetChange={(next) =>
             handleBeaconOffsetChange("store-container", next)
           }
+          corner="top-right"
         />
-        <div className="greetings">Good morning</div>
+        <Greeting className="-mx-6 sm:-mx-12" />
 
         <div className="store-view-main">
           <div className="store-view-left">
@@ -305,22 +321,24 @@ export default function StoreViewPage({
             <div className="store-device-list">
               {deviceRows.map((row, index) => (
                 <div
-                  className={`store-device-row ${index === 0 ? "store-device-row-target beacon-host beacon-host--store-row" : ""}`}
+                  className={`store-device-row ${index === 0 ? "store-device-row-target" : ""}`}
                   key={row.id}
                 >
-                  {index === 0 ? (
-                    <Beacon
-                      label="Device row tour"
-                      beaconId="store-device-row"
-                      onClick={() => startStoreTourFrom(1)}
-                      devMode={isBeaconDevMode}
-                      offset={beaconOffsets["store-device-row"]}
-                      onOffsetChange={(next) =>
-                        handleBeaconOffsetChange("store-device-row", next)
-                      }
-                    />
-                  ) : null}
-                  <span className="store-device-cell">{row.device}</span>
+                  <div
+                    className={`store-device-cell ${index === 1 ? "beacon-host beacon-host--store-row" : ""}`}
+                  >
+                    {index === 1 ? (
+                      <Beacon
+                        label="Device row tour"
+                        beaconId="store-device-row"
+                        onClick={() => startStoreTourFrom(1)}
+                        offset={{ x: -5, y: -15 }}
+                        devMode={isBeaconDevMode}
+                        corner="top-left"
+                      />
+                    ) : null}
+                    {row.device}
+                  </div>
                   <span className="store-device-cell">{row.model}</span>
                   <div
                     className={`store-device-cell ${index === 0 ? "beacon-host beacon-host--schedule" : ""}`}
@@ -373,6 +391,22 @@ export default function StoreViewPage({
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="store-view-widgets">
+          <WidgetGrid>
+            <FanLifeWidget storeIds={storeIds} names={[storeName]} />
+            <EnergyUsageWidget storeIds={storeIds} names={[storeName]} />
+            <EnergyCostWidget storeIds={storeIds} />
+            <ElementLifeWidget storeIds={storeIds} />
+            <AlarmsWidget storeIds={storeIds} names={[storeName]} />
+            <OfflineDevicesWidget storeIds={storeIds} />
+            <CloudConnectedWidget storeIds={storeIds} />
+            <TemperatureAlarmsWidget storeIds={storeIds} names={[storeName]} />
+            <AlarmSummaryWidget seed={storeName} locations={[storeName]} />
+            <DoorOpenedAlarmsWidget storeIds={storeIds} />
+            <EnergyWidget storeIds={storeIds} />
+          </WidgetGrid>
         </div>
       </div>
     </div>

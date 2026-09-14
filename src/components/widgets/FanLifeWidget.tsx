@@ -46,10 +46,10 @@ export default function FanLifeWidget({
       centerLabel="Fans"
       segments={
         count === 0
-          ? [{ name: "All healthy", value: 1, color: "emerald" }]
+          ? [{ name: "All healthy", value: 1, color: "#1e7d3f" }]
           : [
               { name: "Near end of life", value: count, color: "amber" },
-              { name: "Healthy", value: healthy, color: "emerald" },
+              { name: "Healthy", value: healthy, color: "#1e7d3f" },
             ]
       }
     />
@@ -88,7 +88,11 @@ export default function FanLifeWidget({
           <Alternator
             panes={[
               { key: "list", label: "Nearing end of life", node: list },
-              { key: "ring", label: "Fleet health", node: ring },
+              {
+                key: "ring",
+                label: `Fans nearing end of life`,
+                node: ring,
+              },
             ]}
           />
         ) : (

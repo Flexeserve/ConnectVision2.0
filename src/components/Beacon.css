@@ -45,6 +45,13 @@
   right: -12px;
 }
 
+.beacon-button--top-left {
+  bottom: auto;
+  top: -12px;
+  right: auto;
+  left: -12px;
+}
+
 .beacon-button--dev {
   cursor: grab;
 }

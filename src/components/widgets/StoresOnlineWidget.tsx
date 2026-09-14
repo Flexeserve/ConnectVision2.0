@@ -33,7 +33,7 @@ export default function StoresOnlineWidget({
       centerValue={online}
       centerLabel="Online"
       segments={[
-        { name: "Online", value: online, color: "emerald" },
+        { name: "Online", value: online, color: "#1e7d3f" },
         { name: "Offline", value: offline, color: "gray" },
       ]}
     />

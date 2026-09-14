@@ -42,11 +42,7 @@ function Gauge({ cat }: { cat: Category }) {
             },
           ]}
         >
-          <span
-            className={`text-lg font-bold tabular-nums ${
-              cat.offline > 0 ? "text-danger" : "text-ink"
-            }`}
-          >
+          <span className="text-lg font-bold tabular-nums text-ink">
             {cat.offline}
           </span>
         </RadialGauge>

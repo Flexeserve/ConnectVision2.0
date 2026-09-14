@@ -20,6 +20,15 @@ export default {
         /^(bg|text|border|ring|stroke|fill)-(gray|orange|blue|emerald|red|amber)-(100|200|300|400|500|600|700)$/,
       variants: ["hover", "ui-selected"],
     },
+    // Exact brand hex colours passed straight through to Tremor charts
+    // (Tremor falls back to arbitrary-value classes like `fill-[#a4130e]`
+    // for any colour that isn't one of its named palette entries).
+    ...["#a4130e", "#ffcb71", "#1e7d3f"].flatMap((hex) =>
+      ["bg", "text", "fill"].flatMap((prefix) => [
+        `${prefix}-[${hex}]`,
+        `dark:${prefix}-[${hex}]`,
+      ]),
+    ),
   ],
   theme: {
     extend: {

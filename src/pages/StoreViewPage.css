@@ -15,9 +15,17 @@
 }
 
 .beacon-host--store-row .beacon-button {
-  top: 8px;
-  right: 8px;
+  top: -8px;
+  left: -10px;
+  right: auto;
   bottom: auto;
+  width: 26px;
+  height: 26px;
+}
+
+.beacon-host--store-row .beacon-dot {
+  width: 18px;
+  height: 18px;
 }
 
 .beacon-host--schedule .beacon-button {
@@ -52,7 +60,7 @@
   min-height: calc(100vh - 64px);
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 clamp(1.5rem, 4vw, 3.5rem);
+  padding: clamp(1rem, 3vw, 2rem) clamp(1.5rem, 4vw, 3.5rem) 0;
 }
 
 .store-view-main {
@@ -64,6 +72,10 @@
 
 .store-view-bottom {
   padding: 0 clamp(1.5rem, 3vw, 3rem) 24px;
+}
+
+.store-view-widgets {
+  padding: 0 clamp(1.5rem, 3vw, 3rem) 32px;
 }
 
 .store-view-left {

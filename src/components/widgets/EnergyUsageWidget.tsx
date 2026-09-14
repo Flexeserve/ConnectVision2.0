@@ -57,7 +57,7 @@ export default function EnergyUsageWidget({
                     data={perStore.map((r) => ({ store: r.name, "%": r.rate }))}
                     index="store"
                     categories={["%"]}
-                    colors={["emerald"]}
+                    colors={["#1e7d3f"]}
                     showLegend={false}
                     minValue={0}
                     maxValue={100}
@@ -72,7 +72,7 @@ export default function EnergyUsageWidget({
             centerValue={`${compliantRate}%`}
             centerLabel="Compliant"
             segments={[
-              { name: "Compliant", value: compliantRate, color: "emerald" },
+              { name: "Compliant", value: compliantRate, color: "#1e7d3f" },
               { name: "Not compliant", value: 100 - compliantRate, color: "amber" },
             ]}
           />
