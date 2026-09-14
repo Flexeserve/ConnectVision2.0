@@ -34,7 +34,7 @@ export default function CloudConnectedWidget({
           centerValue={connected}
           centerLabel="Connected"
           segments={[
-            { name: "Connected", value: connected, color: "orange" },
+            { name: "Connected", value: connected, color: "#d94d14" },
             { name: "No connection", value: offline, color: "gray" },
           ]}
         />

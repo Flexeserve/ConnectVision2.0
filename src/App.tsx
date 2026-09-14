@@ -18,7 +18,7 @@ import connectLogo from "./assets/connect_logo.svg";
 
 const SLIDE_MS = 600;
 const INACTIVITY_MS = 30_000;
-const ENABLE_INACTIVITY_RETURN = false;
+const ENABLE_INACTIVITY_RETURN = true;
 // v2: beacons now default to visible; the old key may already hold an
 // explicit "hidden" value from before that flip, so start fresh under a new
 // key rather than have that stale value keep suppressing them.
