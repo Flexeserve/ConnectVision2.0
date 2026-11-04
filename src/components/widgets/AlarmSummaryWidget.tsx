@@ -10,13 +10,15 @@ import {
 } from "@tremor/react";
 import { Widget, Metric } from "./Widget";
 import { createSeededRandom, seededPick } from "../../lib/seededRandom";
+import { useLocale } from "../../lib/locale";
 
 type AlarmRow = {
   id: string;
   location: string;
   alarm: string;
   status: "Active" | "Warning" | "Resolved";
-  time: string;
+  /** Minutes since midnight. */
+  minuteOfDay: number;
 };
 
 const ALARM_TYPES = [
@@ -43,10 +45,10 @@ const buildRows = (seed: string, locations: string[]): AlarmRow[] => {
         location: seededPick(rand, pool),
         alarm: seededPick(rand, ALARM_TYPES),
         status: seededPick(rand, STATUSES),
-        time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+        minuteOfDay: hour * 60 + minute,
       };
     })
-    .sort((a, b) => (a.time < b.time ? 1 : -1));
+    .sort((a, b) => b.minuteOfDay - a.minuteOfDay);
 };
 
 const PAGE_SIZE = 6;
@@ -67,6 +69,7 @@ export default function AlarmSummaryWidget({
   locations = [],
 }: AlarmSummaryWidgetProps) {
   const rows = useMemo(() => buildRows(seed, locations), [seed, locations]);
+  const { formatTime } = useLocale();
   const [page, setPage] = useState(0);
   const totalPages = Math.max(Math.ceil(rows.length / PAGE_SIZE), 1);
   const activeCount = rows.filter((r) => r.status === "Active").length;
@@ -118,7 +121,7 @@ export default function AlarmSummaryWidget({
                         </span>
                       </TableCell>
                       <TableCell className="!py-1.5 !text-xs tabular-nums">
-                        {row.time}
+                        {formatTime(Math.floor(row.minuteOfDay / 60), row.minuteOfDay % 60)}
                       </TableCell>
                     </TableRow>
                   ))}

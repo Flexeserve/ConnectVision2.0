@@ -6,6 +6,7 @@ const SHORTCUTS = [
   { keys: "Ctrl + Shift + 0", desc: "Reset beacon positions" },
   { keys: "Shift + C", desc: "Toggle operator camera controls" },
   { keys: "Shift + D", desc: "Toggle operator light debug gizmos" },
+  { keys: "Ctrl + Shift + L", desc: "Cycle locale: Auto (geo) → US → UK" },
 ];
 
 export default function DevShortcutsHelp() {

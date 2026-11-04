@@ -3,12 +3,14 @@ import { Thermometer } from "lucide-react";
 import { AreaChart } from "@tremor/react";
 import { Widget, Metric } from "./Widget";
 import { createSeededRandom } from "../../lib/seededRandom";
+import { useLocale, type Locale } from "../../lib/locale";
 
-const TIME_SLOTS = ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "00:00", "03:00"];
+// Hours of the day each reading is taken at.
+const TIME_SLOTS = [6, 9, 12, 15, 18, 21, 0, 3];
 
-const buildLabels = (days: number) =>
+const buildLabels = (days: number, formatHour: Locale["formatHour"]) =>
   Array.from({ length: days }).flatMap((_, d) =>
-    TIME_SLOTS.map((slot) => `D${d + 1} ${slot}`),
+    TIME_SLOTS.map((slot) => `D${d + 1} ${formatHour(slot)}`),
   );
 
 // A door-open event drops cabinet temperature sharply, then it recovers.
@@ -39,13 +41,16 @@ const generateStoreSeries = (days: number, storeId: string) => {
 
 // Temperature is a sensor reading — the scope's series is the pointwise
 // average of its stores' own series.
-const buildAggregate = (days: number, storeIds: string[]) => {
+// Series are generated in °C and converted to the viewer's unit for display.
+const buildAggregate = (days: number, storeIds: string[], locale: Locale) => {
   const per = storeIds.map((id) => generateStoreSeries(days, id));
   const len = per[0]?.length ?? 0;
-  const labels = buildLabels(days);
+  const labels = buildLabels(days, locale.formatHour);
   return Array.from({ length: len }, (_, i) => ({
     t: labels[i],
-    "°C": Math.round(per.reduce((sum, s) => sum + s[i], 0) / per.length),
+    [locale.tempSymbol]: locale.toTemp(
+      Math.round(per.reduce((sum, s) => sum + s[i], 0) / per.length),
+    ),
   }));
 };
 
@@ -57,8 +62,13 @@ export default function DoorOpenedAlarmsWidget({
   storeIds = ["root"],
 }: DoorOpenedAlarmsWidgetProps) {
   const [days, setDays] = useState(7);
-  const data = useMemo(() => buildAggregate(days, storeIds), [days, storeIds]);
-  const latest = data[data.length - 1]?.["°C"] ?? 0;
+  const locale = useLocale();
+  const { tempSymbol } = locale;
+  const data = useMemo(
+    () => buildAggregate(days, storeIds, locale),
+    [days, storeIds, locale],
+  );
+  const latest = data[data.length - 1]?.[tempSymbol] ?? 0;
 
   return (
     <Widget title="Temperature" icon={<Thermometer />}>
@@ -69,7 +79,7 @@ export default function DoorOpenedAlarmsWidget({
               <div className="text-2xl font-bold tabular-nums text-ink">
                 {latest}
                 <span className="ml-1 text-sm font-semibold text-ink-muted">
-                  °C
+                  {tempSymbol}
                 </span>
               </div>
               <select
@@ -86,9 +96,9 @@ export default function DoorOpenedAlarmsWidget({
               className="min-h-0 flex-1"
               data={data}
               index="t"
-              categories={["°C"]}
+              categories={[tempSymbol]}
               colors={["orange"]}
-              valueFormatter={(v) => `${v}°C`}
+              valueFormatter={(v) => `${v}${tempSymbol}`}
               showLegend={false}
               showXAxis={false}
               curveType="monotone"
@@ -96,7 +106,7 @@ export default function DoorOpenedAlarmsWidget({
             />
           </div>
         ) : (
-          <Metric value={latest} unit="°C" caption="Latest reading" />
+          <Metric value={latest} unit={tempSymbol} caption="Latest reading" />
         )
       }
     </Widget>

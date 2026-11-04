@@ -50,6 +50,7 @@ import {
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { useLocale } from "../lib/locale";
 
 RectAreaLightUniformsLib.init();
 
@@ -816,7 +817,10 @@ export default function OperatorPage({
     setMountScene(deferSceneLoadMs <= 0);
   }
   const [temps, setTemps] = useState(["75", "75", "75", "75"]);
-  const [unit, setUnit] = useState<"C" | "F">("C");
+  const { tempUnit } = useLocale();
+  // Follows the viewer's region until the operator flips the toggle.
+  const [unitOverride, setUnitOverride] = useState<"C" | "F" | null>(null);
+  const unit = unitOverride ?? tempUnit;
   const [lightAnchors, setLightAnchors] = useState<LightAnchors>({});
   const [fanEmitters, setFanEmitters] = useState<FanEmitters>({});
   const [sceneReady, setSceneReady] = useState(false);
@@ -1050,7 +1054,7 @@ export default function OperatorPage({
                 className={`tablet-unit-toggle ${
                   unit === "F" ? "tablet-unit-toggle--on" : ""
                 }`}
-                onClick={() => setUnit((prev) => (prev === "C" ? "F" : "C"))}
+                onClick={() => setUnitOverride(unit === "C" ? "F" : "C")}
                 aria-label="Toggle temperature unit"
               >
                 <span className="tablet-unit-knob" aria-hidden />

@@ -15,6 +15,7 @@ import businessManagerImage from "./assets/BusinessManager.webp";
 import operatorImage from "./assets/Operator.webp";
 import operatorTabletImage from "./assets/OperatorView.svg";
 import connectLogo from "./assets/connect_logo.svg";
+import { useLocale } from "./lib/locale";
 
 const SLIDE_MS = 600;
 const INACTIVITY_MS = 30_000;
@@ -412,6 +413,16 @@ export default function App() {
   const helperTipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  // Region / store names are authored in British English ("City Centre");
+  // localise them for display.
+  const { spell } = useLocale();
+  const localisedNameById = React.useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(NAME_BY_ID).map(([id, name]) => [id, spell(name)]),
+      ),
+    [spell],
+  );
 
   React.useEffect(() => {
     const syncHeaderBrand = () => {
@@ -686,12 +697,16 @@ export default function App() {
         >
           <BusinessManagerPage
             onBack={bmOnBack}
-            heading={bmHeading}
-            rows={bmRows}
+            heading={bmHeading && spell(bmHeading)}
+            rows={bmRows.map((row) => ({
+              ...row,
+              title: spell(row.title),
+              subtitle: row.subtitle && spell(row.subtitle),
+            }))}
             onOpen={bmOnOpen}
             levelKey={bmLevelKey}
             storeIds={bmStoreIds}
-            nameById={NAME_BY_ID}
+            nameById={localisedNameById}
           />
           {selectedStoreId && (
             <div
@@ -699,11 +714,11 @@ export default function App() {
             >
               <StoreViewPage
                 onBack={handleBackToSubRegion}
-                title={
+                title={spell(
                   (isHebMode
                     ? HEB_STORE_TITLE_BY_ID[selectedStoreId]
-                    : STORE_TITLE_BY_ID[selectedStoreId]) ?? "Store View"
-                }
+                    : STORE_TITLE_BY_ID[selectedStoreId]) ?? "Store View",
+                )}
               />
             </div>
           )}

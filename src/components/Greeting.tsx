@@ -1,5 +1,5 @@
 import TypewriterText from "./TypewriterText";
-import { useCityName } from "../hooks/useCityName";
+import { useLocale } from "../lib/locale";
 
 // Morning / afternoon / evening, from the viewer's local clock.
 function timeOfDayGreeting(hour = new Date().getHours()): string {
@@ -16,7 +16,7 @@ function timeOfDayGreeting(hour = new Date().getHours()): string {
  * (min-height, margins, flex basis).
  */
 export default function Greeting({ className = "" }: { className?: string }) {
-  const city = useCityName("London");
+  const { city } = useLocale();
   return (
     <div
       className={`flex w-full items-center px-6 text-left text-5xl font-extrabold text-accent sm:px-12 sm:text-6xl ${className}`}

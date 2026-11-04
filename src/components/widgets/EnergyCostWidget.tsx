@@ -1,15 +1,16 @@
 import { useMemo, useState } from "react";
-import { PoundSterling } from "lucide-react";
+import { DollarSign, Euro, PoundSterling } from "lucide-react";
 import { AreaChart, BadgeDelta } from "@tremor/react";
 import { Widget } from "./Widget";
 import { seededInt } from "../../lib/seededRandom";
+import { useLocale } from "../../lib/locale";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const CURRENCY_OPTIONS = [
-  { code: "GBP", symbol: "£", rate: 0.18 },
-  { code: "EUR", symbol: "€", rate: 0.21 },
-  { code: "USD", symbol: "$", rate: 0.23 },
+  { code: "GBP", symbol: "£", rate: 0.18, Icon: PoundSterling },
+  { code: "EUR", symbol: "€", rate: 0.21, Icon: Euro },
+  { code: "USD", symbol: "$", rate: 0.23, Icon: DollarSign },
 ];
 
 const COST_UP = "#a4130e"; // cost rising vs last week — bad
@@ -78,7 +79,12 @@ export default function EnergyCostWidget({
   storeIds = ["root"],
 }: EnergyCostWidgetProps) {
   const chartData = useMemo(() => buildDataset(storeIds), [storeIds]);
-  const [currency, setCurrency] = useState(CURRENCY_OPTIONS[0]);
+  const { currencyCode } = useLocale();
+  // Follows the viewer's region until they pick one from the dropdown.
+  const [pickedCode, setPickedCode] = useState<string | null>(null);
+  const currency =
+    CURRENCY_OPTIONS.find((o) => o.code === (pickedCode ?? currencyCode)) ??
+    CURRENCY_OPTIONS[0];
 
   const thisWeekSeries = chartData.map((d) => d["This week"]);
   const totalKwh = chartData.reduce((s, v) => s + v["This week"], 0);
@@ -90,7 +96,7 @@ export default function EnergyCostWidget({
   const trendColor = goingDown ? COST_DOWN : COST_UP;
 
   return (
-    <Widget title="Energy Consumption / Cost" icon={<PoundSterling />}>
+    <Widget title="Energy Consumption / Cost" icon={<currency.Icon />}>
       {(expanded) => (
         <div
           className={`flex min-h-0 flex-1 ${
@@ -115,12 +121,7 @@ export default function EnergyCostWidget({
             {expanded && (
               <select
                 value={currency.code}
-                onChange={(e) =>
-                  setCurrency(
-                    CURRENCY_OPTIONS.find((o) => o.code === e.target.value) ??
-                      CURRENCY_OPTIONS[0],
-                  )
-                }
+                onChange={(e) => setPickedCode(e.target.value)}
                 aria-label="Currency"
                 className="mt-1 rounded-md border border-line bg-surface px-2 py-1 text-xs font-medium text-ink"
               >

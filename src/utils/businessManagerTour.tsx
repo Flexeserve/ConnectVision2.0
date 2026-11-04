@@ -4,6 +4,7 @@ import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import "../styles/tour.css";
 import WidgetPanelTooltip from "../components/widgets/widgetLegend";
+import { spell } from "../lib/locale";
 
 const WIDGETS_PANEL_ELEMENT = ".widgets-beacon-target";
 
@@ -101,8 +102,20 @@ export const businessManagerTourSteps: DriveStep[] = [
 ];
 
 export const createBusinessManagerBeaconTour = (stepIndex: number) => {
-  const step = businessManagerTourSteps[stepIndex];
-  if (!step) return null;
+  const baseStep = businessManagerTourSteps[stepIndex];
+  if (!baseStep) return null;
+  // Copy is authored in British English; localise it for the viewer now.
+  const step: DriveStep = baseStep.popover
+    ? {
+        ...baseStep,
+        popover: {
+          ...baseStep.popover,
+          title: baseStep.popover.title && spell(baseStep.popover.title),
+          description:
+            baseStep.popover.description && spell(baseStep.popover.description),
+        },
+      }
+    : baseStep;
 
   let legendRoot: Root | null = null;
 

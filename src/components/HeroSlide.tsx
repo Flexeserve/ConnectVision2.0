@@ -1,6 +1,7 @@
 // src/components/HeroSlide.tsx
 import React from "react";
 import "./HeroSlide.css";
+import { useLocale } from "../lib/locale";
 
 import heroProductImage from "../assets/HeroImage.webp";
 import heroFanIcon from "../assets/Flexeserve fan icon watermark light grey.svg";
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export default function HeroSlide({ visible, onClose }: Props) {
+  const { spell } = useLocale();
   const primaryRef = React.useRef<HTMLButtonElement | null>(null);
   const [isDarkMode, setIsDarkMode] = React.useState(() => {
     if (typeof window === "undefined") return false;
@@ -56,7 +58,7 @@ export default function HeroSlide({ visible, onClose }: Props) {
           <div className="hero-left">
             <div className="hero-title" id="hero-title">
               <div className="hero-logo"></div>
-              <div className="hero-subtitle">Control. Automate. Optimise.</div>
+              <div className="hero-subtitle">{spell("Control. Automate. Optimise.")}</div>
             </div>
             <div className="hero-cta-block">
               <div className="hero-arrow" aria-hidden="true">

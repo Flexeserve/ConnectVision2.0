@@ -5,6 +5,7 @@ import BackButton from "./BackButton";
 import flexeserveLogo from "../assets/flexeserveLogo.svg";
 import flexeserveLogoInversed from "../assets/flexeserveLogoInversed.svg";
 import hebLogo from "../assets/HEBLogo.svg";
+import { useLocale } from "../lib/locale";
 
 type Props = {
   onBack?: () => void;
@@ -103,14 +104,8 @@ export default function Header({ onBack, title, headerBrand }: Props) {
     return () => window.clearInterval(interval);
   }, []);
 
-  const timeLabel = now.toLocaleString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  const locale = useLocale();
+  const timeLabel = locale.formatDateTime(now);
 
   const effectiveHeaderBrand = headerBrand ?? globalHeaderBrand;
   const isHebHeader = effectiveHeaderBrand === "heb";
